@@ -1,6 +1,6 @@
 {
   "name": "@uploadcn/server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Framework-agnostic upload route for UploadCN: presigned S3/R2 uploads, multipart signing, local-disk storage, Cloudinary signing, virus scanning and OCR, using Web standard Request/Response.",
   "keywords": [
     "upload",
