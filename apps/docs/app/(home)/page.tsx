@@ -20,6 +20,7 @@ import { codeBlockClassName } from "@/components/docs/code"
 import { ComponentGallery } from "@/components/home/component-gallery"
 import { InstallCommand } from "@/components/home/install-command"
 import { Showcase } from "@/components/home/showcase"
+import { SiteFooter } from "@/components/home/site-footer"
 import { Button } from "@/components/ui/button"
 import { ExampleRenderer } from "@/examples/components"
 import { examples } from "@/examples/meta"
@@ -378,31 +379,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="border-t">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm text-muted-foreground">
-          <p>
-            {siteConfig.name}, open source, MIT licensed. Built on{" "}
-            <a
-              href="https://ui.shadcn.com"
-              className="underline underline-offset-4 hover:text-foreground"
-            >
-              shadcn/ui
-            </a>
-            .
-          </p>
-          <nav aria-label="Footer" className="flex gap-5">
-            <Link href="/docs" className="hover:text-foreground">
-              Docs
-            </Link>
-            <Link href="/examples" className="hover:text-foreground">
-              Examples
-            </Link>
-            <a href={siteConfig.links.github} className="hover:text-foreground">
-              GitHub
-            </a>
-          </nav>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   )
 }

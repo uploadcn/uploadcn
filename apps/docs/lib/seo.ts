@@ -49,6 +49,14 @@ const organization = {
   sameAs: [siteConfig.links.github, siteConfig.links.npm],
 }
 
+const person = {
+  "@type": "Person",
+  "@id": absoluteUrl("/#author"),
+  name: siteConfig.author.name,
+  url: siteConfig.author.url,
+  sameAs: [siteConfig.author.github],
+}
+
 const website = {
   "@type": "WebSite",
   "@id": absoluteUrl("/#website"),
@@ -65,6 +73,7 @@ export function siteJsonLd(faq: { question: string; answer: string }[]) {
     "@context": "https://schema.org",
     "@graph": [
       organization,
+      person,
       website,
       {
         "@type": "SoftwareSourceCode",
@@ -77,7 +86,8 @@ export function siteJsonLd(faq: { question: string; answer: string }[]) {
         runtimePlatform: ["Next.js", "TanStack Start", "Vite", "React Router"],
         license: "https://opensource.org/licenses/MIT",
         isAccessibleForFree: true,
-        author: { "@id": organization["@id"] },
+        author: { "@id": person["@id"] },
+        maintainer: { "@id": person["@id"] },
         keywords: keywords.join(", "),
       },
       {
