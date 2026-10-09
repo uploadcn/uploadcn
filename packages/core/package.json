@@ -1,0 +1,63 @@
+{
+  "name": "@uploadcn/core",
+  "version": "0.1.0",
+  "description": "Framework-agnostic upload engine: queueing, concurrency, retries, chunked and resumable uploads, validation and storage adapters.",
+  "keywords": [
+    "upload",
+    "file-upload",
+    "s3",
+    "r2",
+    "multipart",
+    "resumable",
+    "chunked",
+    "tus",
+    "shadcn"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uploadcn/uploadcn.git",
+    "directory": "packages/core"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./image": "./dist/image.js",
+    "./tus": "./dist/tus.js",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "tus-js-client": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "tus-js-client": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "eslint": "^10.12.0",
+    "fake-indexeddb": "^6.2.5",
+    "tsdown": "^0.23.0",
+    "tus-js-client": "^4.3.1",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

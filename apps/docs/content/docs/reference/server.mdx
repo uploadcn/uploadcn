@@ -1,0 +1,114 @@
+---
+title: "@uploadcn/server"
+description: A Web-standard upload route for S3, R2 and S3-compatible storage.
+---
+
+```npm
+npm install @uploadcn/server
+```
+
+Runs on Node.js, Bun, Deno, Cloudflare Workers and edge runtimes. Signing uses
+[aws4fetch](https://github.com/mhart/aws4fetch) (Web Crypto, ~2.5 KB), no AWS SDK.
+
+## createUploadRoute
+
+```ts
+const { POST } = createUploadRoute(options)
+// POST(request: Request): Promise<Response>
+```
+
+<TypeTable
+  type={{
+    storage: { type: "UploadStorage", required: true, description: "s3Storage, r2Storage, createMemoryStorage or your own." },
+    authorize: { type: "({ request, action, key? }) => TAuth | Promise<TAuth>", description: "Throw UploadRouteError to deny. The return value is passed to getKey and onUploadComplete." },
+    maxFileSize: { type: "number", description: "Bytes. Checked before signing and locked into single-PUT signatures; verified after multipart." },
+    allowedTypes: { type: "string | string[]", description: "accept syntax: MIME types, wildcards, extensions." },
+    getKey: { type: "({ file, meta, auth, request }) => string", default: "`${uuid}/${sanitized name}`" },
+    expiresIn: { type: "number", default: "3600", description: "Signed URL lifetime, in seconds." },
+    onUploadComplete: { type: "({ key, url, file, meta, auth, request, scan? }) => unknown", description: "Save metadata, start processing. The return value is sent to the client as result.data." },
+    verify: { type: "boolean", default: "true", description: "HEAD the object before completing." },
+    scan: { type: "{ scanner, onUnknown?, maxFileSize?, onResult? }", description: "Scan uploads before they complete. Infected files are deleted and returned as rejected. See [Virus scanning](/docs/guides/virus-scanning)." },
+  }}
+/>
+
+Errors thrown as `UploadRouteError(message, status, code?)` are returned as `{ error }`
+(plus `code`) with that status. `code: "rejected"` marks the file itself as refused: the
+client shows it as rejected and never retries. Anything else becomes a generic `500` and is logged, internal details
+never reach the client.
+
+## Storage
+
+### s3Storage
+
+```ts
+s3Storage({
+  bucket, region, accessKeyId, secretAccessKey,
+  sessionToken?, endpoint?, forcePathStyle?, publicUrl?, readUrlExpiresIn?,
+})
+```
+
+Without `publicUrl`, `url` in results is a signed GET URL.
+
+### r2Storage
+
+```ts
+r2Storage({ accountId, bucket, accessKeyId, secretAccessKey, publicUrl?, jurisdiction? })
+```
+
+### createMemoryStorage
+
+```ts
+const { storage, handler } = createMemoryStorage({ baseUrl: "/api/storage", secret })
+```
+
+A development storage implementing the full presigned and multipart flow with
+HMAC-signed URLs. Bytes are discarded (only size and ETag are kept). Mount `handler`
+at `baseUrl` for `PUT` requests. Not for production.
+
+### Custom storage
+
+Implement `UploadStorage` (`presignPut`, `createMultipart`, `presignPart`, `listParts`,
+`completeMultipart`, `abortMultipart`, `headObject`, `deleteObject`, `getUrl`) to support
+any backend. Add the optional `getObject(key)` (a `ReadableStream`) to enable scanning and
+OCR of stored files.
+
+## Virus scanning
+
+```ts
+import { clamavScanner, createScanner, httpScanner, virusTotalScanner } from "@uploadcn/server/scan"
+```
+
+Each returns a `Scanner` whose `scan({ stream, file, key?, signal? })` resolves to
+`{ status: "clean" | "infected" | "unknown", threats, scanner, details? }`. See
+[Virus scanning](/docs/guides/virus-scanning).
+
+## OCR
+
+```ts
+import {
+  awsTextractOcr, azureDocumentIntelligenceOcr, createOcrProvider, createOcrRoute,
+  googleVisionOcr, httpOcr, mistralOcr,
+} from "@uploadcn/server/ocr"
+```
+
+Each provider's `recognize({ data, type, name?, signal? })` resolves to an `OcrResult`.
+`createOcrRoute({ provider, authorize?, maxFileSize?, allowedTypes?, storage?, onResult? })`
+returns `{ POST }`. See [OCR](/docs/guides/ocr).
+
+## Protocol
+
+One `POST` endpoint with a JSON body, dispatched on `action`. Implement it in any language
+to use `s3Adapter` with a non-JavaScript backend.
+
+| Action | Request | Response |
+| --- | --- | --- |
+| `presign` | `{ file: { name, type, size }, meta? }` | `{ key, url, method: "PUT", headers }` |
+| `complete` | `{ key, file, meta? }` | `{ key, url, etag?, data? }` |
+| `create-multipart` | `{ file, meta? }` | `{ key, uploadId }` |
+| `sign-part` | `{ key, uploadId, partNumber }` | `{ url }` |
+| `list-parts` | `{ key, uploadId }` | `{ parts: [{ partNumber, etag, size }] \| null }` |
+| `complete-multipart` | `{ key, uploadId, parts: [{ partNumber, etag }], file, meta? }` | `{ key, url, etag?, data? }` |
+| `abort-multipart` | `{ key, uploadId }` | `{ ok: true }` |
+
+Errors: any non-2xx status with `{ "error": "message" }`. `408`, `429` and `5xx` are
+retried by the client.

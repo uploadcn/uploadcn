@@ -1,0 +1,69 @@
+---
+title: Image Metadata
+description: "Images upload in the background while people write alt text and captions. Saving waits for every upload and, by default, every description."
+---
+
+<ComponentPreview name="image-metadata" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/image-metadata
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `badge`, `input`, `textarea` components, then copy:
+
+<ComponentSource name="image-metadata" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ImageMetadataUpload } from "@/components/image-metadata"
+```
+
+```tsx
+<ImageMetadataUpload
+  onSave={(images) =>
+    images.map(({ item, alt, caption }) => ({
+      key: item.result?.key,
+      alt,
+      caption,
+    }))
+  }
+/>
+```
+
+Alt text and captions are stored on each item's `meta` with `uploader.update(id, { meta })`, so they survive re-renders and travel with the item.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    maxFiles: { type: "number", default: "8" },
+    requireAlt: {
+      type: "boolean",
+      default: "true",
+      description: "Require alt text before saving.",
+    },
+    onSave: { type: "(images: { item, alt, caption }[]) => void" },
+    className: { type: "string" },
+  }}
+/>

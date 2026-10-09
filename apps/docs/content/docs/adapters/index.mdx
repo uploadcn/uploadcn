@@ -1,0 +1,114 @@
+---
+title: Adapters
+description: The UI doesn't care where files go. Adapters move the bytes.
+---
+
+An adapter is a plain object with an `upload` function. The engine handles queueing,
+retries, pause/cancel, progress throttling, speed and persistence; the adapter only
+moves bytes and reports progress.
+
+```ts
+interface UploadAdapter<TResult> {
+  name: string
+  /** Pausing is offered only for resumable uploads. */
+  resumable?: boolean | ((file: File) => boolean)
+  upload(context: UploadAdapterContext): Promise<TResult>
+  /** Clean up server state (e.g. abort a multipart upload) on cancel. */
+  abort?(context: { item; resumeState }): Promise<void>
+}
+```
+
+## Built-in adapters
+
+| Adapter | For |
+| --- | --- |
+| [`s3Adapter`](/docs/adapters/s3) | S3 and S3-compatible storage, single PUT or multipart |
+| [`r2Adapter`](/docs/adapters/r2) | Cloudflare R2 (alias of `s3Adapter`) |
+| [`presignedAdapter`](/docs/adapters/presigned) | Any service that issues signed URLs or POST policies |
+| [`multipartAdapter`](/docs/adapters/multipart) | Any chunked protocol: bring create / uploadPart / complete |
+| [`httpAdapter`](/docs/adapters/http) | A plain endpoint that accepts files |
+| [`tusAdapter`](/docs/adapters/tus) | tus servers (tusd, @tus/server, Supabase, Cloudflare Stream…) |
+| [`mockAdapter`](/docs/adapters/mock) | Prototypes, tests and docs |
+| `routeAdapter` | Pick an adapter per file |
+
+```ts
+import { MiB, httpAdapter, routeAdapter } from "@uploadcn/core"
+import { tusAdapter } from "@uploadcn/core/tus"
+
+const adapter = routeAdapter((file) =>
+  file.size > 100 * MiB ? tusAdapter({ endpoint: "/files" }) : httpAdapter({ url: "/upload" })
+)
+```
+
+## Writing your own
+
+The context gives you everything you need:
+
+```ts
+interface UploadAdapterContext {
+  item: UploadItem
+  file: File                       // after transforms
+  signal: AbortSignal              // aborted on pause, cancel and remove
+  attempt: number                  // 1-based, within the current run
+  resumeState: unknown             // what you saved last time
+  onProgress(loaded: number, total?: number): void
+  onChunkProgress(completed: number, total: number): void
+  saveResumeState(state: unknown): void
+}
+```
+
+Throw an [`UploadError`](/docs/reference/core#uploaderror) with `retryable: true` for
+failures worth retrying.
+
+### Supabase Storage
+
+```ts
+import { presignedAdapter } from "@uploadcn/core"
+
+export const supabaseAdapter = presignedAdapter({
+  async getTarget({ file }) {
+    // Your route calls supabase.storage.from(bucket).createSignedUploadUrl(path)
+    const { signedUrl, path } = await fetch("/api/supabase-upload", {
+      method: "POST",
+      body: JSON.stringify({ name: file.name }),
+    }).then((res) => res.json())
+    return { url: signedUrl, key: path }
+  },
+})
+```
+
+### Firebase Storage
+
+```ts
+import { UploadError, type UploadAdapter } from "@uploadcn/core"
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage"
+
+export const firebaseAdapter: UploadAdapter<{ path: string; url: string }> = {
+  name: "firebase",
+  upload: ({ file, signal, onProgress }) =>
+    new Promise((resolve, reject) => {
+      const path = `uploads/${crypto.randomUUID()}-${file.name}`
+      const task = uploadBytesResumable(ref(getStorage(), path), file)
+      signal.addEventListener("abort", () => task.cancel())
+      task.on(
+        "state_changed",
+        (snapshot) => onProgress(snapshot.bytesTransferred, snapshot.totalBytes),
+        (error) => reject(new UploadError(error.message, { code: "network", retryable: true })),
+        async () => resolve({ path, url: await getDownloadURL(task.snapshot.ref) })
+      )
+    }),
+}
+```
+
+### Azure Blob Storage and Google Cloud Storage
+
+Both issue signed URLs from your server (SAS tokens / V4 signed URLs), so they work
+with [`presignedAdapter`](/docs/adapters/presigned). For very large files, use
+[`multipartAdapter`](/docs/adapters/multipart) with Azure's Put Block / Put Block List
+or GCS's XML multipart API.
+
+### UploadThing
+
+UploadThing ships its own React client. If you want UploadCN's UI on top of it, wrap
+its `uploadFiles` helper in an adapter's `upload` function and forward `onUploadProgress`
+to `onProgress`.

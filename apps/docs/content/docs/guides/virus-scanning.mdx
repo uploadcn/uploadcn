@@ -1,0 +1,206 @@
+---
+title: Virus scanning
+description: Scan every upload on your server with ClamAV, VirusTotal or your own scanner. Infected files are deleted and shown as rejected.
+---
+
+A browser can't scan files for malware, so UploadCN never pretends to. Scanning happens in
+your upload route, after the file is stored and before the upload completes. The UI only
+reflects the verdict.
+
+<Flow
+  label="With scan enabled"
+  steps={["Uploading", { label: "Scanning", highlight: true }, "Success"]}
+  branches={[{ from: "Scanning", to: "Rejected", note: "malware found: the file is deleted" }]}
+/>
+
+## Add it to your route
+
+<Steps>
+<Step>
+
+### Pick a scanner
+
+```ts
+import { clamavScanner } from "@uploadcn/server/scan"
+
+const scanner = clamavScanner({ host: process.env.CLAMAV_HOST })
+```
+
+</Step>
+<Step>
+
+### Pass it to `createUploadRoute`
+
+```ts title="app/api/upload/route.ts"
+export const { POST } = createUploadRoute({
+  storage,
+  scan: { scanner },
+})
+```
+
+</Step>
+<Step>
+
+### That's it on the client
+
+Nothing changes in the browser. A clean file completes as usual; an infected one is deleted
+and its item becomes **rejected** with "This file contains malware and was removed". Rejected
+uploads are final: the engine doesn't retry them.
+
+</Step>
+</Steps>
+
+The [upload route](/docs/adapters/s3) from `npx shadcn@latest add @uploadcn/upload-route`
+already does this when `CLAMAV_HOST` or `VIRUSTOTAL_API_KEY` is set.
+
+## Scanners
+
+<Tabs items={["ClamAV", "VirusTotal", "HTTP service", "Custom"]}>
+<Tab value="ClamAV">
+
+Free, open source and self-hosted. Files stream to `clamd` over its INSTREAM protocol and
+are never written to disk on your app server.
+
+```bash
+docker run -d -p 3310:3310 clamav/clamav:stable
+```
+
+```ts
+import { clamavScanner } from "@uploadcn/server/scan"
+
+const scanner = clamavScanner({
+  host: process.env.CLAMAV_HOST, // or socketPath: "/run/clamav/clamd.sock"
+  port: 3310,
+  timeout: 60_000,
+})
+
+await scanner.ping() // true when clamd answers, for health checks
+```
+
+clamd refuses streams over its `StreamMaxLength` (25 MB by default). Raise it in
+`clamd.conf` to match your largest upload. ClamAV opens a TCP socket, so the route must run
+on Node.js, not an edge runtime.
+
+</Tab>
+<Tab value="VirusTotal">
+
+Checks the file against 70+ engines. By default only the **SHA-256 hash** is sent, so file
+contents stay on your server and only files VirusTotal already knows can be flagged.
+
+```ts
+import { virusTotalScanner } from "@uploadcn/server/scan"
+
+const scanner = virusTotalScanner({
+  apiKey: process.env.VIRUSTOTAL_API_KEY!,
+  threshold: 2, // engines that must agree before a file counts as infected
+})
+
+createUploadRoute({ storage, scan: { scanner, onUnknown: "allow" } })
+```
+
+Unknown hashes are `unknown`, so pair hash lookups with `onUnknown: "allow"`.
+
+<Callout type="warn" title="upload: true shares your files">
+  With `upload: true`, files VirusTotal hasn't seen are uploaded for analysis. Uploaded files
+  are shared with VirusTotal's security partners. Never enable it for private documents.
+</Callout>
+
+</Tab>
+<Tab value="HTTP service">
+
+Send files to your own scanning service, or a hosted one such as Cloudmersive,
+MetaDefender or an internal sandbox. The request body is the raw file, described by the
+`content-type` and `x-file-name` headers.
+
+```ts
+import { httpScanner } from "@uploadcn/server/scan"
+
+const scanner = httpScanner({
+  url: process.env.SCANNER_URL!,
+  headers: { authorization: `Bearer ${process.env.SCANNER_TOKEN}` },
+  // Default: { "status": "clean" | "infected", "threats": [] } or { "clean": true }
+  parse: (body) => ({
+    status: body.CleanResult ? "clean" : "infected",
+    threats: body.FoundViruses?.map((virus) => virus.VirusName) ?? [],
+  }),
+})
+```
+
+</Tab>
+<Tab value="Custom">
+
+Wrap anything, for example a commercial SDK:
+
+```ts
+import { createScanner, readStream } from "@uploadcn/server/scan"
+
+const scanner = createScanner("my-av", async ({ stream, file }) => {
+  const bytes = await readStream(stream, 100 * 1024 * 1024)
+  const verdict = await myAntivirus.scan(bytes, file.name)
+  return { status: verdict.infected ? "infected" : "clean", threats: verdict.names }
+})
+```
+
+</Tab>
+</Tabs>
+
+## Options
+
+<TypeTable
+  type={{
+    scanner: { type: "Scanner", description: "Any of the scanners above." },
+    onUnknown: {
+      type: '"reject" | "allow"',
+      default: '"reject"',
+      description: "When the scanner can't decide or is down. Reject fails closed and deletes the file.",
+    },
+    maxFileSize: { type: "number", description: "Files larger than this (bytes) aren't scanned and count as unknown." },
+    onResult: { type: "(context) => void", description: "Every verdict with the key, file and auth, for logs, alerts and audit trails." },
+  }}
+/>
+
+`onUploadComplete` receives the verdict as `scan`, and the client's `item.result.scan` says
+`{ status: "clean", scanner: "clamav" }`. Threat names stay on the server.
+
+```ts
+createUploadRoute({
+  storage,
+  scan: {
+    scanner,
+    onResult: async ({ key, result, auth }) => {
+      if (result.status === "infected") await alertSecurityTeam({ key, user: auth, threats: result.threats })
+    },
+  },
+  async onUploadComplete({ key, scan }) {
+    await db.files.create({ key, scannedBy: scan?.scanner })
+  },
+})
+```
+
+## Storage requirements
+
+Scanning reads the stored object back, so the storage must implement `getObject`:
+`s3Storage`, `r2Storage` and `createFileSystemStorage` do. `createMemoryStorage` keeps no
+bytes and can't be scanned.
+
+## Keep unscanned files private
+
+With presigned uploads the bytes reach your bucket before the scan. Keep the bucket
+private (no `publicUrl`) so nobody can download a file until `complete` returns, or upload
+to a quarantine prefix and copy clean files to their final location in `onUploadComplete`.
+
+## Large files and background scans
+
+Scanning inline holds the `complete` request open. For multi-gigabyte files, scan in the
+background instead: skip `scan`, start a job in `onUploadComplete`, and drive the item from
+your job's result with `process` or `uploader.update`. See
+[Processing & scanning](/docs/guides/processing-and-scanning).
+
+On AWS, [GuardDuty Malware Protection for S3](https://docs.aws.amazon.com/guardduty/latest/ug/gdu-malware-protection-s3.html)
+scans new objects and tags them with `GuardDutyMalwareScanStatus`; poll that tag from
+`process`, or wrap it in `createScanner`.
+
+## Test it
+
+The [EICAR test file](https://www.eicar.org/download-anti-malware-testfile/) is harmless,
+and every scanner reports it as infected. Upload it to check the whole flow end to end.

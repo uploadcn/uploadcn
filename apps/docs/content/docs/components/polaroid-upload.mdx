@@ -1,0 +1,60 @@
+---
+title: Polaroid Upload
+description: Photos drop onto the table like polaroids, with a spring, a tilt, and a lift on hover.
+---
+
+<ComponentPreview name="polaroid-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/polaroid-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="polaroid-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { PolaroidUpload } from "@/components/polaroid-upload"
+```
+
+```tsx
+<PolaroidUpload maxFiles={8} />
+```
+
+Each photo gets a stable tilt derived from its id, so re-renders never make it jump.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    maxFiles: { type: "number", default: "8" },
+    maxSize: { type: "number", default: "20 MB" },
+    onSuccess: { type: "(item) => void" },
+  }}
+/>

@@ -1,0 +1,67 @@
+---
+title: Liquid Dropzone
+description: "A dropzone that fills up like a glass. The liquid level is the combined progress of every file, with a gently moving surface."
+---
+
+<ComponentPreview name="liquid-dropzone" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/liquid-dropzone
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="liquid-dropzone" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { LiquidDropzone } from "@/components/liquid-dropzone"
+```
+
+```tsx
+<LiquidDropzone maxFiles={20} />
+```
+
+Two wave layers loop at different speeds for depth. The level reads from `useUploadProgress`, so it works for any number of files. Waves stop with `prefers-reduced-motion`.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+    showQueue: {
+      type: "boolean",
+      default: "true",
+      description: "Show the queue under the dropzone.",
+    },
+  }}
+/>

@@ -1,0 +1,67 @@
+---
+title: Upload Button
+description: A single button that uploads and reports progress inline.
+---
+
+<ComponentPreview name="upload-button" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-button
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="upload-button" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadButton } from "@/components/upload-button"
+```
+
+```tsx
+<UploadButton
+  accept="application/pdf"
+  onSuccess={(item) => console.log(item.result)}
+>
+  Upload invoice
+</UploadButton>
+```
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number" },
+    maxFiles: { type: "number" },
+    multiple: { type: "boolean" },
+    showQueue: {
+      type: "boolean",
+      default: "true",
+      description: "Show the queue under the button.",
+    },
+    children: {
+      type: "ReactNode",
+      default: '"Upload file"',
+      description: "Button label.",
+    },
+    onSuccess: { type: "(item) => void" },
+  }}
+/>

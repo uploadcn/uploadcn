@@ -1,0 +1,190 @@
+# Netlify settings for the UploadCN docs (a Next.js app in a pnpm/Turborepo
+# monorepo). In the Netlify UI: leave "Base directory" empty (repo root) and
+# set "Package directory" to apps/docs. Paths here are relative to the repo
+# root. Next.js itself is handled by Netlify's OpenNext adapter (zero config).
+
+[build]
+  command = "pnpm turbo run build --filter=docs"
+  publish = "apps/docs/.next"
+  # Skip the build (and its 15 credits) when nothing the docs depend on
+  # changed: docs content, its packages or the lockfile.
+  ignore = "npx turbo-ignore docs --fallback=HEAD^1"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
+  TURBO_TELEMETRY_DISABLED = "1"
+
+# Style-aware registry URLs: the shadcn CLI requests /r/{base}-{style}/x.json.
+# Netlify can't serve these through the Next.js rewrites in next.config.mjs
+# (they point at static files), so the CDN rewrites them directly. Status
+# 200 keeps the URL, and no server function runs.
+
+[[redirects]]
+  from = "/r/base-vega/*"
+  to = "/r/styles/vega/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/base-nova/*"
+  to = "/r/styles/nova/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/base-maia/*"
+  to = "/r/styles/maia/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/base-lyra/*"
+  to = "/r/styles/lyra/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/base-mira/*"
+  to = "/r/styles/mira/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/base-luma/*"
+  to = "/r/styles/luma/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/base-sera/*"
+  to = "/r/styles/sera/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/base-rhea/*"
+  to = "/r/styles/rhea/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/radix-vega/*"
+  to = "/r/styles/vega/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/radix-nova/*"
+  to = "/r/styles/nova/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/radix-maia/*"
+  to = "/r/styles/maia/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/radix-lyra/*"
+  to = "/r/styles/lyra/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/radix-mira/*"
+  to = "/r/styles/mira/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/radix-luma/*"
+  to = "/r/styles/luma/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/radix-sera/*"
+  to = "/r/styles/sera/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/radix-rhea/*"
+  to = "/r/styles/rhea/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/aria-vega/*"
+  to = "/r/styles/vega/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/aria-nova/*"
+  to = "/r/styles/nova/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/aria-maia/*"
+  to = "/r/styles/maia/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/aria-lyra/*"
+  to = "/r/styles/lyra/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/aria-mira/*"
+  to = "/r/styles/mira/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/aria-luma/*"
+  to = "/r/styles/luma/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/aria-sera/*"
+  to = "/r/styles/sera/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/aria-rhea/*"
+  to = "/r/styles/rhea/:splat"
+  status = 200
+
+
+# Older shadcn style names get the default (Nova) build.
+
+[[redirects]]
+  from = "/r/new-york-v4/*"
+  to = "/r/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/new-york/*"
+  to = "/r/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/r/default/*"
+  to = "/r/:splat"
+  status = 200
+
+
+# The shadcn CLI fetches registry items from any origin.
+[[headers]]
+  for = "/r/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "public, max-age=300, stale-while-revalidate=86400"
+
+# Search index: built per deploy, downloaded once by the command menu.
+[[headers]]
+  for = "/api/search"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+
+# Open Graph images and icons rarely change; let browsers and crawlers cache.
+[[headers]]
+  for = "/og/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/icon-*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

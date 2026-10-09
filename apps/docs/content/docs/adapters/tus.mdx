@@ -1,0 +1,39 @@
+---
+title: tus
+description: Resumable uploads over the tus protocol.
+---
+
+[tus](https://tus.io) is an open protocol for resumable uploads, supported by tusd,
+`@tus/server`, Supabase Storage, Cloudflare Stream, Vimeo and others. UploadCN wraps
+the reference client, `tus-js-client`, rather than reimplementing the protocol.
+
+```npm
+npm install tus-js-client
+```
+
+```ts
+import { tusAdapter } from "@uploadcn/core/tus"
+
+const adapter = tusAdapter({
+  endpoint: "https://tusd.example.com/files/",
+  chunkSize: 8 * 1024 * 1024,
+  headers: async () => ({ authorization: `Bearer ${await getToken()}` }),
+  metadata: { bucket: "videos" },
+})
+```
+
+The engine stores the tus upload URL as resume state, so it works with
+[IndexedDB persistence](/docs/guides/resumable-uploads) across reloads (tus-js-client's
+own localStorage fingerprinting is turned off). Cancelling an upload sends a tus
+termination request.
+
+<TypeTable
+  type={{
+    endpoint: { type: "string", required: true },
+    chunkSize: { type: "number", description: "Bytes per PATCH request." },
+    parallelUploads: { type: "number", description: "Requires the concatenation extension on the server." },
+    retryDelays: { type: "number[]", default: "[]", description: "tus-js-client's own retries. Off by default: the engine retries." },
+    headers: { type: "Record<string, string> | () => Promise<Record<string, string>>" },
+    metadata: { type: "Record<string, string>", description: "filename and filetype are always sent." },
+  }}
+/>

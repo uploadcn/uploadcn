@@ -1,0 +1,98 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "!.next/dev/**"],
+      "env": [
+        "NEXT_PUBLIC_SITE_URL",
+        "S3_ENDPOINT",
+        "S3_REGION",
+        "S3_BUCKET",
+        "S3_ACCESS_KEY_ID",
+        "S3_SECRET_ACCESS_KEY",
+        "S3_PUBLIC_URL",
+        "CLAMAV_HOST",
+        "CLAMAV_PORT",
+        "VIRUSTOTAL_API_KEY",
+        "GOOGLE_VISION_API_KEY",
+        "TEXTRACT_REGION",
+        "TEXTRACT_ACCESS_KEY_ID",
+        "TEXTRACT_SECRET_ACCESS_KEY",
+        "TEXTRACT_MODEL",
+        "AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT",
+        "AZURE_DOCUMENT_INTELLIGENCE_KEY",
+        "AZURE_DOCUMENT_INTELLIGENCE_MODEL",
+        "MISTRAL_API_KEY",
+        "OCR_SERVICE_URL",
+        "OCR_SERVICE_TOKEN",
+        "NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION",
+        "NEXT_PUBLIC_BING_SITE_VERIFICATION",
+        "R2_ACCOUNT_ID",
+        "R2_BUCKET",
+        "R2_ACCESS_KEY_ID",
+        "R2_SECRET_ACCESS_KEY",
+        "R2_PUBLIC_URL",
+        "UPLOAD_DEMO_SECRET"
+      ]
+    },
+    "registry:build": {
+      "inputs": ["registry/**", "registry.json"],
+      "outputs": ["public/r/**"]
+    },
+    "lint": {
+      "dependsOn": ["^build"],
+      "env": [
+        "NEXT_PUBLIC_SITE_URL",
+        "S3_ENDPOINT",
+        "S3_REGION",
+        "S3_BUCKET",
+        "S3_ACCESS_KEY_ID",
+        "S3_SECRET_ACCESS_KEY",
+        "S3_PUBLIC_URL",
+        "CLAMAV_HOST",
+        "CLAMAV_PORT",
+        "VIRUSTOTAL_API_KEY",
+        "GOOGLE_VISION_API_KEY",
+        "TEXTRACT_REGION",
+        "TEXTRACT_ACCESS_KEY_ID",
+        "TEXTRACT_SECRET_ACCESS_KEY",
+        "TEXTRACT_MODEL",
+        "AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT",
+        "AZURE_DOCUMENT_INTELLIGENCE_KEY",
+        "AZURE_DOCUMENT_INTELLIGENCE_MODEL",
+        "MISTRAL_API_KEY",
+        "OCR_SERVICE_URL",
+        "OCR_SERVICE_TOKEN",
+        "NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION",
+        "NEXT_PUBLIC_BING_SITE_VERIFICATION",
+        "R2_ACCOUNT_ID",
+        "R2_BUCKET",
+        "R2_ACCESS_KEY_ID",
+        "R2_SECRET_ACCESS_KEY",
+        "R2_PUBLIC_URL",
+        "UPLOAD_DEMO_SECRET"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "dev": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true
+    },
+    "test:install": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "env": ["REGISTRY_URL", "KEEP"]
+    }
+  },
+  "globalEnv": []
+}

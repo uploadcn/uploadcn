@@ -1,0 +1,62 @@
+{
+  "name": "@uploadcn/react",
+  "version": "0.1.0",
+  "description": "React hooks and headless, accessible primitives for UploadCN.",
+  "keywords": [
+    "react",
+    "upload",
+    "file-upload",
+    "dropzone",
+    "hooks",
+    "headless",
+    "shadcn"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uploadcn/uploadcn.git",
+    "directory": "packages/react"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@uploadcn/core": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "eslint": "^10.12.0",
+    "happy-dom": "^20.14.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tsdown": "^0.23.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

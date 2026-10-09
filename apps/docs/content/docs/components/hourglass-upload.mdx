@@ -1,0 +1,64 @@
+---
+title: Hourglass
+description: "An hourglass for long uploads and deadlines: sand runs from the top bulb to the bottom with the progress, and the time left is shown front and center."
+---
+
+<ComponentPreview name="hourglass-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/hourglass-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="hourglass-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { HourglassUpload } from "@/components/hourglass-upload"
+```
+
+```tsx
+<HourglassUpload />
+```
+
+Both bulbs are clipped rectangles moved by one spring, so the sand in the top and bottom always adds up. The headline shows the estimated time left, updated live. With reduced motion the sand moves without the falling stream.
+
+It uploads through your [adapter](/docs/storage) like every other component, so it works with S3, R2, Cloudinary, local disk or your own API.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      description:
+        "Where files go. Defaults to the UploadConfigProvider adapter.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

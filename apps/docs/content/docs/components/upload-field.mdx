@@ -1,0 +1,101 @@
+---
+title: Upload Field
+description: An upload field for react-hook-form, TanStack Form and server actions.
+---
+
+<ComponentPreview name="form-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-field
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="upload-field" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadField } from "@/components/upload-field"
+```
+
+```tsx
+<Controller
+  name="attachments"
+  control={form.control}
+  render={({ field, fieldState }) => (
+    <UploadField
+      label="Attachments"
+      required
+      maxFiles={3}
+      error={fieldState.error?.message}
+      onChange={field.onChange}
+      onBlur={field.onBlur}
+      onUploadingChange={setIsUploading}
+    />
+  )}
+/>
+```
+
+The value is a list of object keys, not files: uploads happen while the user fills in the form, so submitting is instant.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    label: { type: "ReactNode" },
+    description: { type: "ReactNode" },
+    error: {
+      type: "string",
+      description:
+        "Error message from your form library. Sets `data-invalid` and `aria-invalid`.",
+    },
+    onChange: {
+      type: "(value: string[]) => void",
+      description: "Values of successful uploads (object keys by default).",
+    },
+    onBlur: { type: "() => void" },
+    onUploadingChange: {
+      type: "(uploading: boolean) => void",
+      description: "Block submission while files are uploading.",
+    },
+    getValue: {
+      type: "(item) => string",
+      description: "Value per successful upload.",
+    },
+    required: { type: "boolean" },
+    name: {
+      type: "string",
+      description: "Also submits hidden inputs in native forms.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number" },
+    maxFiles: { type: "number" },
+  }}
+/>
+
+## Examples
+
+### Required upload (native form)
+
+<ComponentPreview name="required-upload" />
+
+### File restrictions
+
+<ComponentPreview name="file-restrictions" />

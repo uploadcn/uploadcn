@@ -1,0 +1,26 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "index",
+    "installation",
+    "getting-started",
+    "how-it-works",
+    "packages",
+    "theming",
+    "registry",
+    "---Components---",
+    "...components",
+    "---Hooks---",
+    "hooks",
+    "---Storage---",
+    "...storage",
+    "---Adapters---",
+    "...adapters",
+    "---Guides---",
+    "...guides",
+    "---Frameworks---",
+    "...frameworks",
+    "---Reference---",
+    "...reference"
+  ]
+}

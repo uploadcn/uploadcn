@@ -1,0 +1,67 @@
+---
+title: Upload Terminal
+description: "Uploads as a CLI log. Drop files on the window and each one prints a line with an ASCII progress bar, speed and result."
+---
+
+<ComponentPreview name="upload-terminal" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-terminal
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="upload-terminal" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadTerminal } from "@/components/upload-terminal"
+```
+
+```tsx
+<UploadTerminal title="deploy/assets" />
+```
+
+The window is always dark, whatever the theme. The log is an `aria-live` list and scrolls to the newest line.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+    title: {
+      type: "string",
+      default: '"upload"',
+      description: "Shown in the title bar.",
+    },
+  }}
+/>

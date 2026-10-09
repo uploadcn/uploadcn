@@ -1,0 +1,74 @@
+---
+title: Advanced usage
+description: Headless usage, events, concurrency, transforms and the render prop.
+---
+
+## Headless engine
+
+The engine runs anywhere `File` exists, vanilla JS, Svelte, a web worker:
+
+```ts
+import { createUploader, s3Adapter } from "@uploadcn/core"
+
+const uploader = createUploader({ adapter: s3Adapter({ endpoint: "/api/upload" }) })
+const stop = uploader.mount() // listen for online/offline
+
+uploader.subscribe(() => render(uploader.getState().items))
+input.addEventListener("change", () => uploader.add(input.files!))
+```
+
+## The render prop
+
+Every primitive can render a different element, like Base UI:
+
+```tsx
+<UploadPrimitive.Trigger render={<Button variant="secondary" />}>Browse</UploadPrimitive.Trigger>
+
+<UploadPrimitive.Progress
+  render={(props, { percent }) => <CircularProgress {...props} value={percent} />}
+/>
+```
+
+Event handlers are merged; call `event.preventDefault()` in yours to skip the built-in behavior.
+
+## Concurrency and retries
+
+```ts
+createUploader({
+  adapter,
+  concurrency: 4,
+  retry: { retries: 5, baseDelay: 1000, maxDelay: 30_000, factor: 2, jitter: true },
+})
+```
+
+Delays use exponential backoff with equal jitter, and never undercut a server's
+`Retry-After`.
+
+## Transforms
+
+`transform` runs after validation and before queueing. Return a `File` or `Blob`:
+
+```ts
+transform: async (file) => (file.type === "image/heic" ? convertHeic(file) : file)
+```
+
+`item.originalFile` keeps what the user selected; `item.file` is what gets uploaded.
+
+## Metadata
+
+```ts
+await uploader.add(files, { meta: { folder: "invoices" } })
+```
+
+`s3Adapter` forwards `meta` to your route (`getKey`, `onUploadComplete`).
+
+## Selective re-rendering
+
+Lists re-render only when items are added or removed; each item re-renders only for its
+own changes. Use `useUploadSelector` to subscribe to exactly what a component needs.
+
+## Localization
+
+```tsx
+<Upload messages={{ status: { uploading: "Wird hochgeladen" }, uploaded: (name) => `${name} hochgeladen` }} />
+```

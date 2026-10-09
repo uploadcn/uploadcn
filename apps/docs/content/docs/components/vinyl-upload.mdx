@@ -1,0 +1,64 @@
+---
+title: Vinyl
+description: "A spinning record for music and podcast uploads: it spins up while tracks upload, the tonearm follows progress and it coasts to a stop when done."
+---
+
+<ComponentPreview name="vinyl-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/vinyl-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="vinyl-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { VinylUpload } from "@/components/vinyl-upload"
+```
+
+```tsx
+<VinylUpload maxSize={200 * 1024 * 1024} />
+```
+
+The record has momentum: its speed is a spring, so it spins up when uploads start and coasts to a stop instead of freezing. The tonearm angle tracks the overall percent. With reduced motion the record stays still and the arm jumps to its position.
+
+It uploads through your [adapter](/docs/storage) like every other component, so it works with S3, R2, Cloudinary, local disk or your own API.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      description:
+        "Where files go. Defaults to the UploadConfigProvider adapter.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]", default: '"audio/*"' },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

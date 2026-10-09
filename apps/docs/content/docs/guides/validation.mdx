@@ -1,0 +1,77 @@
+---
+title: Validation
+description: Types, sizes, counts, dimensions, durations, duplicates and custom rules.
+---
+
+<ComponentPreview name="file-restrictions" />
+
+```tsx
+<Upload
+  adapter={adapter}
+  accept={["image/png", "image/jpeg"]}
+  maxSize={10 * 1024 * 1024}
+  minSize={1024}
+  maxFiles={5}
+  image={{ minWidth: 400, minHeight: 400 }}
+  media={{ maxDuration: 600 }}
+  duplicates="reject"
+  validate={[noSpaces, uniqueNameOnServer]}
+/>
+```
+
+| Rule | Option | Issue code |
+| --- | --- | --- |
+| Type | `accept`, MIME types, wildcards or extensions | `file-invalid-type` |
+| Size | `maxSize`, `minSize` | `file-too-large`, `file-too-small` |
+| Count | `maxFiles` | `too-many-files` |
+| Minimum count | `minFiles` + `validateFileCount` | `too-few-files` |
+| Image dimensions | `image: { minWidth, minHeight, maxWidth, maxHeight }` | `image-too-small`, `image-too-large` |
+| Audio/video duration | `media: { minDuration, maxDuration }` | `media-too-short`, `media-too-long` |
+| Duplicates | `duplicates: "reject" \| "replace" \| "allow"` | `duplicate` |
+| Custom | `validate` | `custom` (or your own) |
+
+Rejected files appear in the list as `rejected`, with `item.issues` describing why.
+`UploadError` renders the messages and the live region announces them.
+
+When the OS doesn't report a MIME type (common for `.md`, `.csv` and others), the
+type is inferred from the extension.
+
+## Custom and async validators
+
+Return a message (or `{ code, message }`) to reject; return nothing to accept. Validators
+can be async and receive an `AbortSignal` that fires if the file is removed.
+
+```ts
+import type { FileValidator } from "@uploadcn/core"
+
+const noSpaces: FileValidator = (file) =>
+  file.name.includes(" ") ? "File names can't contain spaces" : null
+
+const uniqueNameOnServer: FileValidator = async (file, { signal }) => {
+  const response = await fetch(`/api/files/exists?name=${encodeURIComponent(file.name)}`, { signal })
+  const { exists } = await response.json()
+  return exists ? "A file with this name already exists" : null
+}
+```
+
+Cheap checks run first; image, media and custom validators only run if they pass.
+
+## Minimum files
+
+`minFiles` is a form-level rule. Check it on submit:
+
+```ts
+const issue = validateFileCount(uploadedKeys.length, { minFiles: 1, maxFiles: 3 })
+```
+
+## Without uploading
+
+```ts
+const { validate } = useFileValidation({ accept: ".pdf", maxSize: 5e6 })
+const { accepted, rejected } = await validate(files)
+```
+
+<Callout type="warn">
+  Client-side validation is for user experience. Always enforce limits on the server,
+  `createUploadRoute` checks size and type and locks them into the signature.
+</Callout>

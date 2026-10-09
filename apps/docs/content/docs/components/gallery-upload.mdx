@@ -1,0 +1,54 @@
+---
+title: Gallery Upload
+description: A photo gallery uploader that resizes images to WebP before upload.
+---
+
+<ComponentPreview name="gallery-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/gallery-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="gallery-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { GalleryUpload } from "@/components/gallery-upload"
+```
+
+```tsx
+<GalleryUpload maxFiles={50} onComplete={(items) => saveAlbum(items)} />
+```
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    maxFiles: { type: "number", default: "50" },
+    optimize: {
+      type: "boolean",
+      default: "true",
+      description: "Downscale to 2560px and convert to WebP.",
+    },
+    onComplete: { type: "(items) => void" },
+  }}
+/>

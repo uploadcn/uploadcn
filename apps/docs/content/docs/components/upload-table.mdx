@@ -1,0 +1,59 @@
+---
+title: Upload Table
+description: "The upload queue as a data table, name, type, size, status and progress in columns. Drop files anywhere on the table."
+---
+
+<ComponentPreview name="upload-table" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-table
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `table` component, then copy:
+
+<ComponentSource name="upload-table" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadTable } from "@/components/upload-table"
+```
+
+```tsx
+<UploadTable title="Project files" />
+```
+
+Rows are rendered with `UploadItemContext`, so every `UploadItem*` part (status, progress, actions, error) works inside table cells. The drop target is an [`UploadOverlay`](/docs/components/upload#overlay).
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+    title: { type: "string", default: '"Files"' },
+  }}
+/>

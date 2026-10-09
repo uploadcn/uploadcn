@@ -1,0 +1,86 @@
+---
+title: Receipt Upload
+description: "Expense capture: snap or drop a receipt, fill in the details, or let your OCR do it, and submit."
+---
+
+<ComponentPreview name="receipt-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/receipt-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `button`, `input` components, then copy:
+
+<ComponentSource name="receipt-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ReceiptUpload } from "@/components/receipt-upload"
+```
+
+With OCR, the form fills itself. Textract's `expense` model and Azure's
+`prebuilt-receipt` return the fields directly; other engines are read from the text:
+
+```tsx
+import { ocrEndpoint } from "@uploadcn/core"
+
+;<ReceiptUpload
+  recognize={ocrEndpoint("/api/ocr")} // npx shadcn@latest add @uploadcn/ocr-route
+  onSubmit={(expense) => createExpense(expense)}
+/>
+```
+
+Or extract the fields yourself, with any API or model:
+
+```tsx
+<ReceiptUpload
+  extract={async (item) => {
+    const response = await fetch(`/api/receipts/${item.result.key}/ocr`)
+    return response.json() // { merchant, date, amount, category }
+  }}
+  onSubmit={(expense) => createExpense(expense)}
+/>
+```
+
+On phones the picker opens the rear camera (`capture="environment"`). Fields the user already typed are never overwritten. `receiptFromOcr(result)` is exported if you want the same mapping elsewhere. See the [OCR guide](/docs/guides/ocr) for providers.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    categories: { type: "string[]" },
+    recognize: {
+      type: "OcrRecognizer",
+      description:
+        "Read the receipt with OCR and prefill merchant, date and amount.",
+    },
+    extract: {
+      type: "(item) => Promise<Partial<ReceiptFields>>",
+      description:
+        "Prefill from your own OCR or AI after upload. Wins over `recognize`.",
+    },
+    onSubmit: { type: "(expense) => void" },
+    className: { type: "string" },
+  }}
+/>

@@ -1,0 +1,101 @@
+---
+title: OCR Upload
+description: Upload scans, photos and PDFs and read their text with any OCR engine, with copy, download and extracted fields.
+---
+
+<ComponentPreview name="ocr-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/ocr-upload
+```
+
+For a server engine, add the route too:
+
+```npm
+npx shadcn@latest add @uploadcn/ocr-route
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `button` component, then copy:
+
+<ComponentSource name="ocr-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ocrEndpoint } from "@uploadcn/core"
+
+import { OcrUpload } from "@/components/ocr-upload"
+```
+
+```tsx
+<OcrUpload
+  recognize={ocrEndpoint("/api/ocr")}
+  onResult={(item, result) => saveText(item.result.key, result.text)}
+/>
+```
+
+Files upload through your [adapter](/docs/storage) as usual; after each one is stored, its
+text is read and shown. The engine is up to you:
+
+- `ocrEndpoint("/api/ocr")`: your route, with Google Vision, AWS Textract, Azure Document
+  Intelligence, Mistral or your own service. Keys stay on the server.
+- `tesseractOcr({ load: () => import("tesseract.js") })`: in the browser, with nothing
+  uploaded for OCR. The preview above uses it.
+
+See the [OCR guide](/docs/guides/ocr) for every provider.
+
+## Fields
+
+Engines with document models return structured fields: Textract's `expense` model and
+Azure's `prebuilt-receipt` and `prebuilt-invoice` give `merchant`, `date`, `total`,
+`subtotal`, `tax` and more. The block lists them above the text.
+
+## Accessibility
+
+Documents are a listbox; the text is a focusable, labelled region you can scroll with the
+keyboard. Progress and "Reading text…" are announced politely.
+
+## Props
+
+<TypeTable
+  type={{
+    recognize: {
+      type: "OcrRecognizer",
+      description:
+        "Reads the text: `ocrEndpoint(url)`, `tesseractOcr(...)` or your own function.",
+      required: true,
+    },
+    adapter: {
+      type: "UploadAdapter",
+      description:
+        "Where files go. Defaults to the UploadConfigProvider adapter.",
+    },
+    required: {
+      type: "boolean",
+      default: "false",
+      description: "Reject the upload when text can't be read.",
+    },
+    accept: {
+      type: "string",
+      default: '"image/png,image/jpeg,image/webp,image/tiff,application/pdf"',
+    },
+    maxSize: { type: "number", default: "20 MB" },
+    maxFiles: { type: "number", default: "20" },
+    onResult: {
+      type: "(item, result: OcrResult) => void",
+      description: "Each file's text, once read.",
+    },
+    className: { type: "string" },
+  }}
+/>

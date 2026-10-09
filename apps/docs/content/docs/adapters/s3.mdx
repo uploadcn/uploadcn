@@ -1,0 +1,119 @@
+---
+title: Amazon S3
+description: Direct-to-bucket uploads with presigned URLs and resumable multipart.
+---
+
+<ComponentPreview name="s3-presigned" />
+
+## How it works
+
+1. The browser validates the file and asks your route for a signed URL.
+2. The route checks auth, size and type, and signs a `PUT` whose signature locks the
+   **content type and content length**: S3 rejects anything else.
+3. The browser uploads directly to the bucket and tracks progress.
+4. The browser calls `complete`; the route verifies the object with `HEAD` and runs
+   `onUploadComplete` (save metadata, enqueue a scan…).
+
+Files at or above `multipart.threshold` (64 MB by default) use S3 multipart instead:
+parts are signed one at a time, uploaded in parallel, retried individually, and the
+upload can pause, resume, and survive reloads.
+
+## Client
+
+```ts
+import { MiB, s3Adapter } from "@uploadcn/core"
+
+const adapter = s3Adapter({
+  endpoint: "/api/upload",
+  multipart: { threshold: 64 * MiB, partSize: 8 * MiB, concurrency: 4 },
+  headers: async () => ({ authorization: `Bearer ${await getToken()}` }),
+})
+```
+
+<TypeTable
+  type={{
+    endpoint: { type: "string", required: true, description: "Your upload route." },
+    multipart: { type: "{ threshold?, partSize?, concurrency? } | false", description: "Multipart settings, or false to always use one PUT." },
+    headers: { type: "Record<string, string> | () => Promise<Record<string, string>>", description: "Sent to your route (not to S3)." },
+    credentials: { type: "RequestCredentials", description: "fetch credentials mode for your route." },
+    fetch: { type: "typeof fetch" },
+    transport: { type: "Transport", description: "Replace the XHR transport (tests, instrumentation)." },
+  }}
+/>
+
+The result is a `StoredObject`: `{ key, url, etag?, data? }`.
+
+## Server
+
+```npm
+npx shadcn@latest add @uploadcn/upload-route
+```
+
+```ts title="app/api/upload/route.ts"
+import { UploadRouteError, createUploadRoute, s3Storage } from "@uploadcn/server"
+
+import { auth } from "@/lib/auth"
+import { db } from "@/lib/db"
+
+export const { POST } = createUploadRoute({
+  storage: s3Storage({
+    bucket: process.env.S3_BUCKET!,
+    region: process.env.S3_REGION!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+  }),
+  maxFileSize: 500 * 1024 * 1024,
+  allowedTypes: ["image/*", "application/pdf"],
+  async authorize({ key }) {
+    const session = await auth()
+    if (!session) throw new UploadRouteError("Unauthorized", 401)
+    // Multipart actions carry the key: make sure it's the caller's.
+    if (key && !key.startsWith(`${session.user.id}/`)) throw new UploadRouteError("Forbidden", 403)
+    return session.user
+  },
+  getKey: ({ auth, file }) => `${auth.id}/${crypto.randomUUID()}/${file.name}`,
+  async onUploadComplete({ auth, key, file }) {
+    return db.file.create({ data: { userId: auth.id, key, name: file.name, size: file.size } })
+  },
+})
+```
+
+See the [server reference](/docs/reference/server) for every option.
+
+## Bucket CORS
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://your-app.com"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["content-type"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+`ExposeHeaders: ["ETag"]` is required for multipart uploads: the browser reads each
+part's ETag to complete the upload.
+
+## S3-compatible services
+
+Pass `endpoint` to `s3Storage` for MinIO, Backblaze B2, DigitalOcean Spaces, Wasabi
+and others. Path-style URLs are used automatically with a custom endpoint.
+
+```ts
+s3Storage({
+  endpoint: "https://s3.us-west-004.backblazeb2.com",
+  region: "us-west-004",
+  bucket: "uploads",
+  accessKeyId: process.env.B2_KEY_ID!,
+  secretAccessKey: process.env.B2_APPLICATION_KEY!,
+})
+```
+
+## Abandoned multipart uploads
+
+Parts of cancelled uploads are aborted automatically. Parts of uploads that are simply
+abandoned (tab closed, never resumed) are billed until removed, add a bucket lifecycle
+rule to abort incomplete multipart uploads after a few days.

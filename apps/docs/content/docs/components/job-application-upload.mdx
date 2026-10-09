@@ -1,0 +1,63 @@
+---
+title: Job Application
+description: "A careers-page application: resume (required), cover letter and portfolio (optional), and a link. Files upload while the candidate fills in the rest."
+---
+
+<ComponentPreview name="job-application-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/job-application-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `button`, `input` components, then copy:
+
+<ComponentSource name="job-application-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { JobApplicationUpload } from "@/components/job-application-upload"
+```
+
+```tsx
+<JobApplicationUpload
+  role="Staff Engineer"
+  onSubmit={(application) => apply(application)}
+/>
+```
+
+Submit stays disabled until the resume has uploaded, so you never receive an application without one.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    role: { type: "string" },
+    maxSize: { type: "number", default: "10 MB" },
+    onSubmit: {
+      type: "(application: JobApplication) => void",
+      description: "`{ resume, coverLetter?, portfolio?, link? }`",
+    },
+    className: { type: "string" },
+  }}
+/>

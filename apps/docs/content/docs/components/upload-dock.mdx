@@ -1,0 +1,62 @@
+---
+title: Upload Dock
+description: "A macOS-style dock of uploaded files. Tiles magnify under the cursor, a dot marks files still uploading, and the whole dock is a drop target."
+---
+
+<ComponentPreview name="upload-dock" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-dock
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="upload-dock" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadDock } from "@/components/upload-dock"
+```
+
+```tsx
+<UploadDock accept="image/*" />
+```
+
+Magnification follows the cursor with a spring per tile. The `+` tile opens the file picker. Each tile has a screen-reader label with the file name and status.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

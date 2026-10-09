@@ -1,0 +1,43 @@
+---
+title: Chunked uploads
+description: Split large files into parts that upload in parallel and retry independently.
+---
+
+<ComponentPreview name="chunked-upload" />
+
+Chunking solves three problems with large files:
+
+- **Reliability**: a dropped connection loses one part, not the whole file.
+- **Speed**: several parts upload in parallel, which saturates bandwidth better than one stream.
+- **Resumability**: finished parts are recorded, so uploads continue after a pause or reload.
+
+## With S3 or R2
+
+Nothing to write: `s3Adapter` switches to multipart above its threshold.
+
+```ts
+s3Adapter({ endpoint: "/api/upload", multipart: { threshold: 32 * MiB, partSize: 8 * MiB, concurrency: 4 } })
+```
+
+## With any other backend
+
+Use [`multipartAdapter`](/docs/adapters/multipart) and implement `create`, `uploadPart`
+and `complete` against your API. The example above talks to the same route as
+`s3Adapter`, written out by hand.
+
+## Choosing a part size
+
+- S3 and R2 require parts of at least **5 MiB** (except the last) and at most **10 000** parts.
+  `getPartSize` grows the part size automatically for huge files.
+- Larger parts mean fewer requests; smaller parts mean less work lost on failure and
+  finer-grained progress. 8–16 MiB is a good default.
+- `concurrency` of 3–6 is usually optimal; more rarely helps and competes with the page.
+
+## Chunk progress
+
+Items expose `chunks: { completed, total }` alongside byte progress:
+
+```tsx
+const item = useUploadItem()
+item.chunks && `${item.chunks.completed}/${item.chunks.total} parts`
+```

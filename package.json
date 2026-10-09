@@ -1,0 +1,32 @@
+{
+  "name": "uploadcn",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Production-ready file uploads, built for shadcn.",
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "check": "turbo run lint typecheck test build",
+    "registry:build": "turbo run registry:build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo run build --filter=./packages/* && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "prettier": "^3.9.9",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "turbo": "^2.11.7",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

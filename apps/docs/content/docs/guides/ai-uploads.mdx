@@ -1,0 +1,47 @@
+---
+title: AI & LLM uploads
+description: Chat attachments, multimodal input and RAG document ingestion.
+---
+
+## Chat attachments
+
+<ComponentPreview name="chat-attachment" />
+
+A compact composer for chat interfaces:
+
+- Attach by clicking, dragging onto the composer, or **pasting screenshots**.
+- Files upload while the user types; sending waits for them.
+- Images are downscaled to 1568px WebP, about what vision models work with, so
+  attachments upload faster without changing answers.
+
+Pass the stored objects to your model instead of base64 payloads:
+
+```ts
+onSend={async ({ text, attachments }) => {
+  await fetch("/api/chat", {
+    method: "POST",
+    body: JSON.stringify({ text, files: attachments.map((item) => item.result) }),
+  })
+}}
+```
+
+On the server, give the model a signed URL (or fetch the object and pass its bytes) for
+each file.
+
+## Document ingestion (RAG)
+
+<ComponentPreview name="ai-document-upload" />
+
+`DocumentIngest` follows each document through `upload → parse → chunk → embed → index`.
+The stages are driven by your backend through `process`:
+
+```ts
+const ingest: IngestProcess<StoredObject> = async (item, { setStage, signal }) => {
+  const { jobId } = await api.ingest(item.result!.key, { signal })
+  for await (const event of api.watch(jobId, { signal })) {
+    setStage(event.stage) // "parse" | "chunk" | "embed" | "index"
+  }
+}
+```
+
+Throw to fail the item; it can be retried from the list.

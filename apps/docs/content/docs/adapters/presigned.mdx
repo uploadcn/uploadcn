@@ -1,0 +1,61 @@
+---
+title: Presigned URLs
+description: Upload to any storage that issues signed URLs or POST policies.
+---
+
+`presignedAdapter` implements the generic presigned flow for any provider: Google Cloud
+Storage V4 signed URLs, Azure SAS URLs, Supabase signed upload URLs, S3 POST policies,
+or your own signing service.
+
+<Flow
+  label="Presigned upload"
+  steps={[
+    "Select",
+    "Validate",
+    { label: "getTarget()", note: "your backend signs" },
+    { label: "PUT / POST", note: "browser → storage", highlight: true },
+    "Progress",
+    "Done",
+    { label: "complete()", note: "optional" },
+  ]}
+/>
+
+```ts
+import { presignedAdapter } from "@uploadcn/core"
+
+const adapter = presignedAdapter({
+  async getTarget({ file, signal }) {
+    const response = await fetch("/api/sign", {
+      method: "POST",
+      body: JSON.stringify({ name: file.name, type: file.type, size: file.size }),
+      signal,
+    })
+    return response.json() // { url, method?, headers?, fields?, key?, publicUrl? }
+  },
+  async complete({ target, file }) {
+    const response = await fetch("/api/files", {
+      method: "POST",
+      body: JSON.stringify({ key: target.key, name: file.name }),
+    })
+    return response.json()
+  },
+})
+```
+
+## Target
+
+<TypeTable
+  type={{
+    url: { type: "string", required: true },
+    method: { type: '"PUT" | "POST"', default: '"PUT"', description: "POST sends a multipart form (S3 POST policy)." },
+    headers: { type: "Record<string, string>", description: "Headers that were signed and must be sent as-is." },
+    fields: { type: "Record<string, string>", description: "POST policy form fields, sent before the file." },
+    key: { type: "string", description: "Object key, returned in the result." },
+    publicUrl: { type: "string", description: "Readable URL, returned in the result." },
+  }}
+/>
+
+Without `complete`, the result is `{ key, url }` (the URL without its signature query).
+
+For S3 and R2 you don't need to write the signing route yourself, use
+[`s3Adapter`](/docs/adapters/s3) with `@uploadcn/server`.

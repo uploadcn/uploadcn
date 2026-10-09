@@ -1,0 +1,65 @@
+---
+title: Upload Tabs
+description: "One uploader, three sources: the device, a public link or the camera. Files from every tab land in the same queue."
+---
+
+<ComponentPreview name="upload-tabs" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-tabs
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `input`, `tabs` components, then copy:
+
+<ComponentSource name="upload-tabs" />
+
+<ComponentSource name="use-camera" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadTabs } from "@/components/upload-tabs"
+```
+
+```tsx
+<UploadTabs sources={["device", "link"]} />
+```
+
+Links are fetched in the browser and uploaded like any other file, so the source must allow CORS. The camera starts only when the user clicks **Open camera**.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+    sources: {
+      type: '("device" | "link" | "camera")[]',
+      default: "all three",
+      description: "Which tabs to show.",
+    },
+  }}
+/>

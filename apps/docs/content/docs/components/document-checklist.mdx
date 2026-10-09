@@ -1,0 +1,75 @@
+---
+title: Document Checklist
+description: "Collect a list of documents, insurance claims, onboarding, visas, loans. Each requirement is its own slot and ticks off when its file uploads."
+---
+
+<ComponentPreview name="document-checklist" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/document-checklist
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `badge` component, then copy:
+
+<ComponentSource name="document-checklist" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { DocumentChecklist } from "@/components/document-checklist"
+```
+
+```tsx
+<DocumentChecklist
+  title="Onboarding documents"
+  items={[
+    {
+      name: "contract",
+      label: "Signed contract",
+      accept: "application/pdf",
+      required: true,
+    },
+    { name: "tax-form", label: "Tax form", required: true },
+    { name: "photo", label: "Profile photo", accept: "image/*" },
+  ]}
+/>
+```
+
+Each file carries its requirement name in `item.meta.slot`, so your backend knows which document is which.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    title: { type: "string", default: '"Supporting documents"' },
+    description: { type: "string" },
+    items: {
+      type: "ChecklistItem[]",
+      default: "an insurance claim",
+      description: "`{ name, label, description?, accept?, required? }`",
+    },
+    maxSize: { type: "number", default: "25 MB" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

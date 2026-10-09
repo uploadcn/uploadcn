@@ -1,0 +1,69 @@
+---
+title: Upload Dialog
+description: 'The classic "Upload files" modal: add files, review the list, then upload with one button.'
+---
+
+<ComponentPreview name="upload-dialog" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-dialog
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `dialog` component, then copy:
+
+<ComponentSource name="upload-dialog" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadDialog } from "@/components/upload-dialog"
+```
+
+```tsx
+<UploadDialog label="Upload files" onDone={(items) => refresh()} />
+```
+
+Files are added with `autoUpload: false` so nothing uploads until the user confirms. Closing the dialog mid-upload only hides it, uploads continue and the dialog shows their progress when reopened.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+    title: { type: "string", default: '"Upload files"' },
+    description: { type: "string" },
+    label: {
+      type: "ReactNode",
+      default: '"Upload files"',
+      description: "The trigger button's label.",
+    },
+    onDone: {
+      type: "(items) => void",
+      description: "Called with the uploaded items when the user clicks Done.",
+    },
+  }}
+/>

@@ -1,0 +1,72 @@
+---
+title: Stamp
+description: "A pile of paperwork for contracts, filings and HR documents: each document lands on the pile and gets a rubber stamp the moment it is received."
+---
+
+<ComponentPreview name="stamp-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/stamp-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="stamp-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { StampUpload } from "@/components/stamp-upload"
+```
+
+```tsx
+<StampUpload stamp="Filed" />
+```
+
+The four most recent documents stay on the pile with small fixed tilts, so the server and client render the same. Each stamp carries the date in the user's locale. With reduced motion the stamp fades in instead of slamming down.
+
+It uploads through your [adapter](/docs/storage) like every other component, so it works with S3, R2, Cloudinary, local disk or your own API.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      description:
+        "Where files go. Defaults to the UploadConfigProvider adapter.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: {
+      type: "string | string[]",
+      default: '[".pdf", ".doc", ".docx", "image/*"]',
+    },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    stamp: {
+      type: "string",
+      default: '"Received"',
+      description: "Text on the stamp. Failed files are stamped Returned.",
+    },
+    className: { type: "string" },
+  }}
+/>

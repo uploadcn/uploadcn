@@ -1,0 +1,54 @@
+---
+title: Audio Upload
+description: Audio uploads with an inline player per file.
+---
+
+<ComponentPreview name="audio-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/audio-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="audio-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { AudioUpload } from "@/components/audio-upload"
+```
+
+```tsx
+<AudioUpload maxDuration={3600} />
+```
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    maxDuration: {
+      type: "number",
+      description: "Longest allowed recording, in seconds.",
+    },
+    maxFiles: { type: "number", default: "10" },
+    maxSize: { type: "number", default: "500 MB" },
+    onSuccess: { type: "(item) => void" },
+  }}
+/>

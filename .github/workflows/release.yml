@@ -1,0 +1,56 @@
+name: Release
+
+# On every push to main, Changesets either:
+#  - opens or updates the "Release packages" PR (when changesets are pending), or
+#  - publishes @uploadcn/* to npm (when that PR is merged and versions changed).
+#
+# Publishing uses npm trusted publishing (OIDC): no npm token is stored in this
+# repository. Each package on npmjs.com trusts this file (release.yml) in
+# uploadcn/uploadcn, and every release gets a provenance attestation.
+
+on:
+  push:
+    branches: [main]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    name: release
+    if: github.repository == 'uploadcn/uploadcn'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm 11.5.1 or later.
+      - run: npm install -g npm@latest
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: changesets/action@v1
+        with:
+          version: pnpm version-packages
+          publish: pnpm release
+          title: "chore: release packages"
+          commit: "chore: release packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

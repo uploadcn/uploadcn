@@ -1,0 +1,7 @@
+{
+  "extends": "@workspace/typescript-config/library.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["src", "test", "tsdown.config.ts", "vitest.config.ts"]
+}

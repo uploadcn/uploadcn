@@ -1,0 +1,69 @@
+---
+title: Delivery
+description: "A delivery route for shipping manifests, invoices and proof of delivery: a truck carries the files from the warehouse and drops the parcel off on arrival."
+---
+
+<ComponentPreview name="delivery-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/delivery-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="delivery-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { DeliveryUpload } from "@/components/delivery-upload"
+```
+
+```tsx
+<DeliveryUpload destination="Warehouse 4" />
+```
+
+The truck's position is a spring on the overall percent, and the road markings and wheels only move while it's driving. The status line says where the files are going and when they'll arrive.
+
+It uploads through your [adapter](/docs/storage) like every other component, so it works with S3, R2, Cloudinary, local disk or your own API.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      description:
+        "Where files go. Defaults to the UploadConfigProvider adapter.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    destination: {
+      type: "string",
+      default: '"Head office"',
+      description: "Where the files are going, shown in the status.",
+    },
+    className: { type: "string" },
+  }}
+/>

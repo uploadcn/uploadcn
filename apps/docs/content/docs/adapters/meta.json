@@ -1,0 +1,13 @@
+{
+  "title": "Adapters",
+  "pages": [
+    "index",
+    "s3",
+    "r2",
+    "presigned",
+    "multipart",
+    "http",
+    "tus",
+    "mock"
+  ]
+}

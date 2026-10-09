@@ -1,0 +1,53 @@
+---
+title: Presigned uploads
+description: Let the browser upload straight to storage while your server stays in control.
+---
+
+With presigned uploads, your server never handles file bytes. It only signs requests,
+which keeps it fast, cheap, and free of body-size limits.
+
+<Sequence
+  label="Presigned upload sequence"
+  actors={["Browser", "Your route", "Bucket"]}
+  messages={[
+    { from: 0, to: 0, label: "Select and validate" },
+    { from: 0, to: 1, label: "presign { name, type, size }", note: "auth · limits · key" },
+    { from: 1, to: 0, label: "Signed PUT URL" },
+    { from: 0, to: 2, label: "PUT bytes", note: "with progress, straight to storage" },
+    { from: 0, to: 1, label: "complete { key }", note: "HEAD to verify · save metadata" },
+    { from: 1, to: 0, label: "{ key, url, data }" },
+  ]}
+/>
+
+## What the server enforces
+
+Client-side validation is a convenience; the route is the source of truth.
+
+- **Authentication and authorization**: `authorize` runs before every action.
+- **Size**: `maxFileSize` is checked before signing, and the signature locks the
+  `Content-Length`, so S3 rejects a larger body.
+- **Type**: `allowedTypes` is checked before signing, and the signature locks the
+  `Content-Type`.
+- **Existence**: `complete` verifies the object with `HEAD` before calling
+  `onUploadComplete`, so clients can't register files they never uploaded.
+- **Keys**: generated on the server (`getKey`), never trusted from the client.
+
+## Single PUT or multipart?
+
+| | Single PUT | Multipart |
+| --- | --- | --- |
+| Max size | 5 GB (S3) | 5 TB |
+| Pause / resume | Restarts from 0 | Continues from the last part |
+| Parallelism | One stream | Several parts at once |
+| Requests | 3 | 2 + parts × 2 |
+
+`s3Adapter` picks automatically with `multipart.threshold` (64 MB by default).
+
+## Next.js
+
+```npm
+npx shadcn@latest add @uploadcn/upload-route
+```
+
+See [Amazon S3](/docs/adapters/s3) and [Cloudflare R2](/docs/adapters/r2) for the full
+setup, and [TanStack Start](/docs/frameworks/tanstack-start) for other frameworks.

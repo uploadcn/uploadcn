@@ -1,0 +1,86 @@
+---
+title: Vite, React Router & others
+description: Use UploadCN in any React app, with any backend.
+---
+
+The client packages have no framework dependencies. In a Vite or React Router app:
+
+```npm
+npx shadcn@latest add @uploadcn/file-upload
+```
+
+Point the adapter at your backend:
+
+```tsx
+import { s3Adapter } from "@uploadcn/core"
+
+import { FileUpload } from "@/components/file-upload"
+
+const adapter = s3Adapter({ endpoint: "https://api.example.com/upload", credentials: "include" })
+
+export function App() {
+  return <FileUpload adapter={adapter} />
+}
+```
+
+## Backends
+
+`createUploadRoute` returns a `(request: Request) => Promise<Response>` handler, which
+fits any Web-standard server:
+
+<Tabs items={["Hono", "Cloudflare Workers", "Bun", "Express"]}>
+<Tab value="Hono">
+
+```ts
+import { Hono } from "hono"
+
+const app = new Hono()
+app.post("/api/upload", (c) => upload.POST(c.req.raw))
+```
+
+</Tab>
+<Tab value="Cloudflare Workers">
+
+```ts
+export default {
+  fetch(request: Request) {
+    const url = new URL(request.url)
+    if (url.pathname === "/api/upload") return upload.POST(request)
+    return new Response("Not found", { status: 404 })
+  },
+}
+```
+
+</Tab>
+<Tab value="Bun">
+
+```ts
+Bun.serve({
+  routes: { "/api/upload": { POST: (request) => upload.POST(request) } },
+})
+```
+
+</Tab>
+<Tab value="Express">
+
+```ts
+import express from "express"
+
+const app = express()
+app.post("/api/upload", express.json(), async (req, res) => {
+  const response = await upload.POST(
+    new Request(`http://localhost${req.url}`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: req.get("authorization") ?? "" },
+      body: JSON.stringify(req.body),
+    })
+  )
+  res.status(response.status).json(await response.json())
+})
+```
+
+</Tab>
+</Tabs>
+
+Not using JavaScript on the server? Implement the [route protocol](/docs/reference/server#protocol)
+in any language; it's one JSON endpoint.

@@ -1,0 +1,190 @@
+---
+title: Installation
+description: Add UploadCN to a shadcn project.
+icon: Download
+---
+
+UploadCN works with any project set up with the shadcn CLI (Next.js, Vite, TanStack
+Start, React Router, Astro…), with either Radix or Base UI primitives and Tailwind CSS v4.
+
+<Steps>
+<Step>
+
+### Set up shadcn/ui
+
+Skip this if your project already has a `components.json`.
+
+```npm
+npx shadcn@latest init
+```
+
+</Step>
+<Step>
+
+### Register the `@uploadcn` namespace
+
+This adds UploadCN to the `registries` in your `components.json`, so you can install
+items by name.
+
+```npm
+npx shadcn@latest registry add @uploadcn=https://uploadcn.dev/r/{style}/{name}.json
+```
+
+<Callout title="What this changes">
+  It adds `"@uploadcn": "https://uploadcn.dev/r/{style}/{name}.json"` to the
+  `registries` field of `components.json`. The CLI fills in `{style}` from your
+  project (`base-nova`, `radix-lyra`, `aria-maia`…), so every component arrives in
+  your style. Icons are converted to your `iconLibrary` on install.
+</Callout>
+
+</Step>
+<Step>
+
+### Add a component
+
+```npm
+npx shadcn@latest add @uploadcn/file-upload
+```
+
+The CLI copies `components/ui/upload.tsx` and `components/file-upload.tsx` into your
+project and installs `@uploadcn/react` and `@uploadcn/core`.
+
+</Step>
+<Step>
+
+### Choose where files go
+
+Every component uploads through an **adapter**. Pick the one for your storage; you
+can change it later without touching a single component.
+
+<Tabs items={["S3 / R2", "Cloudinary", "Local disk", "Your API", "Browser only"]}>
+<Tab value="S3 / R2">
+
+Files go straight from the browser to your bucket; a small route signs each upload.
+
+```npm
+npx shadcn@latest add @uploadcn/upload-route
+```
+
+This creates `app/api/upload/route.ts` (or use `@uploadcn/upload-route-tanstack`).
+Fill in your credentials, and allow `PUT` from your origin in the bucket's CORS
+settings, exposing the `ETag` header:
+
+```bash title=".env.local"
+S3_BUCKET=my-uploads
+S3_REGION=us-east-1
+S3_ACCESS_KEY_ID=…
+S3_SECRET_ACCESS_KEY=…
+```
+
+```ts
+const adapter = s3Adapter({ endpoint: "/api/upload" })
+```
+
+See [Amazon S3](/docs/adapters/s3) and [Cloudflare R2](/docs/adapters/r2).
+
+</Tab>
+<Tab value="Cloudinary">
+
+Upload straight to Cloudinary. No route is needed with an unsigned preset.
+
+```ts
+const adapter = cloudinaryAdapter({ cloudName: "demo", uploadPreset: "unsigned" })
+```
+
+See [Cloudinary](/docs/storage/cloudinary) for signed uploads.
+
+</Tab>
+<Tab value="Local disk">
+
+Store files on your own server's disk with `@uploadcn/server/fs`, the same route and
+adapter as S3. See [Local disk](/docs/storage/filesystem).
+
+</Tab>
+<Tab value="Your API">
+
+Wrap any upload function, your endpoint, Supabase, Firebase, Vercel Blob:
+
+```ts
+const adapter = createAdapter(async ({ file, signal, onProgress }) => {
+  return myUpload(file, { signal, onProgress })
+})
+```
+
+See [Custom adapters](/docs/storage/custom).
+
+</Tab>
+<Tab value="Browser only">
+
+Only want the UI? Keep files in the browser and submit them with your form:
+
+```ts
+const adapter = localAdapter()
+```
+
+See [Browser only](/docs/storage/browser).
+
+</Tab>
+</Tabs>
+
+</Step>
+<Step>
+
+### Configure it once
+
+Add the config wrapper and put it in your root layout. Every UploadCN component below
+it uses that adapter.
+
+```npm
+npx shadcn@latest add @uploadcn/upload-config
+```
+
+```tsx title="app/layout.tsx"
+import { UploadConfig } from "@/components/upload-config"
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <UploadConfig>{children}</UploadConfig>
+      </body>
+    </html>
+  )
+}
+```
+
+Edit the adapter in `components/upload-config.tsx`. A component's own `adapter` prop
+still wins, so one page can upload somewhere else.
+
+</Step>
+<Step>
+
+### Use it
+
+```tsx title="app/page.tsx"
+import { FileUpload } from "@/components/file-upload"
+
+export default function Page() {
+  return <FileUpload accept="image/*" maxSize={10_000_000} maxFiles={5} />
+}
+```
+
+</Step>
+</Steps>
+
+## Installing without the CLI
+
+Everything is plain source. Install the packages, then copy the component source from
+each component page (the **Manual** tab).
+
+```npm
+npm install @uploadcn/core @uploadcn/react
+```
+
+## Without the namespace
+
+You can also install any item by URL:
+
+```npm
+npx shadcn@latest add https://uploadcn.dev/r/upload.json
+```

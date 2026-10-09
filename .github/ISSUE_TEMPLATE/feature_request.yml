@@ -1,0 +1,29 @@
+name: Feature or component request
+description: Suggest a feature, an adapter, or a new block.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to build?
+      description: The use case first. What is hard or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help?
+      description: An API sketch, a screenshot of a similar UI, or a link.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        [
+          Component or block,
+          Hook or engine,
+          Storage adapter,
+          Server route,
+          Docs,
+          Other,
+        ]

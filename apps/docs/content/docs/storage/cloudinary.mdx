@@ -1,0 +1,116 @@
+---
+title: Cloudinary
+description: Upload straight from the browser to Cloudinary, unsigned with a preset, or signed by your server. Large files upload in resumable chunks.
+---
+
+```ts
+import { cloudinaryAdapter } from "@uploadcn/core"
+```
+
+Files go directly from the browser to Cloudinary's upload API, with real progress. You
+don't need the Cloudinary SDK.
+
+## Unsigned uploads
+
+Create an **unsigned upload preset** in the Cloudinary console (Settings → Upload) and
+restrict it there: allowed formats, max file size, folder, moderation.
+
+```ts
+const adapter = cloudinaryAdapter({
+  cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
+  uploadPreset: "user-uploads",
+  folder: "avatars",
+})
+```
+
+<Callout type="warn" title="Anyone can use an unsigned preset">
+  The preset name is public. Use unsigned presets only for low-risk uploads, and lock
+  the preset down. For anything tied to a user, sign uploads on your server.
+</Callout>
+
+## Signed uploads
+
+Your server decides what's allowed and signs the parameters with your API secret. The
+secret never reaches the browser.
+
+<Steps>
+<Step>
+
+### Add a signing route
+
+```ts title="app/api/cloudinary/route.ts"
+import { signCloudinaryParams } from "@uploadcn/server"
+
+export async function POST(request: Request) {
+  const session = await auth()
+  if (!session) return new Response("Unauthorized", { status: 401 })
+
+  const params = (await request.json()) as Record<string, string>
+  // Only sign what this user may upload.
+  if (params.folder !== `users/${session.user.id}`) {
+    return new Response("Forbidden", { status: 403 })
+  }
+
+  return Response.json(
+    await signCloudinaryParams(params, {
+      apiKey: process.env.CLOUDINARY_API_KEY!,
+      apiSecret: process.env.CLOUDINARY_API_SECRET!,
+    })
+  )
+}
+```
+
+</Step>
+<Step>
+
+### Ask it for a signature
+
+```ts
+const adapter = cloudinaryAdapter({
+  cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
+  folder: `users/${userId}`,
+  sign: (params) =>
+    fetch("/api/cloudinary", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(params),
+    }).then((response) => response.json()),
+})
+```
+
+</Step>
+</Steps>
+
+## Large files
+
+Files larger than `chunkSize` (default 20 MB, minimum 5 MB) upload in chunks using
+Cloudinary's chunked upload API. Each finished chunk is saved as resume state, so a retry
+(or a reload with [persistence](/docs/guides/resumable-uploads)) continues from the last
+chunk instead of starting over.
+
+## The result
+
+Each successful item's `result` is Cloudinary's upload response:
+
+```ts
+onSuccess={(item) => {
+  item.result.secure_url // https://res.cloudinary.com/…
+  item.result.public_id
+  item.result.width
+}}
+```
+
+## Options
+
+<TypeTable
+  type={{
+    cloudName: { type: "string", required: true },
+    uploadPreset: { type: "string", description: "An unsigned preset. Use this or `sign`." },
+    sign: { type: "(params, item) => Promise<{ signature, timestamp, apiKey }>", description: "Signs `{ ...params, timestamp }` on your server." },
+    resourceType: { type: '"auto" | "image" | "video" | "raw"', default: '"auto"' },
+    folder: { type: "string" },
+    params: { type: "Record<string, string> | (item) => Record<string, string>", description: "Extra upload parameters: tags, context, public_id…" },
+    chunkSize: { type: "number", default: "20 MB" },
+    apiUrl: { type: "string", default: '"https://api.cloudinary.com/v1_1"' },
+  }}
+/>

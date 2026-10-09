@@ -1,0 +1,60 @@
+---
+title: "@uploadcn/react"
+description: Hooks and headless primitives.
+---
+
+```npm
+npm install @uploadcn/react @uploadcn/core
+```
+
+Requires React 19. Every export is a Client Component or hook (the bundle starts with
+`"use client"`).
+
+## Hooks
+
+See [Hooks](/docs/hooks): `useUploader`, `useUpload`, `useUploadState`,
+`useUploadSelector`, `useUploadItem`, `useUploadProgress`, `useUploadValue`,
+`useDropzone`, `useWindowDrop`, `usePasteFiles`, `useFileValidation`,
+`useImageCompression`, `useImageCrop`, `useFilePreview`, `useNetworkStatus`,
+`useUploadGuard`, `useUploadContext`.
+
+## Primitives
+
+Unstyled, accessible building blocks. The registry's `upload` component wraps them with
+shadcn styles; use them directly for a completely custom design.
+
+```tsx
+import { Upload } from "@uploadcn/react"
+
+<Upload.Root adapter={adapter}>
+  <Upload.Dropzone />
+  <Upload.List>{(item) => <Upload.Item item={item}>…</Upload.Item>}</Upload.List>
+</Upload.Root>
+```
+
+| Primitive | Element | Notes |
+| --- | --- | --- |
+| `Upload.Root` | `div` | Options or `uploader`; hidden input, form values, live region |
+| `Upload.Dropzone` | `div` | `role="button"` unless `clickable={false}`; drag state data attributes |
+| `Upload.Trigger` | `button` | Opens the picker |
+| `Upload.List` | `ul` | Function child renders items with isolated re-renders |
+| `Upload.Item` | `li` | Provides the item to parts inside |
+| `Upload.Preview` | `img` | Thumbnails images; `fallback` for other types |
+| `Upload.Name`, `Upload.Size`, `Upload.Speed`, `Upload.Status` | `span` | |
+| `Upload.Error` | `p` | Error or validation messages |
+| `Upload.Success` | - | Renders children on success |
+| `Upload.Progress` / `Upload.ProgressIndicator` | `div` | `progressbar`; item or aggregate |
+| `Upload.Pause`, `Resume`, `Retry`, `Cancel`, `Remove` | `button` | Render only when applicable |
+| `Upload.Empty`, `Upload.Start`, `Upload.Clear` | -, `button`, `button` | Queue-level |
+
+All element primitives accept a `render` prop (element or `(props, state) => element`)
+and merge `className`, `style`, refs and event handlers.
+
+## Messages
+
+```ts
+import { defaultMessages, getStatusLabel, type UploadMessages } from "@uploadcn/react"
+```
+
+Pass `messages` to `Upload.Root` to translate status labels, button names and
+announcements.

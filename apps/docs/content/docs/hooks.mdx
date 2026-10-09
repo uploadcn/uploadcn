@@ -1,0 +1,191 @@
+---
+title: Hooks
+description: React hooks for building upload experiences, from @uploadcn/react.
+icon: Anchor
+---
+
+```npm
+npm install @uploadcn/react @uploadcn/core
+```
+
+| Hook | Use it to… |
+| --- | --- |
+| [`useUploader`](#useuploader) | Create an upload engine tied to a component |
+| [`useUpload`](#useupload) | Create an engine and read its items, summary and actions |
+| [`useUploadState`](#useuploadstate) | Read state from an existing engine |
+| [`useUploadSelector`](#useuploadselector) | Subscribe to a slice of state with minimal re-renders |
+| [`useUploadItem`](#useuploaditem) | Read one item (inside `UploadItem` or by id) |
+| [`useUploadProgress`](#useuploadprogress) | Aggregate progress, speed, ETA and counts |
+| [`useUploadValue`](#useuploadvalue) | Turn successful uploads into form values |
+| [`useDropzone`](#usedropzone) | Add drag-and-drop to any element |
+| [`useWindowDrop`](#usewindowdrop) | Detect files dragged anywhere over the page |
+| [`usePasteFiles`](#usepastefiles) | Upload pasted files and screenshots |
+| [`useFileValidation`](#usefilevalidation) | Validate files without uploading them |
+| [`useImageCompression`](#useimagecompression) | Compress images and report savings |
+| [`useImageCrop`](#useimagecrop) | UI-agnostic crop, zoom, rotate and flip state |
+| [`useFilePreview`](#usefilepreview) | Object URLs and thumbnails with automatic cleanup |
+| [`useNetworkStatus`](#usenetworkstatus) | Online/offline status |
+| [`useUploadGuard`](#useuploadguard) | Warn before leaving the page during uploads |
+
+## useUploader
+
+Creates an engine for the component's lifetime. The instance is stable; option
+changes (including a new adapter) apply without recreating it. It's safe under
+React Strict Mode.
+
+```tsx
+const uploader = useUploader({
+  adapter: s3Adapter({ endpoint: "/api/upload" }),
+  accept: "image/*",
+  maxFiles: 10,
+  onSuccess: (item) => toast(`${item.name} uploaded`),
+  onError: (item, error) => toast.error(error.message),
+})
+```
+
+Accepts every [uploader option](/docs/reference/core#uploaderoptions), plus `onAdd`,
+`onReject`, `onSuccess`, `onError`, `onComplete` and `restore` (load persisted uploads
+on mount).
+
+## useUpload
+
+`useUploader` + `useUploadState` in one call.
+
+```tsx
+const { items, summary, add, pause, resume, retry, remove, uploader } = useUpload({ adapter })
+```
+
+## useUploadState
+
+```tsx
+const { items, summary, online, start, cancel } = useUploadState(uploader)
+```
+
+## useUploadSelector
+
+Subscribe to exactly what you render. The component re-renders only when the selected
+value changes.
+
+```tsx
+const failed = useUploadSelector(uploader, (state) =>
+  state.items.filter((item) => item.status === "error").length
+)
+```
+
+Pass `shallowArrayEqual` as the third argument for selectors that return arrays.
+
+## useUploadItem
+
+```tsx
+function FileName() {
+  const item = useUploadItem() // inside <UploadItem>
+  return <span>{item.name}</span>
+}
+
+const item = useUploadItem(id) // anywhere inside <Upload>
+```
+
+## useUploadProgress
+
+```tsx
+const { percent, loaded, size, speed, eta, counts, isUploading, isComplete, hasErrors } =
+  useUploadProgress(uploader)
+```
+
+## useUploadValue
+
+```tsx
+const getKey = (item: UploadItem<StoredObject>) => item.result!.key
+
+const keys = useUploadValue(uploader, getKey) // ["a1b2/photo.jpg", …]
+```
+
+Define `getValue` outside the component (or memoize it) to keep the array stable.
+
+## useDropzone
+
+```tsx
+const { isDragging, isDragReject, handlers } = useDropzone({
+  onDrop: (files) => uploader.add(files),
+  accept: "image/*",
+})
+
+return <div {...handlers} data-dragging={isDragging || undefined}>…</div>
+```
+
+Folders are expanded recursively. Drags of disallowed types set `isDragReject` before
+the drop, using the MIME types browsers expose while dragging.
+
+## useWindowDrop
+
+```tsx
+const { isDragging } = useWindowDrop({ onDrop: (files) => uploader.add(files) })
+```
+
+Drops that an inner dropzone already handled are ignored.
+
+## usePasteFiles
+
+```tsx
+usePasteFiles({ onPaste: (files) => uploader.add(files), target: composerRef })
+```
+
+Text pastes are left alone; only file pastes (e.g. screenshots) are intercepted.
+
+## useFileValidation
+
+```tsx
+const { validate, validateCount, isValidating } = useFileValidation({ accept: ".pdf", maxSize: 5e6 })
+const { accepted, rejected } = await validate(files, { existingCount: 2 })
+```
+
+## useImageCompression
+
+```tsx
+const { compress, isCompressing, stats } = useImageCompression({ maxWidth: 1600, type: "image/webp" })
+const smaller = await compress(file) // stats → { before, after, saved }
+```
+
+## useImageCrop
+
+UI-agnostic crop state with an `apply(file)` that renders the result. Pair it with
+any crop UI.
+
+```tsx
+const crop = useImageCrop()
+
+<Cropper
+  crop={crop.position}
+  zoom={crop.zoom}
+  rotation={crop.rotation}
+  onCropChange={crop.setPosition}
+  onZoomChange={crop.setZoom}
+  onCropComplete={(_, pixels) => crop.setArea(pixels)}
+/>
+
+const cropped = await crop.apply(file, { maxWidth: 1024, type: "image/webp" })
+```
+
+Also exposes `rotateBy(90)`, `flip("horizontal")` and `reset()`.
+
+## useFilePreview
+
+```tsx
+const url = useFilePreview(file, { thumbnailSize: 256 })
+```
+
+Object URLs are revoked when the file changes or the component unmounts. With
+`thumbnailSize`, large images are downscaled once instead of being decoded at full
+resolution for every thumbnail.
+
+## useNetworkStatus
+
+```tsx
+const online = useNetworkStatus()
+```
+
+## useUploadGuard
+
+```tsx
+useUploadGuard(uploader) // shows the browser's "Leave site?" dialog while uploading
+```

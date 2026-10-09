@@ -1,0 +1,69 @@
+---
+title: Folder Upload
+description: A folder that opens as you hover or drag files over it. Dropped files fly in, and the folder's front shows the upload progress.
+---
+
+<ComponentPreview name="folder-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/folder-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="folder-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { FolderUpload } from "@/components/folder-upload"
+```
+
+```tsx
+<FolderUpload name="Q3 Reports" maxFiles={20} />
+```
+
+The folder opens with CSS on hover and while dragging (`group-data-dragging`), and the flying files use `motion`. With `prefers-reduced-motion`, files don't fly and the folder doesn't tilt.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    name: {
+      type: "string",
+      default: '"Uploads"',
+      description: "Text on the folder tab.",
+    },
+    title: { type: "ReactNode" },
+    description: { type: "ReactNode" },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number" },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    onComplete: { type: "(items) => void" },
+  }}
+/>

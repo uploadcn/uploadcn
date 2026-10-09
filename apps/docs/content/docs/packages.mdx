@@ -1,0 +1,67 @@
+---
+title: Packages & dependencies
+description: Why UploadCN is part npm package, part copied source, and what you actually install.
+icon: Package
+---
+
+shadcn/ui copies components into your project so you own them. UploadCN does the same
+for everything you see, but the upload **engine** ships as an npm package. This page
+explains why, and what it costs you.
+
+## What you install
+
+| Package           | What it is                                                     | Runtime dependencies | Size (gzip) |
+| ----------------- | -------------------------------------------------------------- | -------------------- | ----------- |
+| `@uploadcn/core`  | Queue, retries, chunking, resume, validation, adapters          | **None**             | ~19 KB      |
+| `@uploadcn/react` | Hooks and headless primitives                                   | `@uploadcn/core`     | ~11 KB      |
+| `@uploadcn/server`| Signing routes, S3/R2, local disk, Cloudinary signing (server only) | `aws4fetch`      | server only |
+| `motion`          | Only for [animated components](/docs/components/folder-upload)  | - | shared with your app |
+| `cn`              | The class helper every shadcn component now uses                | - | tiny        |
+
+Everything else, `components/ui/upload.tsx` and every block, is **source in your
+repo**. Change any of it.
+
+## Why not copy the engine too?
+
+We considered shipping the engine as source, like most shadcn components. We didn't,
+because upload engines are the kind of code you don't want to own:
+
+<div className="not-prose my-6 grid gap-3 sm:grid-cols-2">
+  <div className="rounded-xl border bg-card p-4">
+    <p className="font-medium">Engine as a package (what we do)</p>
+    <ul className="mt-2 flex list-disc flex-col gap-1 ps-4 text-sm text-muted-foreground">
+      <li>Bug fixes in retries, multipart and resume arrive with `npm update`.</li>
+      <li>100+ tests run against the exact code you ship.</li>
+      <li>Tree-shaken: adapters you don't import aren't bundled.</li>
+      <li>The UI stays yours, restyle or rewrite any component.</li>
+    </ul>
+  </div>
+  <div className="rounded-xl border bg-card p-4">
+    <p className="font-medium">Engine as copied source</p>
+    <ul className="mt-2 flex list-disc flex-col gap-1 ps-4 text-sm text-muted-foreground">
+      <li>~6,500 lines of engine, protocol and React binding code in your repo.</li>
+      <li>Fixes for edge cases (ETag/CORS, Retry-After, StrictMode) never reach you.</li>
+      <li>Every block would duplicate or depend on it anyway.</li>
+      <li>No real customization gain, behavior is configured through options.</li>
+    </ul>
+  </div>
+</div>
+
+This is the same split shadcn/ui uses for its hardest components: `Drawer` builds on
+`vaul`, `Sonner` on `sonner`, `Calendar` on `react-day-picker`. The behavior is a
+dependency; the look is yours.
+
+## When you want no dependencies at all
+
+- **Only the UI.** Use [`localAdapter`](/docs/storage/browser): no network, no server
+  package, and `submit="file"` hands the files to your form.
+- **Your own engine.** The headless primitives accept any `uploader` object with the
+  same interface, or skip them and build on `useDropzone` and `useFilePreview` alone.
+- **No `motion`.** Every non-animated component is CSS-only. Animated ones are opt-in.
+
+## Versioning
+
+The packages follow semver and are released together. Copied components only depend on
+the public API, so updating the packages never overwrites your code. When a component
+changes, `npx shadcn@latest add @uploadcn/<name> --diff` shows what's new before you
+take it.

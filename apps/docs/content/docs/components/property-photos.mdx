@@ -1,0 +1,70 @@
+---
+title: Property Photos
+description: "Listing photos for real estate and rentals: tag each photo with a room, see which rooms are still missing, and aim for the recommended count."
+---
+
+<ComponentPreview name="property-photos" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/property-photos
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload), then copy:
+
+<ComponentSource name="property-photos" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { PropertyPhotos } from "@/components/property-photos"
+```
+
+```tsx
+<PropertyPhotos
+  rooms={[
+    "Exterior",
+    "Living room",
+    "Kitchen",
+    "Bedroom",
+    "Bathroom",
+    "Garden",
+  ]}
+  recommended={15}
+  onChange={(photos) => save(photos)}
+/>
+```
+
+Room tags live on each item's `meta.room` (set with `uploader.update`), and the room picker is a native `<select>` so it works everywhere, including screen readers.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    rooms: { type: "string[]" },
+    requiredRooms: { type: "string[]", default: 'all but "Other"' },
+    recommended: { type: "number", default: "12" },
+    maxFiles: { type: "number", default: "40" },
+    onChange: { type: "(photos: { item, room }[]) => void" },
+    className: { type: "string" },
+  }}
+/>

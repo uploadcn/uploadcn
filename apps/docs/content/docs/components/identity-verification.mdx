@@ -1,0 +1,62 @@
+---
+title: Identity Verification
+description: "KYC-style identity check: a slot for each document, a progress rail, and a submit button that unlocks once every required document is uploaded."
+---
+
+<ComponentPreview name="identity-verification" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/identity-verification
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `button` component, then copy:
+
+<ComponentSource name="identity-verification" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { IdentityVerification } from "@/components/identity-verification"
+```
+
+```tsx
+<IdentityVerification onSubmit={(files) => verify(files)} />
+```
+
+Built on [`UploadSlot`](/docs/components/upload#slots): one uploader, a named slot per document, each tagged with `meta.slot`. Store identity documents in a private bucket and serve them with short-lived signed URLs.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    steps: { type: "VerificationStep[]", default: "ID front, ID back, selfie" },
+    optional: {
+      type: "string[]",
+      default: '["id-back"]',
+      description: "Steps that may be skipped.",
+    },
+    maxSize: { type: "number", default: "15 MB" },
+    onSubmit: { type: "(files: Record<string, UploadItem>) => void" },
+    className: { type: "string" },
+  }}
+/>

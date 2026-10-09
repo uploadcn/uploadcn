@@ -1,0 +1,96 @@
+---
+title: File Upload
+description: A dropzone with a full upload queue, progress summary and batch actions.
+---
+
+<ComponentPreview name="basic-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/file-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="file-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { FileUpload } from "@/components/file-upload"
+```
+
+```tsx
+<FileUpload
+  accept="image/*,application/pdf"
+  maxSize={20_000_000}
+  maxFiles={10}
+/>
+```
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    accept: {
+      type: "string | string[]",
+      description: "Accepted types: MIME types, wildcards or extensions.",
+    },
+    maxSize: { type: "number", description: "Max size per file, in bytes." },
+    maxFiles: { type: "number" },
+    image: {
+      type: "ImageConstraints",
+      description: "Min/max image dimensions.",
+    },
+    media: {
+      type: "MediaConstraints",
+      description: "Min/max audio/video duration.",
+    },
+    autoUpload: {
+      type: "boolean",
+      default: "true",
+      description: "When false, files wait for the Upload button.",
+    },
+    multiple: { type: "boolean" },
+    disabled: { type: "boolean" },
+    title: { type: "ReactNode" },
+    description: {
+      type: "ReactNode",
+      description: "Defaults to a summary of the limits.",
+    },
+    onSuccess: { type: "(item) => void" },
+    onComplete: {
+      type: "(items) => void",
+      description: "Called when the queue drains.",
+    },
+  }}
+/>
+
+## Examples
+
+### Multiple files
+
+<ComponentPreview name="multiple-upload" />
+
+### Batch upload
+
+<ComponentPreview name="batch-upload" />
+
+### S3 presigned
+
+<ComponentPreview name="s3-presigned" />

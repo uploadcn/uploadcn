@@ -1,0 +1,62 @@
+---
+title: Odometer
+description: "Upload stats on rolling digits: files, megabytes and percent tick over like an odometer."
+---
+
+<ComponentPreview name="upload-odometer" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-odometer
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="upload-odometer" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadOdometer } from "@/components/upload-odometer"
+```
+
+```tsx
+<UploadOdometer maxFiles={50} />
+```
+
+Digits are decorative (`aria-hidden`); a visually hidden copy of each value is read instead.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

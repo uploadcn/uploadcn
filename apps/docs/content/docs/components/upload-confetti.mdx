@@ -1,0 +1,59 @@
+---
+title: Confetti
+description: "Drop it inside any <Upload>: when a batch finishes, a burst of confetti in your theme's colors."
+---
+
+<ComponentPreview name="upload-confetti" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-confetti
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="upload-confetti" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadConfetti } from "@/components/upload-confetti"
+```
+
+```tsx
+<Upload className="relative">
+  <UploadDropzone />
+  <UploadQueue />
+  <UploadConfetti />
+</Upload>
+```
+
+It's a part, not a whole uploader: it reads the nearest `<Upload>`. Colors come from `--primary` and `--chart-1…5`, so it matches every theme. Give the parent `relative`.
+
+## Props
+
+<TypeTable
+  type={{
+    count: { type: "number", default: "28", description: "Pieces per burst." },
+    onlyOnSuccess: {
+      type: "boolean",
+      default: "true",
+      description: "Skip the burst if any file failed.",
+    },
+    className: { type: "string" },
+  }}
+/>

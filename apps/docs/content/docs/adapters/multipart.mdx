@@ -1,0 +1,64 @@
+---
+title: Multipart & chunked
+description: A provider-agnostic engine for chunked, parallel, resumable uploads.
+---
+
+<ComponentPreview name="chunked-upload" />
+
+`multipartAdapter` splits files into parts, uploads them in parallel, retries failed
+parts independently, reports aggregate and chunk progress, and records finished parts
+so uploads resume after a pause, a network loss, or a page reload.
+
+You bring three functions; it works with S3's multipart API, GCS's XML API, Azure
+block blobs, or your own chunk endpoint.
+
+```ts
+import { multipartAdapter, MiB } from "@uploadcn/core"
+
+const adapter = multipartAdapter({
+  partSize: 8 * MiB,
+  concurrency: 4,
+  retry: { retries: 3, baseDelay: 500 },
+  create: ({ file }) => api.createUpload(file),                 // → session
+  uploadPart: ({ session, partNumber, blob, signal, onProgress }) =>
+    api.putPart(session, partNumber, blob, { signal, onProgress }), // → { etag }
+  complete: ({ session, parts }) => api.complete(session, parts),    // → result
+  abort: ({ session }) => api.abort(session),
+  listParts: ({ session }) => api.listParts(session),           // optional
+})
+```
+
+## Options
+
+<TypeTable
+  type={{
+    partSize: { type: "number | (fileSize) => number", default: "8 MiB" },
+    minPartSize: { type: "number", default: "5 MiB", description: "Smallest part except the last (S3 limit)." },
+    maxParts: { type: "number", default: "10 000", description: "Part size grows automatically to stay under this." },
+    concurrency: { type: "number", default: "4", description: "Parts in flight per file." },
+    retry: { type: "RetryOptions | false", default: "3 retries from 500 ms", description: "Per-part retry policy." },
+    create: { type: "(ctx) => Promise<TSession>", required: true, description: "Session must be JSON-serializable (it's persisted)." },
+    uploadPart: { type: "(ctx) => Promise<{ etag }>", required: true },
+    complete: { type: "(ctx) => Promise<TResult>", required: true },
+    abort: { type: "(ctx) => Promise<void>", description: "Called when the user cancels or removes the item." },
+    listParts: { type: "(ctx) => Promise<UploadedPart[] | null>", description: "Server truth on resume; return null to keep local state." },
+  }}
+/>
+
+## Resume state
+
+After each finished part the adapter saves:
+
+```ts
+{ session, partSize, fileSize, parts: [{ partNumber, etag, size }] }
+```
+
+With [persistence](/docs/guides/resumable-uploads), this survives reloads. When the
+saved state doesn't match the file (different size or part size), the upload starts
+over cleanly.
+
+## Retries at two levels
+
+1. A failed **part** is retried with backoff without touching other parts.
+2. If a part exhausts its retries, the **item** fails; the engine's own retry policy
+   then retries the item, which resumes from the parts already stored.

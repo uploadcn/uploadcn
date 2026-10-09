@@ -1,0 +1,48 @@
+---
+title: HTTP
+description: Upload to any endpoint that accepts files.
+---
+
+```ts
+import { httpAdapter } from "@uploadcn/core"
+
+const adapter = httpAdapter<{ id: string; url: string }>({
+  url: "/api/files",
+  fieldName: "file",
+  fields: (item) => ({ folder: String(item.meta.folder ?? "inbox") }),
+  headers: async () => ({ authorization: `Bearer ${await getToken()}` }),
+})
+```
+
+Sends `multipart/form-data` by default; `body: "binary"` sends the raw file with its
+MIME type (useful for `PUT` endpoints). The response is parsed as JSON when possible.
+
+<TypeTable
+  type={{
+    url: { type: "string | (item) => string", required: true },
+    method: { type: '"POST" | "PUT" | "PATCH"', default: '"POST"' },
+    body: { type: '"multipart" | "binary"', default: '"multipart"' },
+    fieldName: { type: "string", default: '"file"' },
+    fields: { type: "Record<string, string> | (item) => Record<string, string>" },
+    headers: { type: "Record<string, string> | () => Promise<Record<string, string>>" },
+    withCredentials: { type: "boolean", description: "Send cookies cross-origin." },
+    timeout: { type: "number", description: "Milliseconds." },
+    parseResponse: { type: "(response) => TResult" },
+    transport: { type: "Transport" },
+  }}
+/>
+
+## Example: Next.js route handler
+
+```ts title="app/api/files/route.ts"
+export async function POST(request: Request) {
+  const form = await request.formData()
+  const file = form.get("file") as File
+  const url = await saveSomewhere(file)
+  return Response.json({ url })
+}
+```
+
+Proxying files through your server is simple but costs bandwidth and is limited by
+platform body-size limits (4.5 MB on Vercel functions). Prefer
+[presigned uploads](/docs/guides/presigned-uploads) for large files.

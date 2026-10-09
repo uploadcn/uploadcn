@@ -1,0 +1,106 @@
+---
+title: Local disk
+description: Store uploads on your own server's disk, for self-hosted apps, VPSs and local development.
+---
+
+```ts
+import { createFileSystemStorage } from "@uploadcn/server/fs"
+```
+
+`createFileSystemStorage` implements the same storage interface as S3, so the browser
+side doesn't change: `s3Adapter` uploads through signed URLs, with multipart and resume.
+Bytes are streamed to disk, never buffered whole in memory.
+
+<Callout type="warn" title="Node.js servers only">
+  Serverless platforms (Vercel functions, Lambda, Workers) have no persistent disk. Use
+  it on a VPS, a container with a volume, or locally.
+</Callout>
+
+<Steps>
+<Step>
+
+### Create the storage
+
+```ts title="lib/storage.ts"
+import { createFileSystemStorage } from "@uploadcn/server/fs"
+
+export const files = createFileSystemStorage({
+  directory: "./uploads",
+  baseUrl: "/api/files",
+  secret: process.env.UPLOAD_SIGNING_SECRET!, // a long random string
+})
+```
+
+</Step>
+<Step>
+
+### Mount the routes
+
+The upload route signs requests. The file handler receives the bytes and serves signed
+downloads.
+
+```ts title="app/api/upload/route.ts"
+import { createUploadRoute } from "@uploadcn/server"
+
+import { files } from "@/lib/storage"
+
+export const { POST } = createUploadRoute({ storage: files.storage })
+```
+
+```ts title="app/api/files/route.ts"
+import { files } from "@/lib/storage"
+
+export const PUT = files.handler
+export const GET = files.handler
+```
+
+</Step>
+<Step>
+
+### Point components at it
+
+```ts
+const adapter = s3Adapter({ endpoint: "/api/upload" })
+```
+
+</Step>
+</Steps>
+
+## Public files
+
+By default, `getUrl` returns a short-lived signed download URL. To serve files publicly,
+for example from `public/uploads`, set `publicUrl`:
+
+```ts
+createFileSystemStorage({
+  directory: "./public/uploads",
+  publicUrl: "/uploads",
+  baseUrl: "/api/files",
+  secret: process.env.UPLOAD_SIGNING_SECRET!,
+})
+```
+
+## Security
+
+- Upload and download URLs are HMAC-signed, expire, and are bound to one method, so a
+  download URL can't be used to upload.
+- Object keys can't escape `directory`: `..`, absolute paths and the internal parts
+  folder are rejected.
+- A signed single upload must match its declared size exactly; anything larger is
+  rejected while streaming.
+- Files are written to a temporary path and renamed when complete, so readers never see
+  half-written files.
+- Downloads are served with `x-content-type-options: nosniff`.
+
+## Options
+
+<TypeTable
+  type={{
+    directory: { type: "string", required: true, description: "Where files are written." },
+    baseUrl: { type: "string", required: true, description: "Where `handler` is mounted." },
+    secret: { type: "string", required: true, description: "HMAC secret for signed URLs." },
+    publicUrl: { type: "string", description: "Serve files publicly from this URL instead of signed URLs." },
+    maxBodySize: { type: "number", default: "5 GiB" },
+    downloadExpiresIn: { type: "number", default: "3600", description: "Seconds." },
+  }}
+/>

@@ -1,0 +1,59 @@
+{
+  "name": "@uploadcn/server",
+  "version": "0.1.0",
+  "description": "Framework-agnostic upload route for UploadCN: presigned S3/R2 uploads, multipart signing, local-disk storage, Cloudinary signing, virus scanning and OCR, using Web standard Request/Response.",
+  "keywords": [
+    "upload",
+    "s3",
+    "r2",
+    "presigned",
+    "multipart",
+    "nextjs",
+    "tanstack-start",
+    "virus-scan",
+    "clamav",
+    "ocr"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uploadcn/uploadcn.git",
+    "directory": "packages/server"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/index.js",
+    "./fs": "./dist/fs.js",
+    "./scan": "./dist/scan.js",
+    "./ocr": "./dist/ocr.js",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@uploadcn/core": "workspace:^",
+    "aws4fetch": "^1.0.20"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "eslint": "^10.12.0",
+    "tsdown": "^0.23.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,73 @@
+---
+title: Camera Upload
+description: "Take photos with the device camera and upload them as you go, with a file picker fallback when there's no camera or access is denied."
+---
+
+<ComponentPreview name="camera-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/camera-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload), then copy:
+
+<ComponentSource name="camera-upload" />
+
+<ComponentSource name="use-camera" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { CameraUpload } from "@/components/camera-upload"
+```
+
+```tsx
+<CameraUpload facingMode="user" maxFiles={5} />
+```
+
+`CameraCapture` is exported too, drop it inside any `<Upload>` to add a viewfinder. The [`useCamera`](#usecamera) hook releases the camera on unmount.
+
+## useCamera
+
+The hook behind the viewfinder. It's installed with the component.
+
+```tsx
+const { videoRef, status, start, stop, flip, capture } = useCamera()
+
+<video ref={videoRef} muted playsInline />
+<button onClick={() => start()}>Open camera</button>
+<button onClick={async () => uploader.add([await capture()])}>Snap</button>
+```
+
+`status` is `idle`, `starting`, `ready`, `denied`, `unavailable` or `error`.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    maxFiles: { type: "number", default: "10" },
+    facingMode: { type: '"user" | "environment"', default: '"environment"' },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

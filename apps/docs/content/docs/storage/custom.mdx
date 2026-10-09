@@ -1,0 +1,170 @@
+---
+title: Custom adapters
+description: "Turn any upload function into an adapter: your API, Supabase, Firebase, Vercel Blob or anything else."
+---
+
+```ts
+import { createAdapter } from "@uploadcn/core"
+```
+
+An adapter is one async function: it receives the file and returns whatever your backend
+returns. Report progress and honour the abort signal, and the engine gives you queueing,
+retries, cancel and the whole UI for free.
+
+<ComponentPreview name="custom-adapter" />
+
+```ts
+const adapter = createAdapter(async ({ file, signal, onProgress, item }) => {
+  // item.meta has anything you attached, e.g. the slot name
+  const result = await uploadSomewhere(file, { signal, onProgress })
+  return result // becomes item.result
+})
+```
+
+<TypeTable
+  type={{
+    file: { type: "File", description: "The file to upload, after transforms." },
+    item: { type: "UploadItem", description: "Id, name, meta, attempt…" },
+    signal: { type: "AbortSignal", description: "Aborted on cancel, pause and remove." },
+    onProgress: { type: "(loaded: number, total?: number) => void" },
+    attempt: { type: "number", description: "1 on the first try, 2 on the first retry…" },
+    resumeState: { type: "unknown", description: "What you saved with `saveResumeState`." },
+    saveResumeState: { type: "(state: unknown) => void", description: "Save progress so a retry can continue." },
+  }}
+/>
+
+Throw an `UploadError` to control retries: `retryable: true` for transient failures,
+`false` for permanent ones. Plain errors and HTTP 5xx/429 are retried; 4xx are not.
+
+## Recipes
+
+<Tabs items={["Your endpoint", "Vercel Blob", "Firebase", "Supabase", "Server action"]}>
+<Tab value="Your endpoint">
+
+No wrapper needed: `httpAdapter` posts `multipart/form-data` with progress:
+
+```ts
+import { httpAdapter } from "@uploadcn/core"
+
+const adapter = httpAdapter({
+  url: "/api/files",
+  headers: async () => ({ authorization: `Bearer ${await getToken()}` }),
+})
+```
+
+</Tab>
+<Tab value="Vercel Blob">
+
+Client uploads go straight to Vercel Blob; your `handleUploadUrl` route authorizes them
+(see the Vercel Blob docs).
+
+```ts
+import { upload } from "@vercel/blob/client"
+import { createAdapter } from "@uploadcn/core"
+
+const adapter = createAdapter(
+  ({ file, signal, onProgress }) =>
+    upload(file.name, file, {
+      access: "public",
+      handleUploadUrl: "/api/blob",
+      abortSignal: signal,
+      onUploadProgress: ({ loaded }) => onProgress(loaded),
+    }),
+  { name: "vercel-blob" }
+)
+```
+
+</Tab>
+<Tab value="Firebase">
+
+```ts
+import { createAdapter } from "@uploadcn/core"
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage"
+
+import { storage } from "@/lib/firebase"
+
+const adapter = createAdapter(
+  ({ file, item, signal, onProgress }) =>
+    new Promise((resolve, reject) => {
+      const task = uploadBytesResumable(ref(storage, `uploads/${item.id}`), file)
+      signal.addEventListener("abort", () => task.cancel())
+      task.on(
+        "state_changed",
+        (snapshot) => onProgress(snapshot.bytesTransferred),
+        reject,
+        async () => resolve({ url: await getDownloadURL(task.snapshot.ref) })
+      )
+    }),
+  { name: "firebase" }
+)
+```
+
+</Tab>
+<Tab value="Supabase">
+
+Create a signed upload URL on your server, then upload with it. Supabase's client
+doesn't report progress, so the item jumps to 100% when done.
+
+```ts
+import { createAdapter } from "@uploadcn/core"
+
+import { supabase } from "@/lib/supabase"
+
+const adapter = createAdapter(
+  async ({ file, signal, onProgress }) => {
+    const { path, token } = await fetch("/api/supabase-upload-url", {
+      method: "POST",
+      body: JSON.stringify({ name: file.name }),
+      signal,
+    }).then((response) => response.json())
+
+    const { data, error } = await supabase.storage
+      .from("uploads")
+      .uploadToSignedUrl(path, token, file)
+    if (error) throw error
+    onProgress(file.size)
+    return data
+  },
+  { name: "supabase" }
+)
+```
+
+</Tab>
+<Tab value="Server action">
+
+Server actions can't report upload progress, so use them for small files.
+
+```ts
+"use client"
+
+import { createAdapter } from "@uploadcn/core"
+
+import { saveFile } from "./actions" // "use server"
+
+const adapter = createAdapter(async ({ file, onProgress }) => {
+  const formData = new FormData()
+  formData.append("file", file)
+  const result = await saveFile(formData)
+  onProgress(file.size)
+  return result
+})
+```
+
+</Tab>
+</Tabs>
+
+## S3-compatible services
+
+MinIO, DigitalOcean Spaces, Backblaze B2, Wasabi and Google Cloud Storage (interop)
+speak the S3 API. Use `s3Storage` with their `endpoint` on the server and `s3Adapter`
+in the browser:
+
+```ts
+s3Storage({
+  bucket: "uploads",
+  region: "us-east-1",
+  endpoint: "https://minio.example.com",
+  accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+})
+```

@@ -1,0 +1,69 @@
+---
+title: Battery
+description: "A battery that charges cell by cell for device and photo backups, with a pulsing bolt while charging and a full glow when the backup completes."
+---
+
+<ComponentPreview name="battery-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/battery-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="battery-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { BatteryUpload } from "@/components/battery-upload"
+```
+
+```tsx
+<BatteryUpload noun="photos" />
+```
+
+Five cells share one spring, each filling its fifth of the progress. Failed uploads turn the cells destructive. The caption is an `aria-live` region with counts, bytes and time left.
+
+It uploads through your [adapter](/docs/storage) like every other component, so it works with S3, R2, Cloudinary, local disk or your own API.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      description:
+        "Where files go. Defaults to the UploadConfigProvider adapter.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]", default: '["image/*", "video/*"]' },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    noun: {
+      type: "string",
+      default: '"files"',
+      description: "What is being backed up, used in the caption.",
+    },
+    className: { type: "string" },
+  }}
+/>

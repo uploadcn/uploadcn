@@ -1,0 +1,33 @@
+---
+title: Offline & reconnection
+description: Network loss, reconnection and recoverable uploads.
+---
+
+The engine listens to the browser's `online` and `offline` events (once mounted, the
+React hooks do this for you).
+
+When the browser goes offline:
+
+- No new uploads start; queued items wait.
+- Uploads that fail with a network error are **paused** with `pauseReason: "offline"`
+  instead of failing, and the attempt doesn't count against the retry budget.
+- `UploadStatus` shows “Waiting for network”.
+
+When it comes back online, offline-paused items are re-queued automatically. Resumable
+adapters continue from their last part; others restart.
+
+```ts
+uploader.on("online", ({ online }) => console.log(online ? "back online" : "offline"))
+const online = useNetworkStatus()
+```
+
+<Callout title="What “online” means">
+  `navigator.onLine` only says a network interface is up, not that your server is
+  reachable. That's why every network failure is also retried with exponential backoff,
+  online or not.
+</Callout>
+
+## Testing it
+
+In Chrome DevTools, set **Network → Offline** during an upload. With a resumable adapter
+(try the [pause/resume example](/examples#pause-resume)), go back online and watch it continue.

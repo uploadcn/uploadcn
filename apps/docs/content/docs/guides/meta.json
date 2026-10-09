@@ -1,0 +1,19 @@
+{
+  "title": "Guides",
+  "pages": [
+    "presigned-uploads",
+    "chunked-uploads",
+    "resumable-uploads",
+    "image-uploads",
+    "validation",
+    "forms",
+    "ai-uploads",
+    "background-uploads",
+    "offline",
+    "processing-and-scanning",
+    "virus-scanning",
+    "ocr",
+    "accessibility",
+    "advanced"
+  ]
+}

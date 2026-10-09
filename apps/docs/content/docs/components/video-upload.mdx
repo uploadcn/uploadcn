@@ -1,0 +1,56 @@
+---
+title: Video Upload
+description: Video uploads with inline playback, duration limits and resumable multipart for large files.
+---
+
+<ComponentPreview name="video-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/video-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="video-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { VideoUpload } from "@/components/video-upload"
+```
+
+```tsx
+<VideoUpload maxDuration={600} maxSize={2_000_000_000} />
+```
+
+With the default `s3Adapter`, files of 64 MB and more switch to multipart: parallel parts, per-part retry, and pause/resume.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    maxDuration: {
+      type: "number",
+      description: "Longest allowed video, in seconds.",
+    },
+    maxSize: { type: "number", default: "2 GB" },
+    maxFiles: { type: "number", default: "1" },
+    onSuccess: { type: "(item) => void" },
+  }}
+/>

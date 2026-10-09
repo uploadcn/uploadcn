@@ -1,0 +1,20 @@
+dist/
+node_modules/
+.next/
+.turbo/
+.source/
+coverage/
+pnpm-lock.yaml
+.pnpm-store/
+apps/docs/public/r/
+starting-point.md
+*.mdx
+AGENTS.md
+CLAUDE.md
+
+# Generated or vendored (checked by tests instead)
+apps/docs/styles/shadcn/
+apps/docs/styles/generated/
+apps/docs/registry/styles/
+apps/docs/components/icons/
+apps/docs/.registry-build/

@@ -1,0 +1,64 @@
+---
+title: Document Ingest
+description: RAG and knowledge-base ingestion with parse, chunk, embed and index stages.
+---
+
+<ComponentPreview name="ai-document-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/document-ingest
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="document-ingest" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { DocumentIngest } from "@/components/document-ingest"
+```
+
+```tsx
+<DocumentIngest
+  ingest={async (item, { setStage, signal }) => {
+    const { jobId } = await startIngestion(item.result.key, { signal })
+    for await (const stage of watchJob(jobId, { signal })) setStage(stage)
+  }}
+/>
+```
+
+Stages are `upload`, `parse`, `chunk`, `embed` and `index`. Report them from polling, server-sent events or webhooks: the UI only reflects what your backend says.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    ingest: {
+      type: "(item, { setStage, signal, setStatus, result }) => Promise<void>",
+      description:
+        "Drives server-side ingestion after the bytes are stored. Throw to fail the item.",
+    },
+    accept: {
+      type: "string[]",
+      default: "PDF, DOCX, TXT, MD, HTML, CSV, JSON",
+    },
+    maxFiles: { type: "number", default: "50" },
+  }}
+/>

@@ -1,0 +1,64 @@
+---
+title: Morphing Button
+description: A button that becomes its own progress bar while uploading, then a check mark. No extra UI needed.
+---
+
+<ComponentPreview name="upload-morph-button" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-morph-button
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="upload-morph-button" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadMorphButton } from "@/components/upload-morph-button"
+```
+
+```tsx
+<UploadMorphButton accept="application/pdf">Upload report</UploadMorphButton>
+```
+
+The width animates with `motion`'s `layout`, and the label cross-fades between states. The state is announced through `aria-live`.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    children: {
+      type: "ReactNode",
+      default: '"Upload"',
+      description: "Label in the idle state.",
+    },
+    multiple: { type: "boolean" },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number" },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    onComplete: { type: "(items) => void" },
+  }}
+/>

@@ -1,0 +1,1181 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "uploadcn",
+  "homepage": "https://uploadcn.dev",
+  "items": [
+    {
+      "name": "upload",
+      "type": "registry:ui",
+      "title": "Upload",
+      "description": "Composable, accessible upload primitives: dropzone, trigger, queue, previews, progress, status and actions.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "class-variance-authority",
+        "cn"
+      ],
+      "registryDependencies": ["button"],
+      "files": [
+        {
+          "path": "registry/default/ui/upload.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "categories": ["upload", "forms"]
+    },
+    {
+      "name": "image-cropper",
+      "type": "registry:ui",
+      "title": "Image Cropper",
+      "description": "A crop, zoom, rotate and flip dialog that outputs a processed image file.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "react-easy-crop"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/ui/image-cropper.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "categories": ["upload", "image"]
+    },
+    {
+      "name": "use-crop-queue",
+      "type": "registry:hook",
+      "title": "useCropQueue",
+      "description": "Turns a crop dialog into an async step so images can be cropped before they upload.",
+      "files": [
+        {
+          "path": "registry/default/hooks/use-crop-queue.ts",
+          "type": "registry:hook"
+        }
+      ],
+      "categories": ["upload", "image"]
+    },
+    {
+      "name": "use-camera",
+      "type": "registry:hook",
+      "title": "useCamera",
+      "description": "Streams the device camera into a video element and captures frames as Files. Starts only on demand.",
+      "files": [
+        {
+          "path": "registry/default/hooks/use-camera.ts",
+          "type": "registry:hook"
+        }
+      ],
+      "categories": ["upload", "media"]
+    },
+    {
+      "name": "file-upload",
+      "type": "registry:block",
+      "title": "File Upload",
+      "description": "A dropzone with a full upload queue, progress summary and batch actions.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "files": [
+        {
+          "path": "registry/default/blocks/file-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "upload-button",
+      "type": "registry:block",
+      "title": "Upload Button",
+      "description": "A single button that uploads and reports progress inline.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-button.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload"]
+    },
+    {
+      "name": "image-upload",
+      "type": "registry:block",
+      "title": "Image Upload",
+      "description": "An image grid with optional cropping and client-side compression.",
+      "dependencies": ["@uploadcn/core@^0.1.0"],
+      "registryDependencies": [
+        "@uploadcn/image-cropper",
+        "@uploadcn/upload",
+        "@uploadcn/use-crop-queue"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/image-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "image"]
+    },
+    {
+      "name": "avatar-upload",
+      "type": "registry:block",
+      "title": "Avatar Upload",
+      "description": "A profile photo uploader with round cropping and a progress ring.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": [
+        "@uploadcn/image-cropper",
+        "@uploadcn/upload",
+        "@uploadcn/use-crop-queue"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/avatar-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "image", "forms"]
+    },
+    {
+      "name": "gallery-upload",
+      "type": "registry:block",
+      "title": "Gallery Upload",
+      "description": "A photo gallery uploader that resizes images to WebP before upload.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "files": [
+        {
+          "path": "registry/default/blocks/gallery-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "image"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "video-upload",
+      "type": "registry:block",
+      "title": "Video Upload",
+      "description": "Video uploads with inline playback, duration limits and resumable multipart for large files.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "files": [
+        {
+          "path": "registry/default/blocks/video-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "media"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "audio-upload",
+      "type": "registry:block",
+      "title": "Audio Upload",
+      "description": "Audio uploads with an inline player per file.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "files": [
+        {
+          "path": "registry/default/blocks/audio-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "media"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "document-upload",
+      "type": "registry:block",
+      "title": "Document Upload",
+      "description": "Document, PDF and résumé uploads with type badges.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "registryDependencies": ["@uploadcn/upload", "badge"],
+      "files": [
+        {
+          "path": "registry/default/blocks/document-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "documents"]
+    },
+    {
+      "name": "chat-attachments",
+      "type": "registry:block",
+      "title": "Chat Attachments",
+      "description": "An AI chat composer with attachments via click, drag and paste.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/chat-attachments.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "ai"]
+    },
+    {
+      "name": "document-ingest",
+      "type": "registry:block",
+      "title": "Document Ingest",
+      "description": "RAG / knowledge-base ingestion with parse, chunk, embed and index stages.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/document-ingest.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "ai"]
+    },
+    {
+      "name": "global-upload",
+      "type": "registry:block",
+      "title": "Global Upload",
+      "description": "An app-wide upload provider with a drop-anywhere overlay, a background queue panel and IndexedDB persistence.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "files": [
+        {
+          "path": "registry/default/blocks/global-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "upload-field",
+      "type": "registry:block",
+      "title": "Upload Field",
+      "description": "A form field for react-hook-form, TanStack Form and server actions.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "registryDependencies": ["@uploadcn/upload", "field"],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-field.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "forms"]
+    },
+    {
+      "name": "upload-dialog",
+      "type": "registry:block",
+      "title": "Upload Dialog",
+      "description": "Pick files, review them, then upload in a modal that confirms before closing mid-upload.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-dialog.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "upload-table",
+      "type": "registry:block",
+      "title": "Upload Table",
+      "description": "The upload queue as a data table, with a drop overlay over the whole table.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-table.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload"]
+    },
+    {
+      "name": "upload-tabs",
+      "type": "registry:block",
+      "title": "Upload Tabs",
+      "description": "One queue fed from three sources: the device, a public link or the camera.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": [
+        "@uploadcn/upload",
+        "@uploadcn/use-camera",
+        "input"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-tabs.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload"]
+    },
+    {
+      "name": "camera-upload",
+      "type": "registry:block",
+      "title": "Camera Upload",
+      "description": "Take photos with the device camera and upload them as you go, with a file picker fallback.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload", "@uploadcn/use-camera"],
+      "files": [
+        {
+          "path": "registry/default/blocks/camera-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "media"]
+    },
+    {
+      "name": "logo-upload",
+      "type": "registry:block",
+      "title": "Logo Upload",
+      "description": "A settings card for a workspace logo with light and dark previews.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload", "card"],
+      "files": [
+        {
+          "path": "registry/default/blocks/logo-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "image"]
+    },
+    {
+      "name": "image-metadata",
+      "type": "registry:block",
+      "title": "Image Metadata",
+      "description": "Images upload in the background while people write alt text and captions.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "registryDependencies": [
+        "@uploadcn/upload",
+        "badge",
+        "input",
+        "textarea"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/image-metadata.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "image", "forms"]
+    },
+    {
+      "name": "upload-popover",
+      "type": "registry:block",
+      "title": "Upload Popover",
+      "description": "Attachments behind a toolbar button with a count and a progress ring.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-popover.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "product-media-upload",
+      "type": "registry:block",
+      "title": "Product Media Upload",
+      "description": "Storefront product photos: a cover image and a gallery you reorder by drag or keyboard.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "files": [
+        {
+          "path": "registry/default/blocks/product-media-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "ecommerce"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "csv-import",
+      "type": "registry:block",
+      "title": "CSV Import",
+      "description": "Bulk import from a spreadsheet, with column checks and a preview before upload.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload", "badge"],
+      "files": [
+        {
+          "path": "registry/default/blocks/csv-import.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "ecommerce", "data"]
+    },
+    {
+      "name": "identity-verification",
+      "type": "registry:block",
+      "title": "Identity Verification",
+      "description": "KYC-style ID front, back and selfie with a progress rail and submit gate.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/identity-verification.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "fintech"]
+    },
+    {
+      "name": "document-checklist",
+      "type": "registry:block",
+      "title": "Document Checklist",
+      "description": "A checklist of required documents (claims, onboarding, visas) ticked off as they upload.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload", "badge"],
+      "files": [
+        {
+          "path": "registry/default/blocks/document-checklist.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "insurance"]
+    },
+    {
+      "name": "job-application-upload",
+      "type": "registry:block",
+      "title": "Job Application Upload",
+      "description": "Resume, cover letter and portfolio for a careers page.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "registryDependencies": ["@uploadcn/upload", "input"],
+      "files": [
+        {
+          "path": "registry/default/blocks/job-application-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "hr"]
+    },
+    {
+      "name": "ocr-upload",
+      "type": "registry:block",
+      "title": "OCR Upload",
+      "description": "Upload scans, photos and PDFs and read their text with any OCR engine, with copy, download and extracted fields.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/ocr-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "docs": "Pass recognize={ocrEndpoint(\"/api/ocr\")} and add the route with npx shadcn@latest add @uploadcn/ocr-route, or use tesseractOcr() to read in the browser. See https://uploadcn.dev/docs/guides/ocr",
+      "categories": ["upload", "ocr", "documents"]
+    },
+    {
+      "name": "receipt-upload",
+      "type": "registry:block",
+      "title": "Receipt Upload",
+      "description": "Expense capture: a receipt plus details your OCR can prefill (merchant, date, amount).",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload", "input"],
+      "files": [
+        {
+          "path": "registry/default/blocks/receipt-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "fintech"]
+    },
+    {
+      "name": "property-photos",
+      "type": "registry:block",
+      "title": "Property Photos",
+      "description": "Real-estate listing photos tagged by room, with coverage and a recommended count.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0", "cn"],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/property-photos.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "real-estate"]
+    },
+    {
+      "name": "assignment-submission",
+      "type": "registry:block",
+      "title": "Assignment Submission",
+      "description": "Coursework hand-in with a deadline, late flag, and turn in / unsubmit.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "registryDependencies": ["@uploadcn/upload", "badge"],
+      "files": [
+        {
+          "path": "registry/default/blocks/assignment-submission.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "education"]
+    },
+    {
+      "name": "upload-config",
+      "type": "registry:file",
+      "title": "Upload Config",
+      "description": "Configure storage once: an UploadConfigProvider wrapper for your root layout that every UploadCN component uses.",
+      "dependencies": ["@uploadcn/core@^0.1.0", "@uploadcn/react@^0.1.0"],
+      "files": [
+        {
+          "path": "registry/default/files/upload-config.tsx",
+          "type": "registry:file",
+          "target": "components/upload-config.tsx"
+        }
+      ],
+      "docs": "Wrap your root layout in <UploadConfig>. Change the adapter in components/upload-config.tsx to switch storage for every component. See https://uploadcn.dev/docs/storage",
+      "categories": ["upload", "config"]
+    },
+    {
+      "name": "upload-route",
+      "type": "registry:file",
+      "title": "Upload Route (Next.js)",
+      "description": "A Next.js route handler that signs S3 or R2 uploads at /api/upload.",
+      "dependencies": ["@uploadcn/server@^0.1.0"],
+      "envVars": {
+        "S3_BUCKET": "",
+        "S3_REGION": "",
+        "S3_ACCESS_KEY_ID": "",
+        "S3_SECRET_ACCESS_KEY": ""
+      },
+      "files": [
+        {
+          "path": "registry/default/files/upload-route.ts",
+          "type": "registry:file",
+          "target": "app/api/upload/route.ts"
+        }
+      ],
+      "docs": "Fill in the S3_* (or R2_*) variables in .env.local, then allow PUT from your origin in the bucket's CORS settings and expose the ETag header (needed for multipart uploads). See https://uploadcn.dev/docs/adapters/s3 Optional virus scanning: set CLAMAV_HOST or VIRUSTOTAL_API_KEY. See https://uploadcn.dev/docs/guides/virus-scanning",
+      "categories": ["upload", "server"]
+    },
+    {
+      "name": "ocr-route",
+      "type": "registry:file",
+      "title": "OCR Route (Next.js)",
+      "description": "A Next.js route handler at /api/ocr that reads text with Google Vision, Textract, Azure, Mistral or your own service.",
+      "dependencies": ["@uploadcn/server@^0.1.0"],
+      "envVars": {
+        "GOOGLE_VISION_API_KEY": ""
+      },
+      "files": [
+        {
+          "path": "registry/default/files/ocr-route.ts",
+          "type": "registry:file",
+          "target": "app/api/ocr/route.ts"
+        }
+      ],
+      "docs": "Set the variables for one provider in .env.local (GOOGLE_VISION_API_KEY, TEXTRACT_*, AZURE_DOCUMENT_INTELLIGENCE_*, MISTRAL_API_KEY or OCR_SERVICE_URL), then add authentication in authorize(). See https://uploadcn.dev/docs/guides/ocr",
+      "categories": ["ocr", "server"]
+    },
+    {
+      "name": "upload-route-tanstack",
+      "type": "registry:file",
+      "title": "Upload Route (TanStack Start)",
+      "description": "A TanStack Start server route that signs S3 uploads at /api/upload.",
+      "dependencies": ["@uploadcn/server@^0.1.0"],
+      "envVars": {
+        "S3_BUCKET": "",
+        "S3_REGION": "",
+        "S3_ACCESS_KEY_ID": "",
+        "S3_SECRET_ACCESS_KEY": ""
+      },
+      "files": [
+        {
+          "path": "registry/default/files/upload-route-tanstack.ts",
+          "type": "registry:file",
+          "target": "src/routes/api/upload.ts"
+        }
+      ],
+      "docs": "Fill in the S3_* variables, then allow PUT from your origin in the bucket's CORS settings and expose the ETag header. See https://uploadcn.dev/docs/frameworks/tanstack-start",
+      "categories": ["upload", "server"]
+    },
+    {
+      "name": "folder-upload",
+      "type": "registry:block",
+      "title": "Folder Upload",
+      "description": "A folder that opens on hover and drag; dropped files fly in and the front shows progress.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/folder-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "upload-stack",
+      "type": "registry:block",
+      "title": "Upload Stack",
+      "description": "Uploads stacked like notifications that fan out on hover or focus.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-stack.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "upload-morph-button",
+      "type": "registry:block",
+      "title": "Morphing Upload Button",
+      "description": "A button that morphs into its own progress bar, then a check mark.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload", "button"],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-morph-button.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"]
+    },
+    {
+      "name": "polaroid-upload",
+      "type": "registry:block",
+      "title": "Polaroid Upload",
+      "description": "Photos drop onto the table like polaroids with a spring and a tilt.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/polaroid-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated", "image"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "animated-upload-queue",
+      "type": "registry:block",
+      "title": "Animated Upload Queue",
+      "description": "A queue whose rows expand in, collapse out, count up and draw a check.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/animated-upload-queue.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "ripple-dropzone",
+      "type": "registry:block",
+      "title": "Ripple Dropzone",
+      "description": "A dropzone whose rings ripple while dragging, with a burst on drop.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/ripple-dropzone.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"]
+    },
+    {
+      "name": "upload-island",
+      "type": "registry:block",
+      "title": "Upload Island",
+      "description": "A Dynamic Island-style pill that morphs between idle, progress and done, and expands into the file list on hover.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-island.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "image-reveal-upload",
+      "type": "registry:block",
+      "title": "Image Reveal Upload",
+      "description": "A single-image uploader where the photo develops behind a scan line as it uploads.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/image-reveal-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "image", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "liquid-dropzone",
+      "type": "registry:block",
+      "title": "Liquid Dropzone",
+      "description": "A dropzone that fills up like a glass with the combined upload progress.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/liquid-dropzone.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"]
+    },
+    {
+      "name": "progress-ring-upload",
+      "type": "registry:block",
+      "title": "Progress Ring Upload",
+      "description": "One ring for the whole batch: a counting percentage, per-file ticks and a self-drawing check.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/progress-ring-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "upload-dock",
+      "type": "registry:block",
+      "title": "Upload Dock",
+      "description": "A macOS-style dock of uploaded files that magnifies under the cursor.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-dock.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "upload-terminal",
+      "type": "registry:block",
+      "title": "Upload Terminal",
+      "description": "Uploads printed as a CLI log with ASCII progress bars, speed and results.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-terminal.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "magnetic-dropzone",
+      "type": "registry:block",
+      "title": "Magnetic Dropzone",
+      "description": "A dropzone whose target leans towards the pointer and follows dragged files.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/magnetic-dropzone.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"]
+    },
+    {
+      "name": "envelope-upload",
+      "type": "registry:block",
+      "title": "Envelope Upload",
+      "description": "Files slide into an envelope; the flap closes and a seal stamps on when sent.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/envelope-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "paper-plane-button",
+      "type": "registry:block",
+      "title": "Paper Plane Button",
+      "description": "A send button that fills with progress, then the paper plane takes off.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/paper-plane-button.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"]
+    },
+    {
+      "name": "shopping-bag-upload",
+      "type": "registry:block",
+      "title": "Shopping Bag Upload",
+      "description": "Product photos drop into a shopping bag that fills as they upload.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/shopping-bag-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "ecommerce", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "orbit-upload",
+      "type": "registry:block",
+      "title": "Orbit Upload",
+      "description": "Files orbit the center while uploading and land in a row when done.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/orbit-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "upload-confetti",
+      "type": "registry:block",
+      "title": "Upload Confetti",
+      "description": "Drop into any Upload: a confetti burst in your theme's colors when a batch finishes.",
+      "dependencies": ["@uploadcn/react@^0.1.0", "cn", "motion"],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-confetti.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"]
+    },
+    {
+      "name": "upload-odometer",
+      "type": "registry:block",
+      "title": "Upload Odometer",
+      "description": "Files, megabytes and percent on rolling odometer digits.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-odometer.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "cloud-dropzone",
+      "type": "registry:block",
+      "title": "Cloud Dropzone",
+      "description": "Particles rise into a cloud that fills with the upload progress.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/cloud-dropzone.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"]
+    },
+    {
+      "name": "flip-card-upload",
+      "type": "registry:block",
+      "title": "Flip Card Upload",
+      "description": "A single-file card that flips to show the uploaded file.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/flip-card-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "scanner-upload",
+      "type": "registry:block",
+      "title": "Scanner Upload",
+      "description": "A document scanner frame with corner guides and a scan beam, for IDs and receipts.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "files": [
+        {
+          "path": "registry/default/blocks/scanner-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "fintech", "animated"],
+      "registryDependencies": ["@uploadcn/upload"]
+    },
+    {
+      "name": "vinyl-upload",
+      "type": "registry:block",
+      "title": "Vinyl Upload",
+      "description": "A record that spins while tracks upload, with a tonearm that follows progress.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/vinyl-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated", "audio"]
+    },
+    {
+      "name": "rocket-upload",
+      "type": "registry:block",
+      "title": "Rocket Upload",
+      "description": "A rocket that climbs with the upload and lifts off when it's done.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/rocket-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated", "devtools"]
+    },
+    {
+      "name": "battery-upload",
+      "type": "registry:block",
+      "title": "Battery Upload",
+      "description": "Charges cell by cell for backups, with a bolt that pulses while it charges.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/battery-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated", "backup"]
+    },
+    {
+      "name": "typewriter-upload",
+      "type": "registry:block",
+      "title": "Typewriter Upload",
+      "description": "Types each file name onto a page that rolls out of the machine.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/typewriter-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated", "documents"]
+    },
+    {
+      "name": "hourglass-upload",
+      "type": "registry:block",
+      "title": "Hourglass Upload",
+      "description": "Sand runs through an hourglass as files upload, with the time left up front.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/hourglass-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated"]
+    },
+    {
+      "name": "blueprint-upload",
+      "type": "registry:block",
+      "title": "Blueprint Upload",
+      "description": "A drawing traces itself as CAD files upload, then the title block is approved.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/blueprint-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated", "documents"]
+    },
+    {
+      "name": "stamp-upload",
+      "type": "registry:block",
+      "title": "Stamp Upload",
+      "description": "Documents land on a pile and get stamped the moment they're received.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/stamp-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated", "legal"]
+    },
+    {
+      "name": "delivery-upload",
+      "type": "registry:block",
+      "title": "Delivery Upload",
+      "description": "A truck carries files from the warehouse to their destination as they upload.",
+      "dependencies": [
+        "@uploadcn/core@^0.1.0",
+        "@uploadcn/react@^0.1.0",
+        "cn",
+        "motion"
+      ],
+      "registryDependencies": ["@uploadcn/upload"],
+      "files": [
+        {
+          "path": "registry/default/blocks/delivery-upload.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload", "animated", "logistics"]
+    }
+  ]
+}

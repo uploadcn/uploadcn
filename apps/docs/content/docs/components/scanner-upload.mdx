@@ -1,0 +1,62 @@
+---
+title: Document Scanner
+description: "A scanner frame for IDs, receipts and contracts: corner guides lock on, a beam sweeps while it uploads, and the frame confirms."
+---
+
+<ComponentPreview name="scanner-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/scanner-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="scanner-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ScannerUpload } from "@/components/scanner-upload"
+```
+
+```tsx
+<ScannerUpload label="Scan your ID" />
+```
+
+On phones the picker opens the rear camera. The frame has an ID-card aspect ratio (1.586:1).
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    label: { type: "string", default: '"Scan a document"' },
+    accept: { type: "string", default: '"image/*,application/pdf"' },
+    maxSize: { type: "number", default: "15 MB" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

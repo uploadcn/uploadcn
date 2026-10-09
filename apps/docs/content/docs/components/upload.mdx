@@ -1,0 +1,464 @@
+---
+title: Upload
+description: Composable, accessible parts for building any upload interface, dropzones, lists, items, progress and actions.
+---
+
+<ComponentPreview name="upload-demo" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install the dependencies:
+
+```npm
+npm install @uploadcn/core @uploadcn/react cn class-variance-authority lucide-react
+```
+
+Add the shadcn `button` component, then copy this file into your project:
+
+<ComponentSource name="upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { s3Adapter } from "@uploadcn/core"
+
+import {
+  Upload,
+  UploadDropzone,
+  UploadDropzoneDescription,
+  UploadDropzoneHeader,
+  UploadDropzoneMedia,
+  UploadDropzoneTitle,
+  UploadItem,
+  UploadItemActions,
+  UploadItemContent,
+  UploadItemDescription,
+  UploadItemMedia,
+  UploadItemProgress,
+  UploadItemTitle,
+  UploadList,
+} from "@/components/ui/upload"
+```
+
+```tsx
+<Upload adapter={s3Adapter({ endpoint: "/api/upload" })} maxFiles={8}>
+  <UploadDropzone>
+    <UploadDropzoneHeader>
+      <UploadDropzoneMedia variant="icon" />
+      <UploadDropzoneTitle>Drop files here</UploadDropzoneTitle>
+      <UploadDropzoneDescription>or click to browse</UploadDropzoneDescription>
+    </UploadDropzoneHeader>
+  </UploadDropzone>
+  <UploadList>
+    <UploadItem>
+      <UploadItemMedia />
+      <UploadItemContent>
+        <UploadItemTitle />
+        <UploadItemDescription />
+      </UploadItemContent>
+      <UploadItemActions />
+      <UploadItemProgress />
+    </UploadItem>
+  </UploadList>
+</Upload>
+```
+
+## Composition
+
+`Upload` holds the uploader. Everything else is a part you place where you want it.
+
+<ComponentTree
+  root={{
+    name: "Upload",
+    description: "holds the uploader, options or an `uploader` prop",
+    children: [
+      {
+        name: "UploadDropzone",
+        description: "drag, drop, click, Enter / Space",
+        children: [
+          {
+            name: "UploadDropzoneHeader",
+            children: [
+              { name: "UploadDropzoneMedia" },
+              { name: "UploadDropzoneTitle" },
+              { name: "UploadDropzoneDescription" },
+            ],
+          },
+          {
+            name: "UploadDropzoneContent",
+            description: "buttons, e.g. UploadTrigger",
+          },
+        ],
+      },
+      { name: "UploadTrigger", description: "opens the file picker" },
+      {
+        name: "UploadOverlay",
+        description: "turns any content into a drop target",
+      },
+      {
+        name: "UploadSlot",
+        description: "a named single-file slot, e.g. “ID front”",
+      },
+      {
+        name: "UploadList",
+        description: "renders its children once per file",
+        children: [
+          {
+            name: "UploadItem",
+            children: [
+              {
+                name: "UploadItemMedia",
+                description: "thumbnail or file-type icon",
+              },
+              {
+                name: "UploadItemContent",
+                children: [
+                  { name: "UploadItemTitle", description: "file name" },
+                  {
+                    name: "UploadItemDescription",
+                    description: "size · progress · speed · error",
+                  },
+                ],
+              },
+              {
+                name: "UploadItemActions",
+                description: "pause, resume, retry, cancel, remove",
+              },
+              { name: "UploadItemProgress" },
+            ],
+          },
+        ],
+      },
+      {
+        name: "UploadHeader / UploadFooter",
+        children: [
+          {
+            name: "UploadSummary",
+            description: "“3 files · 12.4 MB · 45% · 8s left”",
+          },
+        ],
+      },
+      { name: "UploadProgress", description: "all files combined" },
+      { name: "UploadEmpty / UploadStart / UploadClear" },
+    ],
+  }}
+/>
+
+`UploadList` renders its children as a template for every file and provides that file
+to the parts inside. There's no render function or prop drilling. Each row re-renders
+only when its own file changes.
+
+Parts have sensible defaults and accept children to override them:
+
+```tsx
+<UploadItemTitle />                         {/* the file name */}
+<UploadItemTitle>Invoice #1042</UploadItemTitle>
+
+<UploadItemActions />                       {/* the applicable actions */}
+<UploadItemActions>
+  <UploadItemRetry />
+  <UploadItemRemove />
+</UploadItemActions>
+```
+
+## Dropzone
+
+### Variant
+
+Use `variant` to change the surface: `default` (dashed), `muted` or `outline`.
+
+<ComponentPreview name="upload-dropzone-variants" />
+
+### Orientation
+
+`orientation="horizontal"` puts the content side by side, handy for compact forms.
+Use `clickable={false}` when the dropzone contains its own `UploadTrigger`.
+
+<ComponentPreview name="upload-dropzone-horizontal" />
+
+### Size
+
+`size` is `sm`, `default` or `lg`.
+
+```tsx
+<UploadDropzone size="sm">…</UploadDropzone>
+```
+
+## Item
+
+### Variant
+
+`outline` (default), `muted`, `default` (no surface), and `tile` for grids.
+
+<ComponentPreview name="upload-item-variants" />
+
+### Size
+
+`default`, `sm` and `xs`. Media, text and actions scale with the item.
+
+<ComponentPreview name="upload-item-sizes" />
+
+### Tiles
+
+Combine `UploadList variant="grid"` with `UploadItem variant="tile"` and
+`UploadItemMedia variant="cover"`.
+
+<ComponentPreview name="upload-grid" />
+
+### Chips
+
+`UploadList variant="inline"` with extra-small items makes attachment chips.
+
+<ComponentPreview name="upload-chips" />
+
+## Trigger
+
+`UploadTrigger` renders an outline `Button`. Pass `render` to use any element.
+
+<ComponentPreview name="upload-trigger" />
+
+## Overlay
+
+`UploadOverlay` makes any content a drop target without making it a button. A frosted
+layer with a label covers the content only while files are dragged over it, so text
+stays selectable and links stay clickable.
+
+<ComponentPreview name="upload-overlay" />
+
+```tsx
+<UploadOverlay
+  label="Drop to attach"
+  description="Files are added to this note"
+>
+  <Note />
+</UploadOverlay>
+```
+
+## Slots
+
+`UploadSlot` is a named, single-file slot inside a shared `<Upload>`, for forms
+that need specific documents. Each slot has its own picker and drop target, replaces
+its own file, and tags it with `meta.slot` so your backend knows which is which.
+Read a slot's file with `useUploadSlot(name)`.
+
+<ComponentPreview name="upload-slots" />
+
+```tsx
+<Upload>
+  <UploadSlot
+    name="id"
+    label="Photo ID"
+    accept="image/*,application/pdf"
+    required
+  />
+  <UploadSlot name="address" label="Proof of address" />
+</Upload>
+```
+
+## Header, footer and summary
+
+`UploadHeader` and `UploadFooter` lay out titles and queue actions. `UploadSummary`
+describes the queue in one line and renders nothing while it's empty.
+
+<ComponentPreview name="upload-card" />
+
+## Accessibility
+
+- `UploadDropzone` is a button: it's focusable and opens the picker with
+  <kbd>Enter</kbd> or <kbd>Space</kbd>, the alternative to dragging.
+- `UploadItemProgress` is a `progressbar` labelled with the file name.
+- A polite live region announces added, finished, failed and rejected files.
+- Every action has a name such as “Retry upload of report.pdf”.
+- Motion respects `prefers-reduced-motion`.
+
+## API Reference
+
+### Upload
+
+The root. Accepts every [uploader option](/docs/reference/core#uploaderoptions),
+`adapter`, `accept`, `maxSize`, `maxFiles`, `concurrency`, `retry`, `transform`,
+`process`, `persistence`…, or an `uploader` from [`useUploader`](/docs/hooks#useuploader).
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      description: "Where files go. Required unless `uploader` is passed.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader you control from outside.",
+    },
+    multiple: {
+      type: "boolean",
+      default: "true (false when maxFiles is 1)",
+      description: "In single mode a new file replaces the current one.",
+    },
+    disabled: { type: "boolean", default: "false" },
+    name: {
+      type: "string",
+      description:
+        "Submit successful uploads as hidden inputs (native forms, server actions).",
+    },
+    messages: {
+      type: "Partial<UploadMessages>",
+      description: "Translate every label and announcement.",
+    },
+  }}
+/>
+
+### UploadDropzone
+
+<TypeTable
+  type={{
+    variant: { type: '"default" | "muted" | "outline"', default: '"default"' },
+    orientation: { type: '"vertical" | "horizontal"', default: '"vertical"' },
+    size: { type: '"sm" | "default" | "lg"', default: '"default"' },
+    clickable: {
+      type: "boolean",
+      default: "true",
+      description: "Click, Enter and Space open the picker.",
+    },
+  }}
+/>
+
+Data attributes: `data-dragging`, `data-drag-reject`, `data-disabled`.
+
+### UploadDropzoneMedia
+
+<TypeTable
+  type={{
+    variant: {
+      type: '"default" | "icon"',
+      default: '"default"',
+      description:
+        "`icon` draws a bordered circle that lifts on hover and drag.",
+    },
+  }}
+/>
+
+### UploadList
+
+<TypeTable
+  type={{
+    variant: { type: '"list" | "grid" | "inline"', default: '"list"' },
+    filter: {
+      type: "(item) => boolean",
+      description: "Show only matching files.",
+    },
+    children: {
+      type: "ReactNode | (item) => ReactNode",
+      description: "A template rendered per file, or a function of the file.",
+    },
+  }}
+/>
+
+### UploadItem
+
+<TypeTable
+  type={{
+    variant: {
+      type: '"outline" | "muted" | "default" | "tile"',
+      default: '"outline"',
+    },
+    size: { type: '"default" | "sm" | "xs"', default: '"default"' },
+    item: {
+      type: "UploadItem",
+      description: "Only needed outside UploadList.",
+    },
+  }}
+/>
+
+Data attributes: `data-status` (`uploading`, `success`, `error`…), `data-variant`, `data-size`.
+
+### UploadItemMedia
+
+<TypeTable
+  type={{
+    variant: {
+      type: '"default" | "icon" | "cover"',
+      default: '"default"',
+      description:
+        "`default` shows a thumbnail for images and an icon otherwise.",
+    },
+    thumbnailSize: { type: "number", default: "128 (400 for cover)" },
+  }}
+/>
+
+### UploadItemProgress
+
+<TypeTable
+  type={{
+    forceMount: {
+      type: "boolean",
+      default: "false",
+      description: "Keep the bar after the file finished.",
+    },
+  }}
+/>
+
+### UploadOverlay
+
+<TypeTable
+  type={{
+    label: { type: "ReactNode", default: '"Drop files to upload"' },
+    description: { type: "ReactNode" },
+  }}
+/>
+
+### UploadSlot
+
+<TypeTable
+  type={{
+    name: {
+      type: "string",
+      description: "Stored on the file as `meta.slot`.",
+      required: true,
+    },
+    label: { type: "ReactNode", required: true },
+    description: { type: "ReactNode" },
+    accept: {
+      type: "string | string[]",
+      description: "Checked before the file is added.",
+    },
+    icon: { type: "ReactNode" },
+    required: {
+      type: "boolean",
+      description: "Adds “(required)” to the label.",
+    },
+    children: {
+      type: "ReactNode",
+      description:
+        "Content for a filled slot. `UploadItem*` parts work inside.",
+    },
+  }}
+/>
+
+### UploadSummary
+
+Pass children to replace the text. Without children it renders nothing for an empty
+queue.
+
+### Actions
+
+`UploadItemPause`, `UploadItemResume`, `UploadItemRetry`, `UploadItemCancel` and
+`UploadItemRemove` render only when they apply, pause only for resumable adapters.
+They accept `Button` props (`variant`, `size`) and `forceMount`.
+
+## Headless
+
+The same parts without styles live in `@uploadcn/react`, see the
+[custom UI example](/examples#custom-upload-ui).

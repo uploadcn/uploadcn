@@ -1,0 +1,73 @@
+---
+title: Blueprint
+description: "A drafting sheet for architecture, engineering and CAD files: a drawing traces itself line by line as files upload and the title block is stamped approved."
+---
+
+<ComponentPreview name="blueprint-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/blueprint-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="blueprint-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { BlueprintUpload } from "@/components/blueprint-upload"
+```
+
+```tsx
+<BlueprintUpload project="Riverside Library" />
+```
+
+Each line of the drawing takes its share of the progress, so the building is drafted in order. A dashed ghost keeps the sheet readable before anything uploads. The title block lists the latest sheet, file count and size.
+
+It uploads through your [adapter](/docs/storage) like every other component, so it works with S3, R2, Cloudinary, local disk or your own API.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      description:
+        "Where files go. Defaults to the UploadConfigProvider adapter.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: {
+      type: "string | string[]",
+      default:
+        '[".pdf", ".dwg", ".dxf", ".ifc", ".step", ".stl", ".svg", "image/*"]',
+    },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    project: {
+      type: "string",
+      default: '"Project A-104"',
+      description: "Project name in the title block.",
+    },
+    className: { type: "string" },
+  }}
+/>

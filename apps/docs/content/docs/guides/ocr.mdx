@@ -1,0 +1,252 @@
+---
+title: OCR
+description: Read text from scans, photos and PDFs with Google Vision, AWS Textract, Azure Document Intelligence, Mistral, Tesseract or your own service.
+---
+
+Text recognition works the same way as storage: one shape for results, and a provider
+you can swap. Every engine returns an `OcrResult`:
+
+```ts
+interface OcrResult {
+  text: string // all text, pages separated by blank lines
+  pages: { number: number; text: string; lines?: { text: string; confidence?: number }[] }[]
+  confidence?: number // 0 to 1
+  fields?: Record<string, { value: string; confidence?: number }> // merchant, date, total…
+  markdown?: string // Mistral keeps headings and tables
+  provider: string
+}
+```
+
+<ComponentPreview name="ocr-upload" />
+
+## Pick an engine
+
+| Engine | Runs | Good at | Fields |
+| --- | --- | --- | --- |
+| [Tesseract](#in-the-browser) | Browser | Private documents, no backend, no cost | - |
+| [Google Cloud Vision](#google-cloud-vision) | Server | Photos, handwriting, 50+ languages | - |
+| [AWS Textract](#aws-textract) | Server | Forms, receipts and invoices on AWS | Receipts, invoices |
+| [Azure Document Intelligence](#azure-document-intelligence) | Server | Receipts, invoices, IDs, custom models | Yes |
+| [Mistral OCR](#mistral-ocr) | Server | Long PDFs, tables, Markdown for LLMs | - |
+| [Your own service](#your-own-service) | Server | PaddleOCR, docTR, EasyOCR, internal models | Yours |
+
+## How it fits
+
+<Flow
+  label="OCR after upload"
+  steps={["Uploading", { label: "Reading text", highlight: true }, "Success"]}
+/>
+
+OCR runs as the uploader's `process` step, after the file is stored. It doesn't care
+where the file went, so it works with every adapter, including `localAdapter`.
+
+```tsx
+import { ocrEndpoint, ocrProcess } from "@uploadcn/core"
+
+<Upload adapter={adapter} process={ocrProcess(ocrEndpoint("/api/ocr"))} />
+// later: item.meta.ocr is the OcrResult
+```
+
+The [OCR Upload](/docs/components/ocr-upload) block does this for you and shows the text,
+confidence and fields. [Receipt Upload](/docs/components/receipt-upload) takes the same
+`recognize` prop and fills in merchant, date and amount.
+
+## On the server
+
+API keys must never reach the browser, so server engines sit behind a route. Add it:
+
+```npm
+npx shadcn@latest add @uploadcn/ocr-route
+```
+
+That creates `app/api/ocr/route.ts`, which picks a provider from your environment
+variables. Or write it yourself:
+
+```ts title="app/api/ocr/route.ts"
+import { createOcrRoute, googleVisionOcr, OcrRouteError } from "@uploadcn/server/ocr"
+
+export const { POST } = createOcrRoute({
+  provider: googleVisionOcr({ apiKey: process.env.GOOGLE_VISION_API_KEY! }),
+  maxFileSize: 20 * 1024 * 1024,
+  async authorize({ request }) {
+    const session = await auth(request)
+    if (!session) throw new OcrRouteError("Unauthorized", 401)
+    return session
+  },
+})
+```
+
+Then point the component at it:
+
+```tsx
+<OcrUpload recognize={ocrEndpoint("/api/ocr")} />
+```
+
+The route:
+
+- authorizes before it reads the body,
+- accepts PNG, JPEG, WebP, TIFF, GIF, BMP and PDF; SVG is refused (it can carry script),
+- enforces `maxFileSize` from `content-length` and again on the actual file,
+- hides provider errors (they can contain account details) and logs them instead.
+
+### Read files that are already stored
+
+Pass `storage` and clients can send `{ "key": "…" }` instead of the file. Check that the
+caller owns the key in `authorize`:
+
+```ts
+createOcrRoute({
+  provider,
+  storage: s3Storage({ /* … */ }),
+  async authorize({ request, key }) {
+    const user = await requireUser(request)
+    if (key && !key.startsWith(`${user.id}/`)) throw new OcrRouteError("Forbidden", 403)
+  },
+})
+```
+
+## Providers
+
+<Tabs items={["Google Vision", "Textract", "Azure", "Mistral", "Custom"]}>
+<Tab value="Google Vision">
+
+### Google Cloud Vision
+
+```ts
+import { googleVisionOcr } from "@uploadcn/server/ocr"
+
+googleVisionOcr({
+  apiKey: process.env.GOOGLE_VISION_API_KEY!, // restrict the key to the Vision API
+  languageHints: ["en"],
+})
+```
+
+Uses `DOCUMENT_TEXT_DETECTION`. Images go to `images:annotate`; PDFs, TIFFs and GIFs to
+`files:annotate` (the first 5 pages). Prefer a service account? Pass
+`accessToken: () => getAccessToken()` instead of `apiKey`. The key is sent in a header,
+never in the URL.
+
+</Tab>
+<Tab value="Textract">
+
+### AWS Textract
+
+```ts
+import { awsTextractOcr } from "@uploadcn/server/ocr"
+
+awsTextractOcr({
+  region: process.env.TEXTRACT_REGION!,
+  accessKeyId: process.env.TEXTRACT_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.TEXTRACT_SECRET_ACCESS_KEY!,
+  model: "expense", // or "text"
+})
+```
+
+Requests are signed with `aws4fetch`, no AWS SDK. `"text"` calls DetectDocumentText;
+`"expense"` calls AnalyzeExpense and also returns `merchant`, `date`, `total`,
+`subtotal`, `tax` and `currency`. The synchronous APIs take JPEG, PNG, TIFF and
+single-page PDFs up to 10 MB. Give the IAM user only `textract:DetectDocumentText` and
+`textract:AnalyzeExpense`.
+
+</Tab>
+<Tab value="Azure">
+
+### Azure AI Document Intelligence
+
+```ts
+import { azureDocumentIntelligenceOcr } from "@uploadcn/server/ocr"
+
+azureDocumentIntelligenceOcr({
+  endpoint: process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT!,
+  apiKey: process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY!,
+  model: "prebuilt-receipt", // prebuilt-read, prebuilt-invoice, prebuilt-idDocument, or your model id
+})
+```
+
+Starts an analysis and polls it, honouring `Retry-After`. Document fields are mapped to the
+same names as Textract (`merchant`, `date`, `total`…), so receipts work with either. The
+poll URL is only followed on your resource's own origin, because the key is sent with it.
+
+</Tab>
+<Tab value="Mistral">
+
+### Mistral OCR
+
+```ts
+import { mistralOcr } from "@uploadcn/server/ocr"
+
+mistralOcr({ apiKey: process.env.MISTRAL_API_KEY! })
+```
+
+Returns `markdown` that keeps headings, lists and tables, plus plain `text`. A good fit
+when the text goes to an LLM next (see [AI uploads](/docs/guides/ai-uploads)).
+
+</Tab>
+<Tab value="Custom">
+
+### Your own service
+
+Run PaddleOCR, docTR, EasyOCR or Tesseract in a container, or call any other API:
+
+```ts
+import { httpOcr } from "@uploadcn/server/ocr"
+
+httpOcr({
+  url: process.env.OCR_SERVICE_URL!, // receives multipart/form-data with "file"
+  headers: { authorization: `Bearer ${process.env.OCR_SERVICE_TOKEN}` },
+  // Optional: map a different response shape
+  parse: (body) => ({ text: body.text, pages: [{ number: 1, text: body.text }] }),
+})
+```
+
+Or wrap any function:
+
+```ts
+import { createOcrProvider } from "@uploadcn/server/ocr"
+
+const provider = createOcrProvider("my-engine", async ({ data, type }) => {
+  const text = await myEngine.read(data, type)
+  return { text, pages: [{ number: 1, text }] }
+})
+```
+
+</Tab>
+</Tabs>
+
+## In the browser
+
+Tesseract runs in a Web Worker. Nothing is uploaded for OCR and there's no key, which suits
+private documents and offline apps. Install it, then:
+
+```bash
+npm install tesseract.js
+```
+
+```tsx
+import { tesseractOcr } from "@uploadcn/core"
+
+const recognize = tesseractOcr({
+  load: () => import("tesseract.js"), // loaded on first use
+  lang: ["eng", "deu"],
+})
+
+<OcrUpload recognize={recognize} accept="image/png,image/jpeg,image/webp" />
+```
+
+Tesseract reads images, not PDFs, and is slower and less accurate than the cloud engines on
+photos. By default it downloads its engine and language data from a CDN; to self-host them,
+pass `workerOptions: { workerPath, corePath, langPath }`.
+
+## Without the block
+
+`ocrProcess` stores the result on `item.meta.ocr`; render it however you like:
+
+```tsx
+const uploader = useUploader({
+  adapter,
+  process: ocrProcess(ocrEndpoint("/api/ocr"), { required: true }),
+})
+```
+
+With `required: true`, a file whose text can't be read is rejected; by default it is kept and
+`item.meta.ocrError` explains why.

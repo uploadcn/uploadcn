@@ -1,0 +1,46 @@
+---
+title: TanStack Start
+description: Server routes and the same components.
+---
+
+```npm
+npx shadcn@latest add @uploadcn/file-upload @uploadcn/upload-route-tanstack
+```
+
+## Server route
+
+```ts title="src/routes/api/upload.ts"
+import { createFileRoute } from "@tanstack/react-router"
+import { createUploadRoute, s3Storage } from "@uploadcn/server"
+
+const upload = createUploadRoute({
+  storage: s3Storage({
+    bucket: process.env.S3_BUCKET!,
+    region: process.env.S3_REGION!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+  }),
+})
+
+export const Route = createFileRoute("/api/upload")({
+  server: {
+    handlers: {
+      POST: ({ request }) => upload.POST(request),
+    },
+  },
+})
+```
+
+## Components
+
+Components are identical to Next.js. Nothing in UploadCN depends on a framework:
+
+```tsx title="src/routes/index.tsx"
+import { createFileRoute } from "@tanstack/react-router"
+
+import { FileUpload } from "@/components/file-upload"
+
+export const Route = createFileRoute("/")({
+  component: () => <FileUpload maxFiles={5} />,
+})
+```

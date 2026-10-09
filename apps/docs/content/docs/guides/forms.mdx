@@ -1,0 +1,59 @@
+---
+title: Forms
+description: react-hook-form, TanStack Form, native forms and server actions.
+---
+
+The pattern: **upload while the user fills in the form, submit object keys.** The form
+value is a list of strings, so validation is simple and submitting is instant.
+
+## react-hook-form
+
+<ComponentPreview name="form-upload" />
+
+`UploadField` is controlled: `onChange` receives the keys of successful uploads, and
+`onUploadingChange` lets you disable submit while files are still uploading.
+
+## TanStack Form
+
+```tsx
+<form.Field
+  name="attachments"
+  validators={{ onChange: ({ value }) => (value.length ? undefined : "Attach a file") }}
+>
+  {(field) => (
+    <UploadField
+      label="Attachments"
+      error={field.state.meta.errors[0]}
+      onChange={field.handleChange}
+      onBlur={field.handleBlur}
+    />
+  )}
+</form.Field>
+```
+
+## Native forms and server actions
+
+Give `Upload` a `name`; each successful upload renders a hidden input.
+
+<ComponentPreview name="required-upload" />
+
+```tsx title="app/posts/new/page.tsx"
+async function createPost(formData: FormData) {
+  "use server"
+  const images = formData.getAll("images") // object keys
+  await db.post.create({ data: { images } })
+}
+
+<form action={createPost}>
+  <Upload adapter={adapter} name="images">…</Upload>
+  <button type="submit">Publish</button>
+</form>
+```
+
+## Accessibility in forms
+
+- Label the dropzone with `aria-labelledby` pointing at the field label.
+- Set `aria-invalid` on the dropzone and `data-invalid` on the `Field` when there's an error.
+- Connect the description and error with `aria-describedby`.
+
+`UploadField` does all of this for you.

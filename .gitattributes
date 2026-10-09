@@ -1,0 +1,5 @@
+# Keep LF line endings everywhere (Prettier and the registry build expect LF)
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.woff2 binary

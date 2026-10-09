@@ -1,0 +1,63 @@
+---
+title: Document Upload
+description: Document, PDF and résumé uploads with type badges.
+---
+
+<ComponentPreview name="document-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/document-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="document-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { DocumentUpload } from "@/components/document-upload"
+```
+
+```tsx
+<DocumentUpload variant="resume" name="resume" />
+```
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    variant: {
+      type: '"documents" | "pdf" | "resume"',
+      default: '"documents"',
+      description:
+        "Preset for accepted types, limits and copy. `resume` is a single PDF/Word file.",
+    },
+    maxFiles: { type: "number" },
+    maxSize: { type: "number" },
+    name: { type: "string", description: "Form field name." },
+    onSuccess: { type: "(item) => void" },
+  }}
+/>
+
+## Examples
+
+### PDF
+
+<ComponentPreview name="pdf-upload" />

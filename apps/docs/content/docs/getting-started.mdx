@@ -1,0 +1,100 @@
+---
+title: Getting Started
+description: From zero to a production upload UI in a few lines.
+icon: Rocket
+---
+
+## 1. A complete uploader
+
+The fastest path is a block. It's a regular component in your project:
+
+```tsx
+import { FileUpload } from "@/components/file-upload"
+
+<FileUpload accept="image/*,application/pdf" maxSize={20_000_000} maxFiles={10} />
+```
+
+Files are validated in the browser, queued (three at a time), uploaded directly to
+your bucket through `/api/upload`, retried on network errors, and shown with progress,
+speed and time remaining.
+
+## 2. Compose your own
+
+Blocks are built from the `upload` primitives. Use them to shape your own layout:
+
+```tsx
+import { s3Adapter } from "@uploadcn/core"
+
+import {
+  Upload,
+  UploadDropzone,
+  UploadDropzoneTitle,
+  UploadQueue,
+} from "@/components/ui/upload"
+
+const adapter = s3Adapter({ endpoint: "/api/upload" })
+
+export function Attachments() {
+  return (
+    <Upload adapter={adapter} accept={["image/png", "image/jpeg"]} maxSize={10 * 1024 * 1024} maxFiles={5}>
+      <UploadDropzone>
+        <UploadDropzoneTitle>Drop images here</UploadDropzoneTitle>
+      </UploadDropzone>
+      <UploadQueue />
+    </Upload>
+  )
+}
+```
+
+`UploadQueue` is itself a composition of `UploadList`, `UploadItem`, `UploadPreview`,
+`UploadName`, `UploadProgress`, `UploadStatus` and the action buttons, see
+[Upload](/docs/components/upload) for every part.
+
+## 3. Control it from outside
+
+Create the engine with `useUploader` (or `useUpload`, which also returns state) when
+other parts of the page need to react to uploads:
+
+```tsx
+import { s3Adapter } from "@uploadcn/core"
+import { useUpload } from "@uploadcn/react"
+
+const adapter = s3Adapter({ endpoint: "/api/upload" })
+
+export function Composer() {
+  const { uploader, summary } = useUpload({
+    adapter,
+    onSuccess: (item) => console.log("stored at", item.result?.key),
+  })
+
+  return (
+    <>
+      <Upload uploader={uploader}>
+        <UploadDropzone />
+        <UploadQueue />
+      </Upload>
+      <Button disabled={summary.isUploading}>Publish</Button>
+    </>
+  )
+}
+```
+
+## 4. Pick a storage adapter
+
+| You have… | Use |
+| --- | --- |
+| S3, R2, MinIO, B2, Spaces | [`s3Adapter`](/docs/adapters/s3) + [`@uploadcn/server`](/docs/reference/server) |
+| A signed-URL API (GCS, Supabase…) | [`presignedAdapter`](/docs/adapters/presigned) |
+| An endpoint that accepts files | [`httpAdapter`](/docs/adapters/http) |
+| A tus server | [`tusAdapter`](/docs/adapters/tus) |
+| Your own chunk protocol | [`multipartAdapter`](/docs/adapters/multipart) |
+| No backend yet | [`mockAdapter`](/docs/adapters/mock) |
+
+## Next steps
+
+<Cards>
+  <Card title="How it works" href="/docs/how-it-works" />
+  <Card title="Validation" href="/docs/guides/validation" />
+  <Card title="Resumable uploads" href="/docs/guides/resumable-uploads" />
+  <Card title="Examples" href="/examples" />
+</Cards>

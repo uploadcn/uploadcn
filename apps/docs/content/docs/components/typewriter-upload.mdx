@@ -1,0 +1,72 @@
+---
+title: Typewriter
+description: "A typewriter for manuscripts and document submissions: each file name is typed onto a page that rolls out of the machine, with its status beside it."
+---
+
+<ComponentPreview name="typewriter-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/typewriter-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="typewriter-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { TypewriterUpload } from "@/components/typewriter-upload"
+```
+
+```tsx
+<TypewriterUpload title="Manuscript" />
+```
+
+Names are typed a character at a time, but screen readers get the full name at once from a visually hidden copy. The page grows a line per file, and the keys press while uploads run. With reduced motion, text appears immediately and the keys stay still.
+
+It uploads through your [adapter](/docs/storage) like every other component, so it works with S3, R2, Cloudinary, local disk or your own API.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      description:
+        "Where files go. Defaults to the UploadConfigProvider adapter.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: {
+      type: "string | string[]",
+      default: '[".pdf", ".doc", ".docx", ".txt", ".md", ".rtf", ".odt"]',
+    },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    title: {
+      type: "string",
+      default: '"Submission"',
+      description: "Heading typed at the top of the page.",
+    },
+    className: { type: "string" },
+  }}
+/>

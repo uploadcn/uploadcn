@@ -1,0 +1,63 @@
+---
+title: Cloud Dropzone
+description: "Upload to the cloud, literally: particles rise into the cloud while files upload, and the cloud fills with the progress."
+---
+
+<ComponentPreview name="cloud-dropzone" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/cloud-dropzone
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="cloud-dropzone" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { CloudDropzone } from "@/components/cloud-dropzone"
+```
+
+```tsx
+<CloudDropzone maxSize={100 * 1000 * 1000} />
+```
+
+The fill is an SVG clip path driven by `useUploadProgress`.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+    showQueue: { type: "boolean", default: "true" },
+  }}
+/>

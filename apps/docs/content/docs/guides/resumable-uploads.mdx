@@ -1,0 +1,56 @@
+---
+title: Resumable uploads
+description: Pause, resume, and survive reloads and crashes.
+---
+
+<ComponentPreview name="resumable-upload" />
+
+## Pause and resume
+
+Pausing aborts the in-flight request. What happens on resume depends on the adapter:
+
+| Adapter | Resumable | On resume |
+| --- | --- | --- |
+| `s3Adapter` (multipart) | ✓ | Continues from the last finished part |
+| `multipartAdapter` | ✓ | Continues from the last finished part |
+| `tusAdapter` | ✓ | Asks the server for the offset and continues |
+| `s3Adapter` (single PUT), `presignedAdapter`, `httpAdapter` | ✗ | - |
+
+`UploadPause` only appears for resumable uploads (`uploader.canPause(item)`), so users
+are never offered a pause that would silently restart. Queued items can always be paused.
+
+## Surviving reloads
+
+Pass a persistence store. Queued and in-progress uploads, **including the file bytes**,
+are written to IndexedDB along with each adapter's resume state.
+
+```tsx
+const [persistence] = React.useState(() => createIndexedDBPersistence())
+const uploader = useUploader({ adapter, persistence, restore: true })
+```
+
+After a reload, `restore` brings them back as `paused` with `pauseReason: "restored"`.
+Call `uploader.resume()` (or let users press resume) to continue.
+
+### Good to know
+
+- **Storage quotas.** Browsers allow IndexedDB to use a large share of free disk space,
+  but may evict it under pressure. Call `requestPersistentStorage()` to ask for durable
+  storage.
+- **Multiple tabs.** When Web Locks are available, each running upload holds a lock, and
+  `restore()` skips uploads another tab is already running.
+- **Expiry.** Records older than 7 days are dropped (`maxAge`).
+- **Server state.** Incomplete S3 multipart uploads are billed until aborted. Add a
+  bucket lifecycle rule to clean up abandoned ones.
+
+## Persistence for other stores
+
+Implement the three-method interface to persist elsewhere:
+
+```ts
+interface UploadPersistence {
+  load(): Promise<PersistedUpload[]>
+  save(record: PersistedUpload): Promise<void>
+  remove(id: string): Promise<void>
+}
+```

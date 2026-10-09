@@ -1,0 +1,8 @@
+{
+  "extends": "@workspace/typescript-config/library.json",
+  "compilerOptions": {
+    "lib": ["es2022", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": ["src", "test", "tsdown.config.ts", "vitest.config.ts"]
+}

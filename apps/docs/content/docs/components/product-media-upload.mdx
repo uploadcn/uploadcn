@@ -1,0 +1,63 @@
+---
+title: Product Media
+description: "Product photos for a storefront: the first image is the cover, the rest a gallery you reorder by dragging or with the keyboard."
+---
+
+<ComponentPreview name="product-media-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/product-media-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `button` component, then copy:
+
+<ComponentSource name="product-media-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ProductMediaUpload } from "@/components/product-media-upload"
+```
+
+```tsx
+<ProductMediaUpload
+  maxFiles={8}
+  onChange={(images) => setImages(images.map((image) => image.result))}
+/>
+```
+
+Every tile has keyboard-accessible buttons to make it the cover or move it, so reordering doesn't depend on drag and drop. Order is kept in the component and reported through `onChange`.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    maxFiles: { type: "number", default: "8" },
+    maxSize: { type: "number", default: "20 MB" },
+    onChange: {
+      type: "(images) => void",
+      description: "Images in display order; the first is the cover.",
+    },
+    className: { type: "string" },
+  }}
+/>

@@ -1,0 +1,133 @@
+---
+title: "@uploadcn/core"
+description: The framework-agnostic upload engine.
+---
+
+```npm
+npm install @uploadcn/core
+```
+
+Entry points: `@uploadcn/core` (engine, adapters, validation, utilities),
+`@uploadcn/core/image` (image processing), `@uploadcn/core/tus` (tus adapter, needs
+`tus-js-client`).
+
+## createUploader
+
+```ts
+function createUploader<TResult>(options: UploaderOptions<TResult>): Uploader<TResult>
+```
+
+### UploaderOptions
+
+<TypeTable
+  type={{
+    adapter: { type: "UploadAdapter<TResult>", required: true },
+    autoUpload: { type: "boolean", default: "true", description: "Queue files as soon as they're added." },
+    concurrency: { type: "number", default: "3", description: "Simultaneous uploads." },
+    retry: { type: "RetryOptions | false", default: "{ retries: 3, baseDelay: 1000, maxDelay: 30000, factor: 2, jitter: true }" },
+    duplicates: { type: '"reject" | "replace" | "allow"', default: '"reject"', description: "Same name, size, type and modification time." },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number" },
+    minSize: { type: "number" },
+    maxFiles: { type: "number" },
+    minFiles: { type: "number", description: "Checked with validateFileCount." },
+    image: { type: "{ minWidth?, minHeight?, maxWidth?, maxHeight? }" },
+    media: { type: "{ minDuration?, maxDuration? }", description: "Seconds." },
+    validate: { type: "FileValidator | FileValidator[]" },
+    transform: { type: "(file, { signal }) => File | Blob | Promise<File | Blob>" },
+    process: { type: "(item, { signal, result, setStatus, setMeta }) => Promise<TResult | void>", description: "Server-side work after upload: processing, scanning, ingestion." },
+    persistence: { type: "UploadPersistence", description: "e.g. createIndexedDBPersistence()." },
+    network: { type: "NetworkMonitor | false", description: "Defaults to navigator.onLine in browsers." },
+    progressInterval: { type: "number", default: "100", description: "Minimum ms between progress updates." },
+  }}
+/>
+
+### Uploader
+
+| Method | Description |
+| --- | --- |
+| `add(files, { meta?, start? })` | Validate, transform and enqueue. Resolves with the new items. |
+| `start(selector?)` | Queue idle items. |
+| `pause(selector?)` / `resume(selector?)` | Pause queued or resumable uploads. |
+| `cancel(selector?)` | Abort and clean up server state. |
+| `retry(selector?)` | Retry failed or cancelled items (resets attempts). |
+| `remove(selector?)` / `clearCompleted()` | Remove items. |
+| `update(id, { status?, result?, error?, meta? })` | Drive processing/scanning states from outside. |
+| `getState()` / `subscribe(listener)` | Immutable snapshot + change listener. |
+| `on(event, handler)` | Typed events; returns an unsubscribe function. |
+| `getItem(id)` / `canPause(item)` | Helpers. |
+| `restore()` | Load persisted uploads (paused). |
+| `setOptions(partial)` / `getOptions()` | Update options at runtime. |
+| `mount()` | Attach network listeners; returns a cleanup. |
+| `destroy()` | Abort everything and release resources. |
+
+A `selector` is an id, an array of ids, a predicate, or nothing (all items).
+
+## UploadItem
+
+<TypeTable
+  type={{
+    id: { type: "string" },
+    batchId: { type: "string", description: "Shared by files added together." },
+    file: { type: "File", description: "After transforms." },
+    originalFile: { type: "File", description: "As selected." },
+    "name / size / type": { type: "string / number / string" },
+    status: { type: "UploadStatus" },
+    progress: { type: "{ loaded, total, percent, speed, eta }" },
+    chunks: { type: "{ completed, total } | null" },
+    error: { type: "UploadError | null" },
+    issues: { type: "ValidationIssue[]", description: "Why a file was rejected." },
+    attempts: { type: "number" },
+    retryAt: { type: "number | null", description: "When the next automatic retry happens." },
+    pauseReason: { type: '"user" | "offline" | "restored" | null' },
+    result: { type: "TResult | undefined" },
+    meta: { type: "Record<string, unknown>" },
+    resumeState: { type: "unknown", description: "Adapter-owned, JSON-serializable." },
+    restored: { type: "boolean" },
+    "createdAt / startedAt / completedAt": { type: "number | null" },
+  }}
+/>
+
+## UploadError
+
+```ts
+new UploadError(message, { code, retryable?, status?, retryAfter?, details?, cause? })
+```
+
+`code`: `network`, `timeout`, `http`, `aborted`, `offline`, `validation`, `rejected`, `unknown`.
+Helpers: `isUploadError`, `toUploadError`, `httpError`, `isRetryableStatus`, `parseRetryAfter`.
+
+## Validation
+
+`validateFile`, `validateFiles`, `validateFileSync`, `validateFileCount`, `matchesAccept`,
+`parseAccept`, `toAcceptAttribute`, `getFileType`.
+
+## Adapters
+
+`s3Adapter`, `r2Adapter`, `presignedAdapter`, `multipartAdapter`, `httpAdapter`,
+`routeAdapter`, `mockAdapter`, and `tusAdapter` from `@uploadcn/core/tus`. The default
+transport is `xhrTransport` (XMLHttpRequest, for upload progress).
+
+## Persistence & capabilities
+
+`createIndexedDBPersistence({ name?, store?, maxAge? })`, `createMemoryPersistence()`,
+`getBackgroundCapabilities()`, `requestPersistentStorage()`.
+
+## OCR
+
+`ocrEndpoint(url, options?)` sends files to your OCR route; `tesseractOcr({ load, lang? })`
+reads them in the browser; `ocrProcess(recognize, { required?, filter? })` turns either into
+an uploader `process` step that stores the result on `item.meta.ocr`. All return or use
+`OcrResult`: `{ text, pages, confidence?, fields?, markdown?, provider }`. See
+[OCR](/docs/guides/ocr).
+
+## Image (`@uploadcn/core/image`)
+
+`transformImage(file, options)`, `compressImage(file, options)`, `imageTransform(options)`,
+`getImageDimensions(file)`, `getRotatedSize`, `getFitScale`, `canTransformImage`.
+
+## Utilities
+
+`formatBytes`, `formatSpeed`, `formatDuration`, `getUploadSummary`, `getPartSize`,
+`createChunks`, `withRetry`, `getRetryDelay`, `sleep`, `getDroppedFiles`,
+`getClipboardFiles`, `isFileDrag`, `getMediaDuration`, `KiB`, `MiB`, `GiB`.

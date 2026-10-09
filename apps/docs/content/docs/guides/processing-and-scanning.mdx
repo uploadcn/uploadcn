@@ -1,0 +1,61 @@
+---
+title: Processing & scanning
+description: Reflect server-side processing and malware scans in the UI.
+---
+
+<ComponentPreview name="scan-states" />
+
+A browser can't scan files for malware, and UploadCN doesn't pretend to. What it gives
+you is states your backend controls.
+
+<Callout title="Looking for built-in scanning?">
+  `createUploadRoute` can scan every upload with ClamAV, VirusTotal or your own service
+  before it completes. See [Virus scanning](/docs/guides/virus-scanning). This page covers
+  driving the states yourself, for background jobs and webhooks. For text recognition, see
+  [OCR](/docs/guides/ocr).
+</Callout>
+
+<Flow
+  label="Server-side states"
+  steps={["Uploading", "Processing", { label: "Scanning", highlight: true }, "Success"]}
+  branches={[{ from: "Scanning", to: "Rejected", note: "the scanner found a problem" }]}
+/>
+
+## With `process`
+
+`process` runs after the adapter stored the file. Move between states with `setStatus`;
+throw an `UploadError` with code `"rejected"` to reject.
+
+```ts
+import { UploadError } from "@uploadcn/core"
+
+<Upload
+  adapter={adapter}
+  process={async (item, { setStatus, signal, result }) => {
+    setStatus("scanning")
+    const verdict = await waitForScan(result.key, { signal }) // poll, SSE, or websocket
+    if (verdict === "infected") {
+      throw new UploadError("Malware detected", { code: "rejected" })
+    }
+    return { ...result, scanned: true } // becomes item.result
+  }}
+/>
+```
+
+## From outside (webhooks, realtime)
+
+When results arrive through another channel, drive the item directly:
+
+```ts
+uploader.update(id, { status: "scanning" })
+uploader.update(id, { status: "success", result })
+uploader.update(id, { status: "rejected", error: "Malware detected" })
+```
+
+## Server side
+
+For inline scanning, pass `scan` to `createUploadRoute` ([Virus scanning](/docs/guides/virus-scanning)).
+For background scanning, kick it off in `onUploadComplete` (enqueue a job, or rely on your
+storage provider's scanning integration) and expose the verdict to the client. Until a file is
+approved, keep it out of public access, for example, upload to a quarantine prefix and
+copy approved files to their final location.

@@ -1,0 +1,54 @@
+---
+title: Introduction
+description: Production-ready file uploads, built for shadcn.
+icon: BookOpen
+---
+
+UploadCN is a set of upload primitives, hooks and complete upload experiences for
+[shadcn/ui](https://ui.shadcn.com). It solves the part of file uploads that a dropzone
+doesn't: queues, concurrency, retries, chunked and resumable transfers, presigned
+S3/R2 flows, validation, image processing, server-side processing and scan states,
+offline recovery, persistence and accessibility.
+
+<ComponentPreview name="basic-upload" />
+
+## How it's distributed
+
+UploadCN follows the same split as shadcn's own components:
+
+| Layer | What it is | How you get it |
+| --- | --- | --- |
+| **UI components** | Styled, composable shadcn components and blocks | `npx shadcn add @uploadcn/…`, copied into your project |
+| **`@uploadcn/react`** | Hooks and headless, accessible primitives | npm dependency, installed by the CLI |
+| **`@uploadcn/core`** | The framework-agnostic upload engine and adapters | npm dependency, installed by the CLI |
+| **`@uploadcn/server`** | A Web-standard upload route for S3, R2 and friends | npm dependency of the route item |
+
+You own every class name and every line of markup. The parts that are easy to get
+subtly wrong, retry policies, multipart bookkeeping, request signing, live in small,
+tested packages you upgrade like any dependency, the same way shadcn's Drawer builds
+on `vaul` and its Toast on `sonner`.
+
+## What's in the box
+
+<Cards>
+  <Card title="Upload primitives" href="/docs/components/upload">
+    Dropzone, trigger, list, item, preview, progress, status and actions.
+  </Card>
+  <Card title="Complete experiences" href="/docs/components/file-upload">
+    File, image, avatar, gallery, video, audio, document, form and AI uploaders.
+  </Card>
+  <Card title="Hooks" href="/docs/hooks">
+    `useUpload`, `useDropzone`, `useImageCrop`, `useWindowDrop` and more.
+  </Card>
+  <Card title="Storage" href="/docs/adapters">
+    Presigned S3 and R2, multipart, tus, plain HTTP, or write your own adapter.
+  </Card>
+</Cards>
+
+## Principles
+
+- **Composable.** Use the parts you need; replace the rest. Every primitive supports a `render` prop.
+- **Honest.** No fake progress, no client-side "virus scanning", no background uploads the browser can't deliver.
+- **Accessible.** Keyboard-operable dropzones, real `progressbar`s and a polite live region announcing results.
+- **Storage-agnostic.** The UI doesn't care where bytes go. Adapters are plain objects.
+- **Framework-agnostic core.** Next.js, TanStack Start, Vite, React Router, the engine has no React or Next.js dependency.

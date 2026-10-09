@@ -1,0 +1,64 @@
+---
+title: Image Cropper
+description: A crop, zoom, rotate and flip dialog that outputs a processed image file.
+---
+
+<ComponentPreview name="image-crop" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/image-cropper
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="image-cropper" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ImageCropper } from "@/components/ui/image-cropper"
+import { useCropQueue } from "@/hooks/use-crop-queue"
+```
+
+```tsx
+const crops = useCropQueue()
+
+<Upload adapter={adapter} accept="image/*" transform={crops.request}>
+  …
+</Upload>
+<ImageCropper file={crops.current} aspect={1} onCrop={crops.complete} onCancel={crops.skip} />
+```
+
+The crop UI is [react-easy-crop](https://github.com/ValentinH/react-easy-crop) (touch, pinch, wheel and keyboard). Rendering uses `transformImage` from `@uploadcn/core/image`: EXIF orientation is applied and metadata is stripped. Install `use-crop-queue` to use it inside the upload pipeline.
+
+## Props
+
+<TypeTable
+  type={{
+    file: {
+      type: "File | null",
+      description: "The dialog is open while a file is set.",
+    },
+    onCrop: { type: "(file: File) => void" },
+    onCancel: { type: "() => void" },
+    aspect: { type: "number", default: "1", description: "Width / height." },
+    cropShape: { type: '"rect" | "round"', default: '"rect"' },
+    output: {
+      type: "ImageTransformOptions",
+      description: "Size, type and quality of the result (default max 2048px).",
+    },
+    title: { type: "ReactNode" },
+    description: { type: "ReactNode" },
+  }}
+/>

@@ -1,0 +1,37 @@
+---
+title: Mock
+description: Realistic uploads without a backend, for prototypes, tests and docs.
+---
+
+<ComponentPreview name="error-states" />
+
+`mockAdapter` simulates throughput, latency, chunks, failures and resume, so you can
+build and test every UI state before your backend exists.
+
+```ts
+import { MiB, UploadError, mockAdapter } from "@uploadcn/core"
+
+const adapter = mockAdapter({
+  speed: 2 * MiB,          // bytes per second
+  latency: 250,            // ms before the first byte
+  chunkSize: 5 * MiB,      // report chunk progress
+  resumable: true,         // pause continues from the last byte
+  failureRate: 0.1,        // 10% of attempts fail midway (retryable)
+  fail: ({ file, attempt }) =>
+    file.name.includes("forbidden")
+      ? new UploadError("Forbidden", { code: "http", status: 403 })
+      : null,
+})
+```
+
+Results look like `{ key, url: "mock://uploads/…" }`.
+
+## In tests
+
+The engine is plain TypeScript, so you can drive it from Vitest without a DOM:
+
+```ts
+const uploader = createUploader({ adapter: mockAdapter({ latency: 0, speed: 1e9 }), network: false })
+const [item] = await uploader.add([new File(["hello"], "a.txt")])
+await vi.waitFor(() => expect(uploader.getItem(item.id)?.status).toBe("success"))
+```

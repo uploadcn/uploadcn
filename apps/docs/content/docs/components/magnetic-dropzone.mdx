@@ -1,0 +1,68 @@
+---
+title: Magnetic Dropzone
+description: "A dropzone whose target is magnetic: it leans towards the pointer on hover, follows dragged files, and snaps back with a spring."
+---
+
+<ComponentPreview name="magnetic-dropzone" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/magnetic-dropzone
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="magnetic-dropzone" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { MagneticDropzone } from "@/components/magnetic-dropzone"
+```
+
+```tsx
+<MagneticDropzone strength={0.35} />
+```
+
+Pointer and `dragover` events feed a spring; it doesn't move at all with `prefers-reduced-motion`.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+    strength: {
+      type: "number",
+      default: "0.35",
+      description: "How strongly the target follows the pointer, 0–1.",
+    },
+    showQueue: { type: "boolean", default: "true" },
+  }}
+/>

@@ -1,0 +1,62 @@
+---
+title: Upload Island
+description: "A Dynamic Island for uploads: a pill that morphs between idle, uploading and done, and expands into the file list on hover."
+---
+
+<ComponentPreview name="upload-island" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-island
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="upload-island" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadIsland } from "@/components/upload-island"
+```
+
+```tsx
+<UploadIsland maxFiles={10} />
+```
+
+The pill is the dropzone itself, so it's both a button and a drop target. The shape animates with `motion`'s `layout`; content cross-fades with a blur. It expands on hover and on keyboard focus, and its accessible name always describes the progress.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

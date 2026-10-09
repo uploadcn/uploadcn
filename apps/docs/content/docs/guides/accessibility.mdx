@@ -1,0 +1,40 @@
+---
+title: Accessibility
+description: Keyboard, screen readers, focus and motion.
+---
+
+Accessibility is built into the primitives, so every block inherits it.
+
+## Keyboard
+
+- `UploadDropzone` is a focusable button: <kbd>Enter</kbd> or <kbd>Space</kbd> opens
+  the file picker. This is the alternative to drag and drop (WCAG 2.5.7 Dragging Movements).
+- `UploadTrigger` and every action are native `<button>`s.
+- The hidden file input is removed from the tab order so focus never lands on an
+  invisible element.
+- The image cropper supports arrow keys to move the crop area.
+
+## Screen readers
+
+- A polite live region announces files added, uploads finished, failures (with the
+  reason) and rejections.
+- `UploadProgress` is a `progressbar` with `aria-valuenow`, `aria-valuetext` and a label
+  naming the file. Indeterminate states omit `aria-valuenow`.
+- Action buttons have explicit names: “Pause upload of video.mp4”.
+- Items set `aria-busy` while work is in progress.
+- Every string is customizable through `messages` for localization.
+
+## Forms
+
+`UploadField` wires `aria-labelledby`, `aria-describedby`, `aria-invalid` and
+`aria-required`, and uses shadcn's `Field` for consistent error display.
+
+## Motion
+
+Animations are short, subtle, and disabled under `prefers-reduced-motion`
+(`motion-reduce:` variants). Status is never conveyed by motion alone.
+
+## Color
+
+Components use semantic tokens only (`destructive`, `muted-foreground`…), so contrast
+follows your theme in light and dark mode. Error states pair color with an icon and text.

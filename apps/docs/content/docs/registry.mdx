@@ -1,0 +1,128 @@
+---
+title: Registry, MCP & AI
+description: Use UploadCN from the shadcn CLI, the shadcn MCP server, and any coding agent.
+icon: Bot
+---
+
+UploadCN is a standard [shadcn registry](https://ui.shadcn.com/docs/registry). Everything
+that works with other registries, the CLI, search, the MCP server, `--diff`, works here.
+
+## Namespace
+
+```npm
+npx shadcn@latest registry add @uploadcn=https://uploadcn.dev/r/{style}/{name}.json
+```
+
+Then install by name:
+
+```npm
+npx shadcn@latest add @uploadcn/file-upload @uploadcn/upload-config
+```
+
+| URL                                         | What it serves                                  |
+| ------------------------------------------- | ----------------------------------------------- |
+| `/r/registry.json`                          | The index of every item (used by search and MCP) |
+| `/r/{name}.json`                            | An item, compiled for the default style (Nova)  |
+| `/r/{style}/{name}.json`                    | An item for your style, e.g. `/r/base-lyra/upload.json` |
+
+## Browse from the CLI
+
+```npm
+npx shadcn@latest search @uploadcn --query image
+```
+
+```npm
+npx shadcn@latest view @uploadcn/product-media-upload
+```
+
+`view` prints the files an item will add before you install it. After an update,
+`npx shadcn@latest add @uploadcn/upload --diff` shows what changed against your copy.
+
+## MCP server
+
+The [shadcn MCP server](https://ui.shadcn.com/docs/mcp) reads UploadCN's registry index,
+so your assistant can find, explain and install components.
+
+<Steps>
+<Step>
+
+### Add the namespace
+
+Run the `registry add` command above so `@uploadcn` is in `components.json`.
+
+</Step>
+<Step>
+
+### Install the MCP server
+
+<Tabs items={["Claude Code", "Cursor", "VS Code"]}>
+<Tab value="Claude Code">
+
+```npm
+npx shadcn@latest mcp init --client claude
+```
+
+</Tab>
+<Tab value="Cursor">
+
+```npm
+npx shadcn@latest mcp init --client cursor
+```
+
+</Tab>
+<Tab value="VS Code">
+
+```npm
+npx shadcn@latest mcp init --client vscode
+```
+
+</Tab>
+</Tabs>
+
+</Step>
+<Step>
+
+### Ask
+
+- “Show me the components in the @uploadcn registry”
+- “Add an image upload with crop from @uploadcn”
+- “Build a KYC page with @uploadcn/identity-verification that uploads to Cloudinary”
+
+</Step>
+</Steps>
+
+## llms.txt
+
+Agents that don't use MCP can read [`/llms.txt`](/llms.txt): what UploadCN is, how to set
+up the registry, every component with its install command, and the docs index.
+[`/llms-full.txt`](/llms-full.txt) has the full documentation in one file, and every docs
+page is available as Markdown from the **Copy Markdown** button.
+
+## Quality bar
+
+Every item in the registry:
+
+- passes `shadcn registry validate` and the registry-directory rules (flat structure, no
+  inline content in `registry.json`);
+- declares exactly the npm packages and registry items it imports;
+- is compiled for all 8 styles with no style classes left over;
+- passes `@shadcn/lint` theme checks;
+- renders, uploads and passes an accessibility scan in automated tests;
+- installs and type-checks in fresh Radix, Base UI and React Aria projects.
+
+## shadcn registry directory
+
+To list UploadCN in the [registry directory](https://ui.shadcn.com/docs/directory), add
+this entry to `apps/v4/registry/directory.json` in
+[shadcn-ui/ui](https://github.com/shadcn-ui/ui), run `pnpm validate:registries`, and open
+a pull request:
+
+```json title="apps/v4/registry/directory.json"
+{
+  "name": "@uploadcn",
+  "homepage": "https://uploadcn.dev",
+  "url": "https://uploadcn.dev/r/{style}/{name}.json",
+  "description": "Production-ready file uploads for shadcn/ui: dropzones, queues, resumable S3/R2/Cloudinary uploads, industry blocks and animated components for every style.",
+  "logo": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='var(--foreground)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='18' height='18' rx='5'/><path d='M12 16V8'/><path d='m8.5 11.5 3.5-3.5 3.5 3.5'/></svg>"
+}
+```

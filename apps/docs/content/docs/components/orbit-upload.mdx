@@ -1,0 +1,62 @@
+---
+title: Orbit
+description: "Files orbit the center while they upload, each with its own progress ring, and land in a tidy row when finished."
+---
+
+<ComponentPreview name="orbit-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/orbit-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="orbit-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { OrbitUpload } from "@/components/orbit-upload"
+```
+
+```tsx
+<OrbitUpload accept="image/*" />
+```
+
+Up to eight files orbit at once; the rest wait in the queue. Orbiting stops with reduced motion.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

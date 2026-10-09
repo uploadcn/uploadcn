@@ -1,0 +1,59 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: A minimal repository, a StackBlitz link, or exact steps. Issues with a reproduction get fixed first.
+    validations:
+      required: true
+  - type: input
+    id: item
+    attributes:
+      label: Component or package
+      placeholder: "@uploadcn/file-upload, @uploadcn/react@0.1.0, ..."
+    validations:
+      required: true
+  - type: dropdown
+    id: base
+    attributes:
+      label: shadcn base
+      options: [Radix, Base UI, React Aria, Not relevant]
+  - type: input
+    id: style
+    attributes:
+      label: shadcn style
+      placeholder: "nova, lyra, maia, ..."
+  - type: input
+    id: framework
+    attributes:
+      label: Framework and version
+      placeholder: "Next.js 16, Vite 7, TanStack Start, ..."
+  - type: dropdown
+    id: storage
+    attributes:
+      label: Storage adapter
+      options:
+        [
+          S3,
+          R2,
+          Cloudinary,
+          Local disk,
+          Custom adapter,
+          Browser only,
+          Not relevant,
+        ]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or errors
+      render: shell

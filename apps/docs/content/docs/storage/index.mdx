@@ -1,0 +1,76 @@
+---
+title: Choosing storage
+description: Every component works with every backend. Pick an adapter, configure it once, and switch any time.
+icon: HardDrive
+---
+
+UploadCN separates **where files go** from **what the UI looks like**. Components never
+talk to a storage provider directly; they hand files to an _adapter_. Change the adapter
+and every dropzone, button, gallery and animated component follows.
+
+## Pick an adapter
+
+| You want…                                       | Use                                                    | Server code               |
+| ----------------------------------------------- | ------------------------------------------------------ | ------------------------- |
+| Your own S3 / R2 / MinIO / Spaces / B2 bucket   | [`s3Adapter`](/docs/adapters/s3) + `@uploadcn/server`   | One route                 |
+| Cloudinary                                      | [`cloudinaryAdapter`](/docs/storage/cloudinary)         | None (unsigned) or one    |
+| Files on your own server's disk                 | [`s3Adapter`](/docs/storage/filesystem) + `@uploadcn/server/fs` | One route + a file handler |
+| Your existing upload endpoint                   | [`httpAdapter`](/docs/adapters/http)                    | Yours                     |
+| An SDK, Supabase, Firebase, Vercel Blob…       | [`createAdapter`](/docs/storage/custom)                 | Whatever the SDK needs    |
+| Only the UI, the form submits the files        | [`localAdapter`](/docs/storage/browser)                 | None                      |
+| Resumable uploads through a tus server          | [`tusAdapter`](/docs/adapters/tus)                      | A tus server              |
+
+## Configure it once
+
+Wrap your app in `UploadConfigProvider`. Every component below it uses that adapter, and
+any other defaults you set, like `maxSize` or `retry`.
+
+```tsx title="components/upload-config.tsx"
+"use client"
+
+import { cloudinaryAdapter } from "@uploadcn/core"
+import { UploadConfigProvider } from "@uploadcn/react"
+
+const adapter = cloudinaryAdapter({
+  cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!,
+  uploadPreset: "user-uploads",
+})
+
+export function UploadConfig({ children }: { children: React.ReactNode }) {
+  return (
+    <UploadConfigProvider adapter={adapter} maxSize={20_000_000}>
+      {children}
+    </UploadConfigProvider>
+  )
+}
+```
+
+`npx shadcn@latest add @uploadcn/upload-config` creates this file for you. Put
+`<UploadConfig>` in your root layout.
+
+### Overriding per component
+
+Props win over the provider, so a single component can upload somewhere else:
+
+```tsx
+<AvatarUpload adapter={s3Adapter({ endpoint: "/api/avatars" })} />
+```
+
+Providers nest, too: wrap an admin area in its own `UploadConfigProvider` to give it a
+different bucket or larger limits.
+
+<Callout title="No adapter?">
+  Without a provider or an `adapter` prop, components throw an error that tells you how
+  to configure one. There is no hidden default endpoint.
+</Callout>
+
+## What every adapter gets
+
+The engine handles the hard parts the same way for every backend:
+
+- **Queue and concurrency**: three uploads at a time by default.
+- **Retries**: network errors and 5xx/429 responses retry with backoff; 4xx don't.
+- **Cancel**: the adapter receives an `AbortSignal`.
+- **Progress**: the adapter reports bytes; the UI shows percent, speed and time left.
+- **Resume**: adapters that save state (S3 multipart, Cloudinary chunks, tus) continue
+  where they left off after a failure or a reload.

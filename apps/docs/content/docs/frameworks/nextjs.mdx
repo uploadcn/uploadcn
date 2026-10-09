@@ -1,0 +1,69 @@
+---
+title: Next.js
+description: App Router route handlers, server actions and layouts.
+---
+
+```npm
+npx shadcn@latest add @uploadcn/file-upload @uploadcn/upload-route
+```
+
+## Route handler
+
+`@uploadcn/server` uses Web standard `Request`/`Response`, so the route is one line:
+
+```ts title="app/api/upload/route.ts"
+import { createUploadRoute, s3Storage } from "@uploadcn/server"
+
+export const { POST } = createUploadRoute({
+  storage: s3Storage({
+    bucket: process.env.S3_BUCKET!,
+    region: process.env.S3_REGION!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+  }),
+})
+```
+
+It runs on the Node.js and Edge runtimes.
+
+## Client components
+
+Upload components use hooks, so they're Client Components. The registry files already
+include `"use client"`; render them from Server Components as usual:
+
+```tsx title="app/settings/page.tsx"
+import { AvatarUpload } from "@/components/avatar-upload"
+
+export default async function SettingsPage() {
+  const user = await getUser()
+  return <AvatarUpload src={user.image} />
+}
+```
+
+## Server actions
+
+Submit object keys rather than files, see [Forms](/docs/guides/forms#native-forms-and-server-actions).
+Next.js limits server action bodies to 1 MB by default, which is another reason to
+upload directly to storage.
+
+## App-wide uploads
+
+Put `UploadProvider` in `app/layout.tsx` so uploads survive navigation:
+
+```tsx title="app/layout.tsx"
+import { GlobalDropzone, UploadProvider, UploadQueuePanel } from "@/components/global-upload"
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <UploadProvider persist>
+          {children}
+          <GlobalDropzone />
+          <UploadQueuePanel />
+        </UploadProvider>
+      </body>
+    </html>
+  )
+}
+```

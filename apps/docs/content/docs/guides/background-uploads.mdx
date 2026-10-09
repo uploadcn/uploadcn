@@ -1,0 +1,48 @@
+---
+title: Background uploads
+description: What browsers can really do, and how UploadCN uses it.
+---
+
+<ComponentPreview name="background-upload" />
+
+## What's possible
+
+| Goal | Reality in browsers |
+| --- | --- |
+| Keep uploading while navigating your app | ✓ Keep the uploader in a layout-level provider |
+| Keep uploading in a background tab | ✓ Requests continue (timers may be throttled) |
+| Resume after a reload or crash | ✓ Persist files + resume state in IndexedDB |
+| Coordinate uploads across tabs | ✓ Web Locks |
+| Keep uploading after the tab closes | ✗ Not with JavaScript uploads |
+| Background Fetch API | Chromium only; requires a service worker and a single request body, so no multipart, signing per part, or progress per part |
+
+UploadCN implements the first four and reports capabilities honestly with
+`getBackgroundCapabilities()`.
+
+## App-level uploads
+
+Put `UploadProvider` in your root layout. Uploads keep running during client-side
+navigation, and any component can add files:
+
+```tsx title="app/layout.tsx"
+<UploadProvider persist>
+  {children}
+  <GlobalDropzone />
+  <UploadQueuePanel />
+</UploadProvider>
+```
+
+```tsx
+const { addFiles } = useUploadContext()
+```
+
+## Persistence
+
+`persist` stores queued files and their resume state in IndexedDB. After a reload or
+crash they come back paused and continue from the last finished part. See
+[Resumable uploads](/docs/guides/resumable-uploads).
+
+## Leaving the page
+
+`UploadProvider` warns before closing or reloading the tab while uploads run
+(`useUploadGuard`). Browsers show their own message; custom text isn't supported.

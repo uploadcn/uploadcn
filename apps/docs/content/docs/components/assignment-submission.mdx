@@ -1,0 +1,65 @@
+---
+title: Assignment Submission
+description: "Coursework hand-in, like a learning platform: attach work, turn it in, unsubmit to make changes. Shows the deadline and flags late work."
+---
+
+<ComponentPreview name="assignment-submission" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/assignment-submission
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `badge`, `button` components, then copy:
+
+<ComponentSource name="assignment-submission" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { AssignmentSubmission } from "@/components/assignment-submission"
+```
+
+```tsx
+<AssignmentSubmission
+  title="Essay: The Industrial Revolution"
+  due={new Date("2026-11-01T23:59:00")}
+  onSubmit={(files) => turnIn(files)}
+/>
+```
+
+The countdown renders on the client only, so server and client HTML always match.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    course: { type: "string" },
+    title: { type: "string" },
+    due: { type: "Date", description: "Required." },
+    points: { type: "number", default: "100" },
+    accept: { type: "string" },
+    onSubmit: { type: "(files) => void | Promise<void>" },
+    onUnsubmit: { type: "() => void" },
+    className: { type: "string" },
+  }}
+/>

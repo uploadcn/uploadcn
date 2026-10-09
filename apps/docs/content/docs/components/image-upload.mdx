@@ -1,0 +1,96 @@
+---
+title: Image Upload
+description: An image grid with optional cropping and client-side compression.
+---
+
+<ComponentPreview name="image-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/image-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="image-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ImageUpload } from "@/components/image-upload"
+```
+
+```tsx
+<ImageUpload crop compress maxWidth={2000} />
+```
+
+Cropping happens inside the upload pipeline: each image waits in the `validating` state while its crop dialog is open, and several images are cropped one after another. Skipping a crop uploads the original.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    crop: {
+      type: "boolean | { aspect?: number }",
+      default: "false",
+      description: "Open a crop dialog for every image.",
+    },
+    compress: {
+      type: "boolean",
+      default: "false",
+      description: "Resize and re-encode before uploading (WebP by default).",
+    },
+    maxWidth: {
+      type: "number",
+      default: "2048",
+      description: "Longest edge after compression or cropping.",
+    },
+    maxHeight: { type: "number", default: "2048" },
+    quality: {
+      type: "number",
+      default: "0.82",
+      description: "Encoder quality, 0 to 1.",
+    },
+    type: {
+      type: '"image/webp" | "image/jpeg" | "image/avif" | "image/png"',
+      description: "Output format.",
+    },
+    maxFiles: { type: "number", default: "12" },
+    maxSize: {
+      type: "number",
+      default: "20 MB",
+      description: "Max size of the original file.",
+    },
+    minWidth: {
+      type: "number",
+      description: "Minimum width of the original image.",
+    },
+    minHeight: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+  }}
+/>
+
+## Examples
+
+### Image crop
+
+<ComponentPreview name="image-crop" />
+
+### Image compression
+
+<ComponentPreview name="image-compression" />

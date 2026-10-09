@@ -1,0 +1,45 @@
+/* Radius presets from shadcn/create. "default" keeps the theme's radius. */
+html[data-radius="none"] {
+  --radius: 0rem;
+}
+html[data-radius="small"] {
+  --radius: 0.45rem;
+}
+html[data-radius="medium"] {
+  --radius: 0.625rem;
+}
+html[data-radius="large"] {
+  --radius: 0.875rem;
+}
+
+/* Lyra and Sera are square: their components use no radius at all. */
+.style-lyra,
+.style-sera {
+  --radius: 0rem;
+}
+
+/* Fonts from the selected preset (loaded with next/font in the layout). */
+.font-preset-geist {
+  --font-sans: var(--font-geist);
+}
+.font-preset-inter {
+  --font-sans: var(--font-inter);
+}
+.font-preset-figtree {
+  --font-sans: var(--font-figtree);
+}
+.font-preset-jetbrains-mono {
+  --font-sans: var(--font-jetbrains-mono);
+}
+.font-preset-noto-sans {
+  --font-sans: var(--font-noto-sans);
+}
+.font-preset-dm-sans {
+  --font-sans: var(--font-dm-sans);
+}
+.font-preset-outfit {
+  --font-sans: var(--font-outfit);
+}
+.font-preset-manrope {
+  --font-sans: var(--font-manrope);
+}

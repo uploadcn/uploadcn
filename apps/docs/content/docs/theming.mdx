@@ -1,0 +1,129 @@
+---
+title: Styles & theming
+description: Every component follows your shadcn design system, all 8 styles, every base color and theme, your icon library, font and radius.
+icon: Palette
+---
+
+shadcn/ui projects are built from a **preset**: a style (Vega, Nova, Maia, Lyra, Mira,
+Luma, Sera or Rhea), a base color, a theme, an icon library, a font and a radius. UploadCN
+components follow all of it. Click **Customize** in the header to switch the whole site,
+or paste a preset code from [ui.shadcn.com/create](https://ui.shadcn.com/create).
+
+## Styles
+
+Styles change shape and density, not just color: Lyra is square and compact, Maia is
+round and roomy, Sera is editorial with uppercase headings. UploadCN works the same way
+shadcn/ui does:
+
+- Parts are written with semantic classes, `cn-upload-dropzone`,
+  `cn-upload-item`, `cn-upload-card`…
+- Each style defines them, derived from the matching shadcn component: upload items
+  from **Item**, dropzones from **Empty**, cards from **Card**, modals from **Dialog**,
+  progress from **Progress**.
+- The registry compiles them per style, so your files contain plain Tailwind classes,
+  no runtime, no extra CSS.
+
+<div className="not-prose my-6 grid gap-2 sm:grid-cols-2">
+  <div className="rounded-xl border bg-card p-4 text-sm">
+    <p className="font-medium">Nova</p>
+    <code className="text-xs text-muted-foreground">rounded-lg text-sm gap-2.5 px-3 py-2.5</code>
+  </div>
+  <div className="rounded-xl border bg-card p-4 text-sm">
+    <p className="font-medium">Lyra</p>
+    <code className="text-xs text-muted-foreground">rounded-none text-xs gap-2.5 px-3 py-2.5</code>
+  </div>
+  <div className="rounded-xl border bg-card p-4 text-sm">
+    <p className="font-medium">Maia</p>
+    <code className="text-xs text-muted-foreground">rounded-2xl text-sm gap-3.5 px-4 py-3.5</code>
+  </div>
+  <div className="rounded-xl border bg-card p-4 text-sm">
+    <p className="font-medium">Sera</p>
+    <code className="text-xs text-muted-foreground">rounded-none uppercase tracking-wider headings</code>
+  </div>
+</div>
+
+<p className="text-sm text-muted-foreground">The same upload item, compiled for four styles.</p>
+
+### How the right style is installed
+
+Register the namespace with a `{style}` URL (the default in
+[Installation](/docs/installation)):
+
+```json title="components.json"
+{
+  "registries": {
+    "@uploadcn": "https://uploadcn.dev/r/{style}/{name}.json"
+  }
+}
+```
+
+The CLI replaces `{style}` with your project's style, like `base-lyra` or `radix-maia`,
+and downloads that build. With a plain `{name}.json` URL you get Nova.
+
+## Icons
+
+Components use `IconPlaceholder`, which names an icon in every library shadcn supports:
+
+```tsx
+<IconPlaceholder
+  lucide="UploadIcon"
+  tabler="IconUpload"
+  hugeicons="Upload01Icon"
+  phosphor="UploadSimpleIcon"
+  remixicon="RiUploadLine"
+/>
+```
+
+`shadcn add` rewrites it to an import from your `iconLibrary` and installs that package,
+the same mechanism shadcn/ui's own components use.
+
+## Colors, radius and fonts
+
+Components only use theme tokens (`primary`, `muted`, `border`, `destructive`, `chart-*`…),
+so base colors and themes just work. Radius comes from `--radius` (Lyra and Sera stay
+square, like shadcn's own components there), and text inherits your font.
+
+Components that need a dark surface, like
+[Upload Terminal](/docs/components/upload-terminal), use a `dark` scope, so they show
+your theme's dark palette rather than a fixed black.
+
+<Callout title="Contrast in every theme">
+  We scan the components with axe in every base color and theme, light and dark. All
+  pass WCAG AA except one property of two palettes: in light **Olive** and **Mist**,
+  shadcn's own `--muted-foreground` is 4.25:1 and 4.33:1 on white, just under 4.5:1,
+  for every component that uses it. If you need AA there, darken that one variable, e.g.
+  `--muted-foreground: oklch(0.52 0.031 107.3)`.
+</Callout>
+
+## Radix, Base UI and React Aria
+
+shadcn ships on three primitive libraries whose components don't share an API, React
+Aria's `Button` takes `isDisabled` and `onPress`, its `Table` is a collection, its
+`Dialog` has different parts. UploadCN only relies on what's common:
+
+- **Buttons** are native `<button>`s styled with your own `buttonVariants`.
+- **Dialogs** use the native `<dialog>` element; **popovers** the native Popover API.
+- **Tabs** and **tables** are plain, accessible HTML styled with your style's tokens.
+- Inputs, badges, cards and fields come from your `components/ui`.
+
+## Keeping it that way
+
+Every registry item is checked with [`@shadcn/lint`](https://github.com/shadcn-ui/lint)
+(`no-raw-colors`, `no-unknown-classes`, `no-arbitrary-values`, `require-static-classes`),
+compiled for all 8 styles, and installed into fresh Radix, Base UI and React Aria projects
+by the test suite. You can run the same lint rules on your copy:
+
+```js title="eslint.config.mjs"
+import { plugin as shadcn } from "@shadcn/lint"
+
+export default [
+  {
+    files: ["components/**/*.tsx"],
+    plugins: { shadcn },
+    rules: {
+      "shadcn/no-raw-colors": "error",
+      "shadcn/no-unknown-classes": "error",
+    },
+  },
+]
+```

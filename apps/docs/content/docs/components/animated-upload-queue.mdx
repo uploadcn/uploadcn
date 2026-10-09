@@ -1,0 +1,61 @@
+---
+title: Animated Queue
+description: "A queue in motion: rows expand in and collapse out, percentages count up smoothly, active bars shimmer and finished rows draw a check."
+---
+
+<ComponentPreview name="animated-upload-queue" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/animated-upload-queue
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="animated-upload-queue" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { AnimatedUploadQueue } from "@/components/animated-upload-queue"
+```
+
+```tsx
+<AnimatedUploadQueue maxFiles={20} />
+```
+
+Built from the same `UploadItem` parts as the static queue, wrapped in `AnimatePresence` for exit animations.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number" },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+  }}
+/>

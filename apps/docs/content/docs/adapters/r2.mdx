@@ -1,0 +1,54 @@
+---
+title: Cloudflare R2
+description: Upload directly to R2 through its S3-compatible API.
+---
+
+<ComponentPreview name="r2-presigned" />
+
+R2 implements the S3 API, so the browser code is identical to S3, `r2Adapter` is an
+alias of `s3Adapter`. The difference is on the server.
+
+## Server
+
+```ts title="app/api/upload/route.ts"
+import { createUploadRoute, r2Storage } from "@uploadcn/server"
+
+export const { POST } = createUploadRoute({
+  storage: r2Storage({
+    accountId: process.env.R2_ACCOUNT_ID!,
+    bucket: process.env.R2_BUCKET!,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    // A custom domain or r2.dev URL for reading objects:
+    publicUrl: process.env.R2_PUBLIC_URL,
+  }),
+})
+```
+
+`r2Storage` uses `https://<account>.r2.cloudflarestorage.com`, region `auto` and
+path-style URLs. For jurisdiction-restricted buckets pass `jurisdiction: "eu"`.
+
+`@uploadcn/server` signs with Web Crypto, so the same route runs on Cloudflare Workers.
+
+## CORS
+
+In the R2 dashboard, under **Settings → CORS policy**:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://your-app.com"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["content-type"],
+    "ExposeHeaders": ["ETag"]
+  }
+]
+```
+
+## Client
+
+```ts
+import { r2Adapter } from "@uploadcn/core"
+
+const adapter = r2Adapter({ endpoint: "/api/upload" })
+```

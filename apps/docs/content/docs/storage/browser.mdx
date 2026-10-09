@@ -1,0 +1,81 @@
+---
+title: Browser only
+description: Use the components purely as UI, files stay in the browser, and your form or code decides what to do with them.
+---
+
+```ts
+import { localAdapter } from "@uploadcn/core"
+```
+
+Sometimes you don't want an upload pipeline: a form that posts files to a server action,
+a desktop app, an offline draft, or a prototype. `localAdapter` "uploads" instantly
+without a network, and every component keeps working: previews, validation, cropping,
+compression, animations.
+
+<ComponentPreview name="ui-only-form" />
+
+## Submit files with a form
+
+Set `name` and `submit="file"` on `<Upload>`. The selected files are added to the form
+like a regular `<input type="file">`:
+
+```tsx title="app/new-post/page.tsx"
+import { localAdapter } from "@uploadcn/core"
+
+import { Upload, UploadDropzone, UploadQueue } from "@/components/ui/upload"
+
+const adapter = localAdapter()
+
+export default function NewPost() {
+  async function createPost(formData: FormData) {
+    "use server"
+    const files = formData.getAll("attachments") as File[]
+    // Save them wherever you like.
+  }
+
+  return (
+    <form action={createPost}>
+      <Upload adapter={adapter} name="attachments" submit="file">
+        <UploadDropzone />
+        <UploadQueue />
+      </Upload>
+      <button type="submit">Post</button>
+    </form>
+  )
+}
+```
+
+<Callout title="Transforms apply">
+  If you crop or compress images before upload, the form submits the processed file,
+  so the server receives the smaller version.
+</Callout>
+
+## Read files in code
+
+The result of each item carries the `File` and a preview URL:
+
+```tsx
+<FileUpload
+  adapter={localAdapter()}
+  onSuccess={(item) => {
+    item.result.file // File
+    item.result.url  // blob: URL for previews
+  }}
+/>
+```
+
+## Keep files across reloads
+
+With `store: "indexeddb"`, files are also saved in the browser. Read them back later,
+even after a reload, with `getLocalFile`:
+
+```ts
+import { getLocalFile, localAdapter } from "@uploadcn/core"
+
+const adapter = localAdapter({ store: "indexeddb" })
+
+// later
+const file = await getLocalFile(item.id)
+```
+
+Remove them with `deleteLocalFile(id)` when you're done.

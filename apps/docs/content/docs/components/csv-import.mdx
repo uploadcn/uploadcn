@@ -1,0 +1,68 @@
+---
+title: CSV Import
+description: "Bulk import from a spreadsheet. The CSV is read in the browser, required columns are checked and the first rows previewed, before anything uploads."
+---
+
+<ComponentPreview name="csv-import" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/csv-import
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and the shadcn `badge`, `button`, `table` components, then copy:
+
+<ComponentSource name="csv-import" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { CsvImport } from "@/components/csv-import"
+```
+
+```tsx
+<CsvImport
+  columns={[
+    { key: "email", label: "Email", required: true },
+    { key: "name", label: "Name" },
+  ]}
+  onSuccess={(item, preview) => startImportJob(item.result, preview.rowCount)}
+/>
+```
+
+Uploading only starts when the user clicks **Import**, and stays disabled while required columns are missing. Parsing is a small RFC 4180 parser, swap in Papa Parse for exotic files.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    columns: {
+      type: "CsvColumn[]",
+      default: "a product catalog",
+      description:
+        "`{ key, label?, required? }`. Headers match case- and space-insensitively.",
+    },
+    maxSize: { type: "number", default: "50 MB" },
+    onSuccess: { type: "(item, preview) => void" },
+    className: { type: "string" },
+  }}
+/>

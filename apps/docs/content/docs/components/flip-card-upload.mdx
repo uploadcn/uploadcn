@@ -1,0 +1,62 @@
+---
+title: Flip Card
+description: "A single-file card that flips over when the upload finishes, showing the file on its back. Flip it again to upload another."
+---
+
+<ComponentPreview name="flip-card-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/flip-card-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="flip-card-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { FlipCardUpload } from "@/components/flip-card-upload"
+```
+
+```tsx
+<FlipCardUpload title="Upload your contract" accept="application/pdf" />
+```
+
+The hidden face is `inert`, so keyboard focus never lands on the side you can't see.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    title: { type: "string", default: '"Upload your file"' },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

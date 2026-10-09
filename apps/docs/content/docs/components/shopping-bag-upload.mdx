@@ -1,0 +1,60 @@
+---
+title: Shopping Bag
+description: "For storefronts and marketplaces: product photos drop into a shopping bag, the counter bounces, and the bag fills as they upload."
+---
+
+<ComponentPreview name="shopping-bag-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/shopping-bag-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="shopping-bag-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ShoppingBagUpload } from "@/components/shopping-bag-upload"
+```
+
+```tsx
+<ShoppingBagUpload maxFiles={12} />
+```
+
+Pair it with [Product Media](/docs/components/product-media-upload) to order the photos afterwards.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    maxFiles: { type: "number", default: "12" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

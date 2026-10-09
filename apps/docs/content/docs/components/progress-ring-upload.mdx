@@ -1,0 +1,62 @@
+---
+title: Progress Ring
+description: "One big ring for the whole batch: the percentage counts up in the middle, ticks mark each file, and a check draws itself when everything is done."
+---
+
+<ComponentPreview name="progress-ring-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/progress-ring-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="progress-ring-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ProgressRingUpload } from "@/components/progress-ring-upload"
+```
+
+```tsx
+<ProgressRingUpload />
+```
+
+The ring and the number share one `useSpring`, so they never drift apart. The caption under the ring is an `aria-live` region with files, bytes and time left.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

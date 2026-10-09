@@ -1,0 +1,60 @@
+---
+title: Image Reveal
+description: "A single-image uploader where the photo develops as it uploads, blurred and grey at first, revealed sharp behind a scan line that follows the progress."
+---
+
+<ComponentPreview name="image-reveal-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/image-reveal-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="image-reveal-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ImageRevealUpload } from "@/components/image-reveal-upload"
+```
+
+```tsx
+<ImageRevealUpload onSuccess={(item) => save(item.result)} />
+```
+
+The reveal is a `clip-path` driven by the upload percent. The preview is a local object URL, so it appears instantly. With reduced motion the scan line and flash are skipped.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    maxSize: { type: "number", default: "20 MB" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

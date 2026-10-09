@@ -1,0 +1,61 @@
+---
+title: Avatar Upload
+description: A profile photo uploader with round cropping and a progress ring.
+---
+
+<ComponentPreview name="avatar-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/avatar-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="avatar-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { AvatarUpload } from "@/components/avatar-upload"
+```
+
+```tsx
+<AvatarUpload
+  src={user.image}
+  onChange={(item) => updateUser({ image: item?.result?.url ?? null })}
+/>
+```
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    src: { type: "string | null", description: "The current avatar URL." },
+    size: {
+      type: "number",
+      default: "512",
+      description: "Output size in pixels (square, WebP).",
+    },
+    onChange: {
+      type: "(item | null) => void",
+      description: "Called after upload, or with null on removal.",
+    },
+    name: { type: "string", description: "Form field name." },
+  }}
+/>

@@ -1,0 +1,7 @@
+{
+  "extends": "@workspace/typescript-config/react-library.json",
+  "compilerOptions": {
+    "types": []
+  },
+  "include": ["src", "test", "tsdown.config.ts", "vitest.config.ts"]
+}

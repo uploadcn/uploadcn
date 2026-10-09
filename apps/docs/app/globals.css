@@ -1,0 +1,58 @@
+@import "./theme.css";
+@import "fumadocs-ui/css/shadcn.css";
+@import "fumadocs-ui/css/preset.css";
+
+/* Design system: shadcn styles, base colors, themes, fonts and radius,
+ * switched live from the site header (see components/design). */
+@import "./themes.css";
+@import "./design.css";
+@import "../styles/generated/shadcn-ui.css" layer(components);
+@import "../registry/styles/style-vega.css" layer(components);
+@import "../registry/styles/style-nova.css" layer(components);
+@import "../registry/styles/style-maia.css" layer(components);
+@import "../registry/styles/style-lyra.css" layer(components);
+@import "../registry/styles/style-mira.css" layer(components);
+@import "../registry/styles/style-luma.css" layer(components);
+@import "../registry/styles/style-sera.css" layer(components);
+@import "../registry/styles/style-rhea.css" layer(components);
+
+@source "../registry";
+@source "../components";
+@source "../content";
+@source "../examples";
+
+/* Docs chrome, tuned to match shadcn/ui's docs. */
+#nd-sidebar {
+  background-color: var(--background);
+}
+
+#nd-sidebar p {
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+/* Compact items, like the shadcn/ui docs sidebar. */
+#nd-sidebar a {
+  min-height: 30px;
+  padding-block: 0.25rem;
+  border: 1px solid transparent;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+#nd-sidebar a[data-active="true"] {
+  border-color: var(--accent);
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.prose :where(code):not(:where(pre *, [class~="not-prose"] *)) {
+  border: 0;
+  border-radius: 0.375rem;
+  background-color: var(--muted);
+  padding: 0.15rem 0.35rem;
+  font-size: 0.85em;
+}

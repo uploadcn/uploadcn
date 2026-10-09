@@ -1,0 +1,64 @@
+---
+title: Rocket
+description: "A launch pad for deploys and build artifacts: the rocket climbs with the upload, its engine burns while bytes move and it lifts off when every file lands."
+---
+
+<ComponentPreview name="rocket-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/rocket-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="rocket-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { RocketUpload } from "@/components/rocket-upload"
+```
+
+```tsx
+<RocketUpload accept={[".zip", ".tar.gz"]} />
+```
+
+Altitude is a spring driven by the overall percent, so the climb is smooth even when progress arrives in bursts. The status line in the corner is an `aria-live` region with bytes and time left. Smoke and engine flicker are skipped with reduced motion.
+
+It uploads through your [adapter](/docs/storage) like every other component, so it works with S3, R2, Cloudinary, local disk or your own API.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      description:
+        "Where files go. Defaults to the UploadConfigProvider adapter.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+  }}
+/>

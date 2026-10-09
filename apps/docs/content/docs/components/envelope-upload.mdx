@@ -1,0 +1,63 @@
+---
+title: Envelope
+description: "Send documents like mail: files slide into the envelope, the flap closes, and a seal stamps on when everything has arrived."
+---
+
+<ComponentPreview name="envelope-upload" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/envelope-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="envelope-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { EnvelopeUpload } from "@/components/envelope-upload"
+```
+
+```tsx
+<EnvelopeUpload recipient="Acme Legal" accept="application/pdf" />
+```
+
+The flap is a 3D `rotateX` and the seal uses a spring. With reduced motion, states change instantly.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number", description: "Bytes." },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+    className: { type: "string" },
+    recipient: { type: "string", default: '"Acme Legal"' },
+  }}
+/>

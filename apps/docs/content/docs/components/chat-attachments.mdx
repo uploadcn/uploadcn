@@ -1,0 +1,65 @@
+---
+title: Chat Attachments
+description: An AI chat composer with attachments via click, drag and paste.
+---
+
+<ComponentPreview name="chat-attachment" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/chat-attachments
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="chat-attachments" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { ChatAttachments } from "@/components/chat-attachments"
+```
+
+```tsx
+<ChatAttachments
+  onSend={async ({ text, attachments }) => {
+    await sendMessage({ text, files: attachments.map((item) => item.result) })
+  }}
+/>
+```
+
+Images are downscaled to 1568px WebP before upload (the size vision models work with), which makes attachments upload several times faster. Paste is scoped to the composer.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    onSend: {
+      type: "({ text, attachments }) => void | Promise<void>",
+      description: "Called on Enter or the send button, once uploads finished.",
+    },
+    placeholder: { type: "string" },
+    accept: {
+      type: "string[]",
+      default: "images, PDF, text, Markdown, CSV, JSON, DOCX",
+    },
+    maxFiles: { type: "number", default: "10" },
+    maxSize: { type: "number", default: "25 MB" },
+    disabled: { type: "boolean" },
+  }}
+/>

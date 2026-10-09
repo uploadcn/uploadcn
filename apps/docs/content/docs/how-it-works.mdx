@@ -1,0 +1,79 @@
+---
+title: How it works
+description: The engine, the lifecycle and the layers on top.
+icon: Workflow
+---
+
+## Layers
+
+<ArchitectureDiagram />
+
+The **engine** (`createUploader`) owns all state. React bindings subscribe to it with
+`useSyncExternalStore`, so list items re-render only when their own item changes.
+
+## Lifecycle
+
+<Flow
+  label="Upload lifecycle"
+  steps={[
+    "Select",
+    "Validate",
+    "Transform",
+    { label: "Queue", note: "concurrency" },
+    { label: "Upload", note: "progress · retry", highlight: true },
+    "Process",
+    "Scan",
+    "Complete",
+  ]}
+  branches={[
+    { from: "Upload", to: "Paused", note: "pause, offline, resume continues from the last part" },
+    { from: "Upload", to: "Queue", note: "automatic retry with backoff on network and 5xx errors" },
+    { from: "Any step", to: "Cancelled", note: "cancel aborts the request and cleans up multipart state" },
+  ]}
+/>
+
+1. **Select**: picker, drop (folders expanded), paste, or `uploader.add(files)`.
+2. **Validate**: type, size, count, duplicates, image dimensions, media duration and
+   your own (async) validators. Failing files become `rejected` with readable issues.
+3. **Transform**: optional `transform(file)`: crop, compress, convert.
+4. **Queue**: `autoUpload` queues immediately; otherwise items wait as `idle` until
+   `start()`. At most `concurrency` uploads run at once.
+5. **Upload**: the adapter moves the bytes and reports progress. Retryable failures
+   are retried with exponential backoff; resumable adapters can pause and resume.
+6. **Process / Scan**: optional `process(item)` reflects server-side work.
+7. **Complete**: `success`, or `error` / `rejected` with a reason.
+
+## States
+
+| Status | Meaning |
+| --- | --- |
+| `validating` | Running validators and transforms |
+| `idle` | Ready, waiting for `start()` |
+| `queued` | Waiting for a free slot (or for a retry delay, see `retryAt`) |
+| `uploading` | Bytes are moving |
+| `paused` | Paused by the user, by a network loss (`pauseReason: "offline"`) or restored after a reload |
+| `processing` | Stored; the server is working on it |
+| `scanning` | Stored; a malware scan is running on the server |
+| `success` | Done |
+| `error` | Failed; can be retried |
+| `cancelled` | Cancelled by the user; can be retried |
+| `rejected` | Refused by validation or by the server; final |
+
+## Errors
+
+Every failure is an `UploadError` with a `code` (`network`, `timeout`, `http`,
+`offline`, `validation`, `rejected`, …), an optional HTTP `status`, and a `retryable`
+flag. Timeouts, `408`, `425`, `429` and `5xx` are retried; other `4xx` are not.
+`Retry-After` headers are honored.
+
+## Events
+
+```ts
+uploader.on("success", ({ item }) => {})
+uploader.on("error", ({ item, error }) => {})
+uploader.on("retry", ({ item, error, delay }) => {})
+uploader.on("complete", ({ items }) => {}) // queue drained
+```
+
+All events: `add`, `reject`, `start`, `progress`, `pause`, `resume`, `retry`,
+`success`, `error`, `cancel`, `remove`, `statuschange`, `complete`, `online`.

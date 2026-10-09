@@ -1,0 +1,61 @@
+---
+title: Upload Stack
+description: Uploads stacked like notifications. Hover or focus the stack to fan it out; the newest file stays on top.
+---
+
+<ComponentPreview name="upload-stack" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-stack
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) and `motion`, then copy:
+
+```npm
+npm install motion
+```
+
+<ComponentSource name="upload-stack" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadStack } from "@/components/upload-stack"
+```
+
+```tsx
+<UploadStack maxFiles={10} />
+```
+
+Collapsed cards beyond the third are `inert`, so keyboard users never land on a hidden card; focusing the stack expands it.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    uploader: {
+      type: "Uploader",
+      description: "An uploader from `useUploader`, instead of options.",
+    },
+    accept: { type: "string | string[]" },
+    maxSize: { type: "number" },
+    maxFiles: { type: "number" },
+    onSuccess: { type: "(item) => void" },
+  }}
+/>

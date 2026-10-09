@@ -1,0 +1,58 @@
+---
+title: Image uploads
+description: Preview, crop, rotate, resize and compress images in the browser.
+---
+
+<ComponentPreview name="image-crop" />
+
+All processing uses native browser APIs (`createImageBitmap` and canvas) from
+`@uploadcn/core/image`, no image library is shipped.
+
+## Compress before upload
+
+Plug `imageTransform` into any uploader. Non-images, GIFs and SVGs pass through untouched.
+
+```ts
+import { imageTransform } from "@uploadcn/core/image"
+
+<Upload adapter={adapter} accept="image/*" transform={imageTransform({ maxWidth: 2000, quality: 0.82, type: "image/webp" })} />
+```
+
+`compressImage` returns the original when re-encoding wouldn't make it smaller.
+
+## Crop
+
+`ImageUpload crop` and `AvatarUpload` open the [Image Cropper](/docs/components/image-cropper)
+inside the upload pipeline. To crop programmatically:
+
+```ts
+import { transformImage } from "@uploadcn/core/image"
+
+const output = await transformImage(file, {
+  crop: { x: 120, y: 40, width: 800, height: 800 },
+  rotate: 90,
+  flipHorizontal: false,
+  maxWidth: 512,
+  type: "image/webp",
+  quality: 0.9,
+})
+```
+
+## EXIF and privacy
+
+- Orientation from EXIF is applied before any other operation, so phone photos are never sideways.
+- Re-encoding strips metadata, including **GPS location**: which is usually what you want
+  for user uploads. Upload the original file if you need to keep it.
+
+## Validation
+
+```tsx
+<Upload accept="image/*" image={{ minWidth: 400, minHeight: 400, maxWidth: 8000 }} />
+```
+
+## Previews
+
+`UploadPreview` and `useFilePreview(file, { thumbnailSize })` downscale large images once
+for display, so a gallery of 40 photos doesn't decode 40 full-resolution images.
+
+<ComponentPreview name="image-compression" />

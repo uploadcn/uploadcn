@@ -1,0 +1,78 @@
+---
+title: Global Upload
+description: An app-wide upload provider, a drop-anywhere overlay and a background queue panel.
+---
+
+<ComponentPreview name="full-window-dropzone" />
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/global-upload
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install [Upload](/docs/components/upload) first, then copy:
+
+<ComponentSource name="global-upload" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import {
+  GlobalDropzone,
+  UploadProvider,
+  UploadQueuePanel,
+} from "@/components/global-upload"
+```
+
+```tsx
+// app/layout.tsx
+<UploadProvider persist>
+  {children}
+  <GlobalDropzone />
+  <UploadQueuePanel />
+</UploadProvider>
+```
+
+Any component under the provider can add files with `useUploadContext().addFiles(files)`. Uploads keep running during client-side navigation because the provider stays mounted. `GlobalDropzone` ignores drops already handled by an inner dropzone.
+
+## Props
+
+<TypeTable
+  type={{
+    adapter: {
+      type: "UploadAdapter",
+      default: 's3Adapter({ endpoint: "/api/upload" })',
+      description: "Where files go.",
+    },
+    persist: {
+      type: "boolean | UploadPersistence",
+      default: "false",
+      description: "Keep uploads in IndexedDB and restore them after reloads.",
+    },
+    guard: {
+      type: "boolean",
+      default: "true",
+      description: "Warn before leaving the page during uploads.",
+    },
+    "...options": {
+      type: "UploaderOptions",
+      description: "Any uploader option (accept, maxSize, concurrency...).",
+    },
+  }}
+/>
+
+## Examples
+
+### Background uploads
+
+<ComponentPreview name="background-upload" />
