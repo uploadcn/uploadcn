@@ -1,6 +1,6 @@
 {
   "name": "@uploadcn/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Framework-agnostic upload engine: queueing, concurrency, retries, chunked and resumable uploads, validation and storage adapters.",
   "keywords": [
     "upload",
