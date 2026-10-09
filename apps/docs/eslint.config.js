@@ -4,6 +4,8 @@ import { nextJsConfig } from "@workspace/eslint-config/next-js"
 /** @type {import("eslint").Linter.Config[]} */
 export default [
   ...nextJsConfig,
+  // Registry build scratch: written and deleted while `registry:build` runs.
+  { ignores: [".registry-build/**"] },
   {
     // Design-system rules for everything users install or copy: components
     // must use theme tokens so they work with every shadcn theme.
