@@ -210,9 +210,12 @@ describe("storage resolution", () => {
     expect(provider.calls).toEqual([])
   })
 
-  it("explains how to configure storage when no adapter is set", () => {
-    vi.spyOn(console, "error").mockImplementation(() => {})
-    expect(() => render(<Upload />)).toThrow(/UploadConfigProvider/)
+  it("renders without an adapter and explains how to configure storage", () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
+    expect(() => render(<Upload />)).not.toThrow()
+    expect(error).toHaveBeenCalledWith(
+      expect.stringMatching(/UploadConfigProvider/)
+    )
   })
 
   it("UploadConfetti works inside any Upload", async () => {

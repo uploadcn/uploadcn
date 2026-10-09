@@ -57,11 +57,19 @@ describe("UploadConfigProvider", () => {
     await waitFor(() => expect(results).toEqual(["prop"]))
   })
 
-  it("explains how to configure storage when there is no adapter", () => {
+  it("renders without an adapter and explains how to configure storage", async () => {
+    const logged: unknown[] = []
     const error = console.error
-    console.error = () => {}
+    console.error = (message: unknown) => logged.push(message)
     try {
-      expect(() => render(<Upload.Root />)).toThrow(/UploadConfigProvider/)
+      const failures: string[] = []
+      const { container } = render(
+        <Upload.Root onError={(_item, e) => failures.push(e.message)} />
+      )
+      expect(logged.join(" ")).toMatch(/UploadConfigProvider/)
+      selectFiles(container, [file("a.txt")])
+      await waitFor(() => expect(failures).toHaveLength(1))
+      expect(failures[0]).toMatch(/UploadConfigProvider/)
     } finally {
       console.error = error
     }
