@@ -3,7 +3,7 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "registry:build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "!.next/dev/**"],
       "env": [
@@ -39,7 +39,12 @@
       ]
     },
     "registry:build": {
-      "inputs": ["registry/**", "registry.json"],
+      "inputs": [
+        "registry/**",
+        "registry.json",
+        "scripts/**",
+        "styles/shadcn/**"
+      ],
       "outputs": ["public/r/**"]
     },
     "lint": {
@@ -80,7 +85,7 @@
       "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "registry:build"],
       "outputs": []
     },
     "dev": {

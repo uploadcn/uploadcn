@@ -35,10 +35,7 @@ jobs:
       - name: Format
         run: pnpm format:check
 
-      # The registry tests read the compiled registry in apps/docs/public/r.
-      - name: Build registry
-        run: pnpm --filter docs registry:build
-
+      # Turbo runs the docs registry build first (test and build depend on it).
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build
 
