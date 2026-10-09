@@ -1,9 +1,10 @@
 import {
   type UploadAdapter,
-  type UploadError,
   type UploadItem,
   type Uploader,
   type UploaderOptions,
+  UploadError,
+  createAdapter,
   createUploader,
 } from "@uploadcn/core"
 import * as React from "react"
@@ -55,6 +56,17 @@ const NO_ADAPTER =
   "See https://uploadcn.dev/docs/storage"
 
 /**
+ * Stands in when no adapter is configured: the component still renders
+ * (and pre-renders), and every upload fails right away with the setup hint.
+ */
+const missingAdapter = createAdapter(
+  async () => {
+    throw new UploadError(NO_ADAPTER, { code: "unknown", retryable: false })
+  },
+  { name: "missing" }
+)
+
+/**
  * Creates an upload engine bound to the component's lifetime. The instance
  * is stable; option changes (including a new adapter) apply on the next
  * render without recreating it.
@@ -68,8 +80,13 @@ export function useUploader<TResult = unknown>(
     ...defaults,
     ...stripUndefined(own),
   } as UploaderOptions<TResult>
-  if (!engine.adapter) throw new Error(NO_ADAPTER)
+  const configured = engine.adapter != null
+  if (!configured) engine.adapter = missingAdapter as UploadAdapter<TResult>
   const [uploader] = React.useState(() => createUploader<TResult>(engine))
+
+  React.useEffect(() => {
+    if (!configured) console.error(NO_ADAPTER)
+  }, [configured])
 
   const callbacksRef = React.useRef(callbacks)
   React.useEffect(() => {
