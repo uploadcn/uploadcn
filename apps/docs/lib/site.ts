@@ -9,4 +9,10 @@ export const siteConfig = {
     npm: "https://www.npmjs.com/org/uploadcn",
   },
   namespace: "@uploadcn",
+  author: {
+    name: "Hanzala",
+    url: "https://hanzala.me",
+    github: "https://github.com/hanzala267",
+    handle: "hanzala267",
+  },
 }
