@@ -15,6 +15,56 @@ export function docsMarkdown(slugs: string[]) {
   return `/llms.mdx/docs/${[...slugs, "content.md"].join("/")}`
 }
 
+/**
+ * The meta description shown in search results. Docs subtitles are short on
+ * purpose, so short ones get a second sentence, by section, that says what
+ * the page is for in the words people search with.
+ */
+export function seoDescription(page: {
+  slugs: string[]
+  title: string
+  description?: string
+}) {
+  const base = page.description ?? siteConfig.description
+  if (base.length >= 110) return base
+  const [section, slug] = page.slugs
+  // Longest first; the first one that keeps the snippet within ~160
+  // characters (where Google truncates) wins.
+  const more: Record<string, string[]> = {
+    components: [
+      `A free shadcn/ui file upload component for React. Install it with npx shadcn add @uploadcn/${slug}.`,
+      "A free shadcn/ui file upload component for React.",
+      "A shadcn/ui upload component.",
+    ],
+    adapters: [
+      "Upload adapters for UploadCN, open-source file upload components for shadcn/ui and React.",
+      "File uploads for shadcn/ui and React.",
+    ],
+    storage: [
+      "Storage setup for UploadCN, open-source file upload components for shadcn/ui and React.",
+      "File uploads for shadcn/ui and React.",
+    ],
+    guides: [
+      "A guide to file uploads in React with UploadCN and shadcn/ui components.",
+      "File uploads in React with shadcn/ui.",
+    ],
+    frameworks: [
+      `File upload components for shadcn/ui in ${page.title}, with UploadCN.`,
+      "File uploads for shadcn/ui.",
+    ],
+    reference: [
+      "API reference for UploadCN, file uploads for shadcn/ui and React.",
+      "File uploads for shadcn/ui and React.",
+    ],
+  }
+  const options = more[section ?? ""] ?? [
+    "UploadCN: open-source file upload components for shadcn/ui, React and Next.js.",
+    "File uploads for shadcn/ui and React.",
+  ]
+  const fit = options.find((extra) => base.length + 1 + extra.length <= 160)
+  return fit ? `${base} ${fit}` : base
+}
+
 export const keywords = [
   "shadcn",
   "shadcn/ui",
@@ -114,9 +164,13 @@ export function docsJsonLd(page: {
   install?: string
 }) {
   const url = absoluteUrl(page.url)
-  const trail = [
+  // Google requires an `item` URL on every breadcrumb, so sidebar groups
+  // without a page of their own ("Components", "Guides"…) are left out.
+  const trail: { name: string; url: string }[] = [
     { name: "Docs", url: "/docs" },
-    ...page.crumbs,
+    ...page.crumbs.flatMap((crumb) =>
+      crumb.url ? [crumb as { name: string; url: string }] : []
+    ),
     { name: page.title, url: page.url },
   ]
   return {
@@ -154,7 +208,7 @@ export function docsJsonLd(page: {
           "@type": "ListItem",
           position: index + 1,
           name: crumb.name,
-          ...(crumb.url ? { item: absoluteUrl(crumb.url) } : {}),
+          item: absoluteUrl(crumb.url),
         })),
       },
     ],

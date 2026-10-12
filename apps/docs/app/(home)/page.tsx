@@ -98,7 +98,15 @@ const LIFECYCLE: {
   },
 ]
 
+const homeTitle = "UploadCN: shadcn File Upload Components for React"
+const homeDescription =
+  "Free, open-source shadcn/ui file upload components for React and Next.js: drag and drop dropzones, image and avatar uploads, progress, S3 and R2."
+
 export const metadata: Metadata = {
+  title: { absolute: homeTitle },
+  description: homeDescription,
+  openGraph: { title: homeTitle, description: homeDescription },
+  twitter: { title: homeTitle, description: homeDescription },
   alternates: {
     canonical: "/",
     types: { "text/plain": "/llms.txt" },
