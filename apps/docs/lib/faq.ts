@@ -14,6 +14,16 @@ export const faq = [
       "Run npx shadcn@latest add @uploadcn/file-upload in a project set up with shadcn/ui. The CLI copies the component into components/ and installs its dependencies. Every block has its own install command on its docs page and on the examples page.",
   },
   {
+    question: "Is there a drag and drop file upload component for shadcn/ui?",
+    answer:
+      "Yes. UploadCN's File Upload is a shadcn/ui dropzone with drag and drop and click to browse, plus a file list with previews, progress, retry and remove. Install it with npx shadcn@latest add @uploadcn/file-upload, or pick one of 58 blocks such as image, avatar, gallery, document and video uploads.",
+  },
+  {
+    question: "Does UploadCN work with Next.js, Vite and TanStack Start?",
+    answer:
+      "Yes. The components are plain React, so they work in any React app set up with the shadcn CLI: Next.js (App Router), Vite, React Router, TanStack Start and Astro. The upload route ships for Next.js and TanStack Start, and the adapters work with any backend.",
+  },
+  {
     question: "Which storage does UploadCN work with?",
     answer:
       "Any storage. Amazon S3, Cloudflare R2, MinIO, Backblaze B2 and other S3-compatible buckets use presigned URLs, so files go straight from the browser to the bucket. Cloudinary, local disk, tus servers, your own endpoint or any SDK (Supabase, Firebase, Vercel Blob) work through adapters, and localAdapter keeps files in the browser for forms.",

@@ -20,7 +20,7 @@ import { JsonLd } from "@/components/json-ld"
 import { getMDXComponents } from "@/components/mdx"
 import { Button } from "@/components/ui/button"
 import { getPageInfo } from "@/lib/search-index"
-import { docsImage, docsJsonLd, docsMarkdown } from "@/lib/seo"
+import { docsImage, docsJsonLd, docsMarkdown, seoDescription } from "@/lib/seo"
 import { siteConfig } from "@/lib/site"
 import { source } from "@/lib/source"
 
@@ -147,8 +147,14 @@ export async function generateMetadata(
   const title =
     info?.kind === "component"
       ? `${page.data.title}: shadcn upload component`
-      : page.data.title
-  const description = page.data.description ?? siteConfig.description
+      : page.slugs[0] === "frameworks"
+        ? `${page.slugs[1] === "react" ? "React" : page.data.title} file uploads with shadcn`
+        : page.data.title
+  const description = seoDescription({
+    slugs: page.slugs,
+    title: page.data.title,
+    description: page.data.description,
+  })
   const image = {
     url: docsImage(page.slugs),
     width: 1200,
