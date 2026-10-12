@@ -36,9 +36,12 @@ small, tested npm packages.
 In a project set up with the shadcn CLI:
 
 ```bash
-npx shadcn@latest registry add @uploadcn=https://uploadcn.dev/r/{style}/{name}.json
 npx shadcn@latest add @uploadcn/file-upload @uploadcn/upload-config
 ```
+
+No setup step: UploadCN is listed in the official
+[shadcn registry directory](https://ui.shadcn.com/docs/directory), so the CLI knows the
+`@uploadcn` namespace and installs every component in your project's style.
 
 ```tsx
 import { FileUpload } from "@/components/file-upload"

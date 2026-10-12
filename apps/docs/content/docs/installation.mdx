@@ -21,25 +21,6 @@ npx shadcn@latest init
 </Step>
 <Step>
 
-### Register the `@uploadcn` namespace
-
-This adds UploadCN to the `registries` in your `components.json`, so you can install
-items by name.
-
-```npm
-npx shadcn@latest registry add @uploadcn=https://uploadcn.dev/r/{style}/{name}.json
-```
-
-<Callout title="What this changes">
-  It adds `"@uploadcn": "https://uploadcn.dev/r/{style}/{name}.json"` to the
-  `registries` field of `components.json`. The CLI fills in `{style}` from your
-  project (`base-nova`, `radix-lyra`, `aria-maia`…), so every component arrives in
-  your style. Icons are converted to your `iconLibrary` on install.
-</Callout>
-
-</Step>
-<Step>
-
 ### Add a component
 
 ```npm
@@ -48,6 +29,14 @@ npx shadcn@latest add @uploadcn/file-upload
 
 The CLI copies `components/ui/upload.tsx` and `components/file-upload.tsx` into your
 project and installs `@uploadcn/react` and `@uploadcn/core`.
+
+<Callout title="No setup needed">
+  UploadCN is listed in the official [shadcn registry
+  directory](https://ui.shadcn.com/docs/directory), so the CLI already knows the
+  `@uploadcn` namespace. Every component arrives in your project's style
+  (`base-nova`, `radix-lyra`, `aria-maia`…), with icons converted to your
+  `iconLibrary`.
+</Callout>
 
 </Step>
 <Step>
@@ -181,9 +170,19 @@ each component page (the **Manual** tab).
 npm install @uploadcn/core @uploadcn/react
 ```
 
-## Without the namespace
+## Pin the registry (optional)
 
-You can also install any item by URL:
+To record the registry in your project, for example so a team mirror or CI resolves
+it the same way, add it to `components.json`:
+
+```npm
+npx shadcn@latest registry add @uploadcn=https://uploadcn.dev/r/{style}/{name}.json
+```
+
+## Install by URL
+
+You can also install any item by URL. Plain URLs are compiled for the default style
+(Nova); add your style to the path, like `/r/base-lyra/upload.json`, for another one.
 
 ```npm
 npx shadcn@latest add https://uploadcn.dev/r/upload.json
