@@ -4,6 +4,7 @@ import * as React from "react"
 import { CheckIcon, CopyIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { trackInstallCopy } from "@/lib/analytics"
 
 export function InstallCommand({
   command,
@@ -24,6 +25,7 @@ export function InstallCommand({
       type="button"
       onClick={() => {
         void navigator.clipboard.writeText(command).then(() => setCopied(true))
+        trackInstallCopy(command, "home")
       }}
       className={cn(
         "group inline-flex h-10 max-w-full items-center gap-3 rounded-full border bg-background px-4 font-mono text-[0.8rem] shadow-xs transition-colors outline-none hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50",

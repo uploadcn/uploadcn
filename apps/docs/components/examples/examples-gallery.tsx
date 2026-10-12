@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { trackInstallCopy } from "@/lib/analytics"
 import Link from "next/link"
 import {
   ArrowUpRightIcon,
@@ -60,9 +61,10 @@ function CopyCommand({ command, title }: { command: string; title: string }) {
   return (
     <button
       type="button"
-      onClick={() =>
+      onClick={() => {
         void navigator.clipboard.writeText(command).then(() => setCopied(true))
-      }
+        trackInstallCopy(command, "examples")
+      }}
       aria-label={copied ? "Copied" : `Copy install command for ${title}`}
       title={command}
       className={cn(
