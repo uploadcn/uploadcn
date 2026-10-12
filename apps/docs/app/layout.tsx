@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next"
+import { GoogleAnalytics } from "@next/third-parties/google"
 import { RootProvider } from "fumadocs-ui/provider/next"
 import {
   DM_Sans,
@@ -14,6 +15,7 @@ import {
 
 import "./globals.css"
 
+import { CopyTracker } from "@/components/analytics/copy-tracker"
 import { DemoUploadConfig } from "@/components/demo-upload-config"
 import {
   CommandMenu,
@@ -83,6 +85,8 @@ const presetFonts = [
 
 const designScript = `(${applyStoredDesignScript.toString()})(${JSON.stringify(DESIGN_STORAGE_KEY)}, ${JSON.stringify(DESIGN_CLASS_PREFIXES)}, ${JSON.stringify(DEFAULT_DESIGN)}, ${JSON.stringify(BASE_COLORS)})`
 const defaults = designAttributes(DEFAULT_DESIGN)
+/** Google Analytics 4 measurement ID (G-…), set in Netlify's environment. */
+const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -163,6 +167,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </RootProvider>
         </SearchEntriesProvider>
       </body>
+      {/* Only when the ID is set (production), so dev and forks send nothing. */}
+      {gaId ? (
+        <>
+          <GoogleAnalytics gaId={gaId} />
+          <CopyTracker />
+        </>
+      ) : null}
     </html>
   )
 }
