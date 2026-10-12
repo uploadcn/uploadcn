@@ -44,8 +44,8 @@ Server extras: virus scanning in the upload route (\`@uploadcn/server/scan\`: Cl
 
 ## Use the registry
 
-- Add the namespace (style-aware): \`npx shadcn@latest registry add @uploadcn=${url("/r/{style}/{name}.json")}\`
-- Install a component: \`npx shadcn@latest add @uploadcn/file-upload\`
+- Install a component: \`npx shadcn@latest add @uploadcn/file-upload\` (no setup needed: \`@uploadcn\` is in the official shadcn registry directory, and the CLI installs in the project's style)
+- Optional, to pin the registry in components.json: \`npx shadcn@latest registry add @uploadcn=${url("/r/{style}/{name}.json")}\`
 - Registry index (all items, for agents and the shadcn MCP server): ${url("/r/registry.json")}
 - Item JSON: ${url("/r/{name}.json")} (Nova) or ${url("/r/{style}/{name}.json")} (e.g. \`base-lyra\`)
 - MCP: run \`npx shadcn@latest mcp init --client claude\`, then ask "show me the components in the @uploadcn registry"

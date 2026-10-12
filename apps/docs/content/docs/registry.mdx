@@ -4,19 +4,23 @@ description: Use UploadCN from the shadcn CLI, the shadcn MCP server, and any co
 icon: Bot
 ---
 
-UploadCN is a standard [shadcn registry](https://ui.shadcn.com/docs/registry). Everything
+UploadCN is a standard [shadcn registry](https://ui.shadcn.com/docs/registry), listed in
+the official [shadcn registry directory](https://ui.shadcn.com/docs/directory). Everything
 that works with other registries, the CLI, search, the MCP server, `--diff`, works here.
 
 ## Namespace
 
-```npm
-npx shadcn@latest registry add @uploadcn=https://uploadcn.dev/r/{style}/{name}.json
-```
-
-Then install by name:
+The shadcn CLI already knows `@uploadcn`, so you can install by name with no setup:
 
 ```npm
 npx shadcn@latest add @uploadcn/file-upload @uploadcn/upload-config
+```
+
+To pin the registry in your project's `components.json` (useful for team mirrors and CI),
+add it explicitly:
+
+```npm
+npx shadcn@latest registry add @uploadcn=https://uploadcn.dev/r/{style}/{name}.json
 ```
 
 | URL                                         | What it serves                                  |
@@ -46,9 +50,10 @@ so your assistant can find, explain and install components.
 <Steps>
 <Step>
 
-### Add the namespace
+### Pin the namespace
 
-Run the `registry add` command above so `@uploadcn` is in `components.json`.
+Run the `registry add` command above so `@uploadcn` is in `components.json` and the MCP
+server lists it with your project's registries.
 
 </Step>
 <Step>
@@ -112,18 +117,6 @@ Every item in the registry:
 
 ## shadcn registry directory
 
-To list UploadCN in the [registry directory](https://ui.shadcn.com/docs/directory), add
-this entry to `apps/v4/registry/directory.json` in
-[shadcn-ui/ui](https://github.com/shadcn-ui/ui), run `pnpm validate:registries`, and open
-a pull request:
-
-```json title="apps/v4/registry/directory.json"
-{
-  "name": "@uploadcn",
-  "homepage": "https://uploadcn.dev",
-  "url": "https://uploadcn.dev/r/{style}/{name}.json",
-  "description": "Production-ready file uploads: dropzones, queues, resumable S3 and R2 uploads, and 58 blocks for every style.",
-  "author": "Hanzala",
-  "logo": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6.5' fill='var(--foreground)'/><g fill='none' stroke='var(--background)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' transform='translate(-0.75 0)'><path d='M7 9v4a5 5 0 0 0 10 0V6'/><path d='m14 9 3-3 3 3'/></g></svg>"
-}
-```
+UploadCN is listed in the [shadcn registry directory](https://ui.shadcn.com/docs/directory)
+as `@uploadcn`. shadcn's [Registry Health](https://ui.shadcn.com/docs/registry/health)
+monitor checks the index every hour and installs a sample item with the CLI every week.
