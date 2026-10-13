@@ -116,8 +116,7 @@ export default function SponsorsPage() {
                 key={tier.id}
                 className={cn(
                   "flex flex-col gap-4 rounded-xl border bg-background p-6",
-                  tier.featured &&
-                    "border-foreground/30 shadow-sm"
+                  tier.featured && "border-foreground/30 shadow-sm"
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
