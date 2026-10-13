@@ -1,0 +1,117 @@
+---
+title: Tigris
+description: Upload straight from the browser to Tigris, globally distributed S3-compatible object storage.
+---
+
+[Tigris](https://www.tigrisdata.com) speaks the S3 API, so UploadCN's S3 adapter and upload
+route work with it unchanged: files go from the browser straight to your Tigris bucket,
+large files upload in parallel parts and resume after a refresh, and your server only
+signs requests.
+
+<Callout title="Tested with Tigris">
+  Single uploads, multipart uploads, part listing (used to resume), browser CORS
+  preflights, reads and deletes all pass against a Tigris bucket with the settings below.
+</Callout>
+
+<Steps>
+<Step>
+
+### Create a bucket and an access key
+
+In the Tigris console, create a bucket, then an access key. Give the key the **Editor**
+role on that bucket: a key without a role on the bucket gets `Access Denied` on every
+upload.
+
+</Step>
+<Step>
+
+### Add the upload route
+
+```npm
+npx shadcn@latest add @uploadcn/upload-route
+```
+
+This creates `app/api/upload/route.ts` (or use `@uploadcn/upload-route-tanstack` for
+TanStack Start). It reads the standard S3 variables, so pointing it at Tigris is only
+configuration:
+
+```bash title=".env.local"
+S3_ENDPOINT=https://t3.storage.dev
+S3_REGION=auto
+S3_BUCKET=my-bucket
+S3_ACCESS_KEY_ID=tid_…
+S3_SECRET_ACCESS_KEY=tsec_…
+```
+
+</Step>
+<Step>
+
+### Point your components at it
+
+```npm
+npx shadcn@latest add @uploadcn/upload-config
+```
+
+```tsx title="components/upload-config.tsx"
+"use client"
+
+import { s3Adapter } from "@uploadcn/core"
+import { UploadConfigProvider } from "@uploadcn/react"
+
+const adapter = s3Adapter({ endpoint: "/api/upload" })
+
+export function UploadConfig({ children }: { children: React.ReactNode }) {
+  return <UploadConfigProvider adapter={adapter}>{children}</UploadConfigProvider>
+}
+```
+
+Wrap your root layout in `<UploadConfig>`, and every UploadCN component uploads to Tigris.
+
+</Step>
+</Steps>
+
+## Writing the route yourself
+
+If you'd rather not use the scaffolded file:
+
+```ts title="app/api/upload/route.ts"
+import { createUploadRoute, s3Storage } from "@uploadcn/server"
+
+export const { POST } = createUploadRoute({
+  storage: s3Storage({
+    endpoint: "https://t3.storage.dev",
+    region: "auto",
+    bucket: process.env.S3_BUCKET!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+  }),
+})
+```
+
+With a custom `endpoint`, `s3Storage` signs path-style URLs
+(`https://t3.storage.dev/<bucket>/<key>`). Keep that default for Tigris: browser
+preflight requests to path-style URLs return the CORS headers uploads need.
+
+## CORS
+
+Browsers upload directly to Tigris, so the bucket must allow your site's origin to `PUT`
+and must expose the `ETag` header, which multipart uploads read to finish. In our tests a
+new bucket allowed this for every origin. To limit uploads to your own domains, set a CORS
+rule on the bucket in the Tigris console, or with the S3 `PutBucketCors` API:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://your-app.com"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["content-type"],
+    "ExposeHeaders": ["ETag"]
+  }
+]
+```
+
+## Large files
+
+Files above the multipart threshold upload in parallel parts through Tigris' S3 multipart
+API, and the route lists stored parts so an interrupted upload resumes where it stopped.
+See [Multipart & chunked](/docs/adapters/multipart) for part size and concurrency.
