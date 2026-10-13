@@ -20,7 +20,14 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/@uploadcn/react"><img src="https://img.shields.io/npm/v/@uploadcn/react?label=%40uploadcn%2Freact&color=111" alt="npm version" /></a>
   <a href="https://github.com/uploadcn/uploadcn/actions/workflows/ci.yml"><img src="https://github.com/uploadcn/uploadcn/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://ui.shadcn.com/docs/directory"><img src="https://img.shields.io/badge/shadcn-registry%20directory-111" alt="Listed in the shadcn registry directory" /></a>
+  <a href="https://www.npmjs.com/package/@uploadcn/react"><img src="https://img.shields.io/npm/dm/@uploadcn/react?color=111&label=downloads" alt="npm downloads" /></a>
+  <a href="https://github.com/uploadcn/uploadcn/stargazers"><img src="https://img.shields.io/github/stars/uploadcn/uploadcn?style=flat&color=111" alt="GitHub stars" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-111" alt="MIT license" /></a>
+</p>
+
+<p align="center">
+  If UploadCN saves you time, <a href="https://github.com/uploadcn/uploadcn">give it a ⭐ on GitHub</a>. It helps other developers find it.
 </p>
 
 ---
@@ -128,6 +135,21 @@ pnpm check            # lint, typecheck, test and build everything
 The docs include a real upload route (`apps/docs/app/api/upload`). Without credentials it
 uses in-memory development storage. To upload to a real bucket, copy
 `apps/docs/.env.example` to `apps/docs/.env.local` and fill in the S3 or R2 variables.
+
+## Sponsors
+
+UploadCN is free and open source. Sponsors keep it moving and get their logo in front of
+developers choosing how their app uploads files. See the tiers on
+[uploadcn.dev/sponsors](https://uploadcn.dev/sponsors).
+
+<!-- sponsors:start -->
+<!-- sponsors:end -->
+
+## Star history
+
+<a href="https://star-history.com/#uploadcn/uploadcn&Date">
+  <img src="https://api.star-history.com/svg?repos=uploadcn/uploadcn&type=Date" alt="Star history of uploadcn/uploadcn" width="600" />
+</a>
 
 ## Contributing
 

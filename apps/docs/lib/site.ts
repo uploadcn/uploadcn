@@ -7,7 +7,14 @@ export const siteConfig = {
   links: {
     github: "https://github.com/uploadcn/uploadcn",
     npm: "https://www.npmjs.com/org/uploadcn",
+    directory: "https://ui.shadcn.com/docs/directory",
   },
+  /**
+   * Where "Become a sponsor" goes. Point it at the Open Collective page once
+   * it exists; until then sponsors reach the maker directly.
+   */
+  sponsorUrl: "https://hanzala.me/#contact",
+  repo: "uploadcn/uploadcn",
   namespace: "@uploadcn",
   author: {
     name: "Hanzala",

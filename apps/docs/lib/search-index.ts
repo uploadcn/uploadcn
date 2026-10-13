@@ -30,6 +30,13 @@ export function getSearchIndex(): SearchEntry[] {
       description: "Every component and block, live.",
       kind: "page",
     },
+    {
+      title: "Sponsor",
+      url: "/sponsors",
+      group: "Pages",
+      description: "Sponsorship tiers and placements.",
+      kind: "page",
+    },
   ]
 
   const walk = (nodes: Node[], group: string) => {

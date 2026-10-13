@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button"
 import { getPageInfo } from "@/lib/search-index"
 import { docsImage, docsJsonLd, docsMarkdown, seoDescription } from "@/lib/seo"
 import { siteConfig } from "@/lib/site"
+import { AdSlot } from "@/components/ads/ad-slot"
+import { SponsorCard } from "@/components/sponsors/sponsor-card"
 import { source } from "@/lib/source"
 
 export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
@@ -38,7 +40,12 @@ export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
     <DocsPage
       toc={page.data.toc}
       full={page.data.full}
-      tableOfContent={{ style: "clerk" }}
+      tableOfContent={{
+        style: "clerk",
+        // Above the fold (ad networks require it), then the sponsor invite.
+        header: <AdSlot className="mb-4" />,
+        footer: <SponsorCard />,
+      }}
       tableOfContentPopover={{ style: "clerk" }}
       breadcrumb={{ enabled: false }}
       footer={{ enabled: false }}

@@ -21,6 +21,7 @@ import { ComponentGallery } from "@/components/home/component-gallery"
 import { InstallCommand } from "@/components/home/install-command"
 import { Showcase } from "@/components/home/showcase"
 import { SiteFooter } from "@/components/home/site-footer"
+import { SponsorLogos } from "@/components/sponsors/sponsor-logos"
 import { Button } from "@/components/ui/button"
 import { ExampleRenderer } from "@/examples/components"
 import { examples } from "@/examples/meta"
@@ -147,13 +148,13 @@ export default function HomePage() {
         />
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-7 px-4 pt-20 pb-16 text-center sm:pt-28">
           <Link
-            href="/docs/guides/ocr"
+            href="/docs/registry"
             className="group inline-flex items-center gap-2 rounded-full border bg-background py-1 ps-1 pe-3 text-xs font-medium shadow-xs transition-colors hover:bg-muted/60"
           >
             <span className="rounded-full bg-primary px-2 py-0.5 text-primary-foreground">
               New
             </span>
-            OCR and virus scanning
+            Now in the official shadcn registry directory
             <ArrowRightIcon className="size-3 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <h1 className="max-w-4xl text-5xl leading-[1.05] font-semibold tracking-tighter text-balance sm:text-6xl lg:text-7xl">
@@ -386,6 +387,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <SponsorLogos placement="home" className="px-4 py-16" />
 
       <SiteFooter />
     </main>
