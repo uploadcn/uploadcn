@@ -13,6 +13,7 @@ and every dropzone, button, gallery and animated component follows.
 | You want…                                       | Use                                                    | Server code               |
 | ----------------------------------------------- | ------------------------------------------------------ | ------------------------- |
 | Your own S3 / R2 / MinIO / Spaces / B2 bucket   | [`s3Adapter`](/docs/adapters/s3) + `@uploadcn/server`   | One route                 |
+| Tigris (S3-compatible, globally distributed)    | [`s3Adapter`](/docs/storage/tigris) + `@uploadcn/server` | One route                 |
 | Cloudinary                                      | [`cloudinaryAdapter`](/docs/storage/cloudinary)         | None (unsigned) or one    |
 | Files on your own server's disk                 | [`s3Adapter`](/docs/storage/filesystem) + `@uploadcn/server/fs` | One route + a file handler |
 | Your existing upload endpoint                   | [`httpAdapter`](/docs/adapters/http)                    | Yours                     |

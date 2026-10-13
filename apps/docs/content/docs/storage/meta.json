@@ -1,4 +1,4 @@
 {
   "title": "Storage",
-  "pages": ["index", "cloudinary", "filesystem", "browser", "custom"]
+  "pages": ["index", "cloudinary", "tigris", "filesystem", "browser", "custom"]
 }
