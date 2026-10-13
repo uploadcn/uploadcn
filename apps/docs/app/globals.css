@@ -56,3 +56,37 @@
   padding: 0.15rem 0.35rem;
   font-size: 0.85em;
 }
+
+/* Carbon ads (components/ads/ad-slot.tsx), styled with the site's tokens. */
+.ad-slot #carbonads {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 0.5rem);
+  background-color: var(--background);
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+.ad-slot #carbonads a {
+  color: var(--foreground);
+  text-decoration: none;
+}
+.ad-slot #carbonads .carbon-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.ad-slot #carbonads .carbon-img img {
+  display: block;
+  max-width: 100%;
+  border-radius: 0.375rem;
+}
+.ad-slot #carbonads .carbon-poweredby {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}

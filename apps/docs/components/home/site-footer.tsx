@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { Logo } from "@/components/logo"
+import { SponsorLogos } from "@/components/sponsors/sponsor-logos"
 import { siteConfig } from "@/lib/site"
 
 const linkClass =
@@ -22,6 +23,7 @@ const columns = [
       { label: "GitHub", href: siteConfig.links.github },
       { label: "npm", href: siteConfig.links.npm },
       { label: "Releases", href: `${siteConfig.links.github}/releases` },
+      { label: "Sponsor", href: "/sponsors" },
       {
         label: "Contributing",
         href: `${siteConfig.links.github}/blob/main/CONTRIBUTING.md`,
@@ -94,6 +96,7 @@ export function SiteFooter() {
           ))}
         </nav>
       </div>
+      <SponsorLogos placement="footer" className="border-t px-4 py-8" />
       <div className="border-t">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-5 text-xs text-muted-foreground">
           <p>

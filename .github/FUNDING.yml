@@ -1,0 +1,3 @@
+# Shows a "Sponsor" button on the repository.
+# Add `open_collective: <slug>` once the Open Collective page exists.
+custom: ["https://uploadcn.dev/sponsors"]
