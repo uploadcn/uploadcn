@@ -88,6 +88,10 @@ Cloudinary's chunked upload API. Each finished chunk is saved as resume state, s
 (or a reload with [persistence](/docs/guides/resumable-uploads)) continues from the last
 chunk instead of starting over.
 
+Cloudinary accepts a signature for one hour, so with signed uploads `sign` may be called
+again: when an upload resumes, or between chunks of an upload that runs that long. Your
+signing route already handles it; it just signs a new timestamp.
+
 ## The result
 
 Each successful item's `result` is Cloudinary's upload response:

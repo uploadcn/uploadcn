@@ -94,7 +94,8 @@
     },
     "test": {
       "dependsOn": ["^build", "registry:build"],
-      "outputs": []
+      "outputs": [],
+      "env": ["S3_COMPAT"]
     },
     "dev": {
       "dependsOn": ["^build"],

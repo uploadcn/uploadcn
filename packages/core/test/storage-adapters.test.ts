@@ -97,7 +97,11 @@ describe("cloudinaryAdapter", () => {
       sign: (params) => {
         signed++
         expect(params).toEqual({})
-        return { signature: "sig", timestamp: 1, apiKey: "key" }
+        return {
+          signature: "sig",
+          timestamp: Math.floor(Date.now() / 1000),
+          apiKey: "key",
+        }
       },
       transport,
     })
@@ -125,6 +129,83 @@ describe("cloudinaryAdapter", () => {
     expect(requests.map((r) => r.headers?.["content-range"])).toEqual([
       "bytes 5000000-9999999/12000000",
       "bytes 10000000-11999999/12000000",
+    ])
+  })
+
+  // Cloudinary accepts a signature for one hour after its timestamp.
+  const chunked = (
+    sign: () => { signature: string; timestamp: number; apiKey: string }
+  ) => {
+    const { transport, requests } = fakeTransport((request) => {
+      const done = (request.headers?.["content-range"] ?? "").endsWith(
+        `-${12_000_000 - 1}/12000000`
+      )
+      return {
+        status: 200,
+        body: JSON.stringify(done ? { public_id: "big" } : { done: false }),
+      }
+    })
+    const adapter = cloudinaryAdapter({
+      cloudName: "demo",
+      chunkSize: 5_000_000,
+      sign,
+      transport,
+    })
+    return { adapter, requests }
+  }
+
+  it("re-signs when resuming with a signature older than an hour", async () => {
+    const now = Math.floor(Date.now() / 1000)
+    let signs = 0
+    const { adapter, requests } = chunked(() => {
+      signs++
+      return { signature: "fresh", timestamp: now, apiKey: "key" }
+    })
+    const file = createFile("video.mp4", 12_000_000, "video/mp4")
+    const stale = {
+      signature: "stale",
+      timestamp: now - 2 * 60 * 60,
+      apiKey: "key",
+    }
+    const { ctx } = context(file, {
+      resumeState: { uploadId: "u-1", offset: 5_000_000, signature: stale },
+    })
+    await adapter.upload(ctx)
+    expect(signs).toBe(1)
+    expect(requests.map((r) => (r.body as FormData).get("signature"))).toEqual([
+      "fresh",
+      "fresh",
+    ])
+    // Same Cloudinary upload, continued from the saved offset.
+    expect(
+      new Set(requests.map((r) => r.headers?.["x-unique-upload-id"]))
+    ).toEqual(new Set(["u-1"]))
+  })
+
+  it("keeps a resumed signature that is still valid", async () => {
+    let signs = 0
+    const { adapter, requests } = chunked(() => {
+      signs++
+      return {
+        signature: "new",
+        timestamp: Math.floor(Date.now() / 1000),
+        apiKey: "key",
+      }
+    })
+    const file = createFile("video.mp4", 12_000_000, "video/mp4")
+    const recent = {
+      signature: "recent",
+      timestamp: Math.floor(Date.now() / 1000) - 600,
+      apiKey: "key",
+    }
+    const { ctx } = context(file, {
+      resumeState: { uploadId: "u-2", offset: 5_000_000, signature: recent },
+    })
+    await adapter.upload(ctx)
+    expect(signs).toBe(0)
+    expect(requests.map((r) => (r.body as FormData).get("signature"))).toEqual([
+      "recent",
+      "recent",
     ])
   })
 })

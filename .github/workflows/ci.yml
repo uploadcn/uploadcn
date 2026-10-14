@@ -39,6 +39,48 @@ jobs:
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build
 
+  storage-compat:
+    name: storage-compat
+    # The real upload path (adapter → route → s3Storage) against live
+    # S3-compatible servers: SeaweedFS (Go, verifies signatures, escapes XML
+    # like Tigris and MinIO) and Moto (mirrors AWS S3 responses).
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Start SeaweedFS and Moto
+        run: |
+          docker run -d --name seaweedfs -p 8333:8333 \
+            -v "$PWD/packages/server/test/compat/seaweedfs-s3.json:/etc/seaweedfs/s3.json:ro" \
+            chrislusf/seaweedfs:4.48 server -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json \
+            -master.volumeSizeLimitMB=64 -volume.max=200
+          docker run -d --name moto -p 5055:5000 motoserver/moto:5.2.4
+          for i in $(seq 1 60); do
+            s=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8333/ || true)
+            m=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5055/ || true)
+            if [ "$s" != "000" ] && [ "$m" != "000" ]; then echo "ready: seaweedfs $s, moto $m"; exit 0; fi
+            sleep 2
+          done
+          docker logs seaweedfs | tail -50
+          exit 1
+
+      - name: S3 compatibility suite
+        run: pnpm turbo run test --filter=@uploadcn/server
+        env:
+          S3_COMPAT: "seaweedfs|http://127.0.0.1:8333|uploadcn|uploadcn-secret|sig,moto|http://127.0.0.1:5055|test|test"
+
   changeset:
     name: changeset
     # Package changes need a changeset so they get released. Docs-only and

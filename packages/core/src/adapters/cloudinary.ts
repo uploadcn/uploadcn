@@ -65,6 +65,8 @@ interface CloudinaryResumeState {
 }
 
 const MIN_CHUNK = 5 * 1000 * 1000
+/** Seconds; Cloudinary rejects signatures older than one hour. */
+const SIGNATURE_MAX_AGE = 50 * 60
 
 /**
  * Uploads directly from the browser to Cloudinary — unsigned with a preset,
@@ -126,9 +128,15 @@ export function cloudinaryAdapter(
     }) {
       const params = await resolveParams(item)
       const previous = resumeState as CloudinaryResumeState | undefined
-      const signature =
-        previous?.signature ??
-        (options.sign ? await options.sign(params, item) : undefined)
+      // Cloudinary accepts a signature for one hour after its timestamp, so
+      // re-sign before it runs out: on resume, and between chunks of long uploads.
+      const isStale = (value: CloudinarySignature | undefined) =>
+        !!value &&
+        Date.now() / 1000 - Number(value.timestamp) > SIGNATURE_MAX_AGE
+      const sign = async () =>
+        options.sign ? await options.sign(params, item) : undefined
+      let signature = previous?.signature
+      if (!signature || isStale(signature)) signature = await sign()
 
       const send = (
         blob: Blob,
@@ -150,14 +158,16 @@ export function cloudinaryAdapter(
         return parseBody(response.body) as CloudinaryUploadResult
       }
 
-      const state: CloudinaryResumeState = previous ?? {
-        uploadId: crypto.randomUUID(),
-        offset: 0,
-        signature,
-      }
+      const state: CloudinaryResumeState = previous
+        ? { ...previous, signature }
+        : { uploadId: crypto.randomUUID(), offset: 0, signature }
       const totalChunks = Math.ceil(file.size / chunkSize)
       let result: CloudinaryUploadResult | undefined
       while (state.offset < file.size) {
+        if (isStale(signature)) {
+          signature = await sign()
+          state.signature = signature
+        }
         const end = Math.min(state.offset + chunkSize, file.size)
         const response = await send(
           file.slice(state.offset, end),
