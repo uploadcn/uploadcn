@@ -5,12 +5,14 @@ description: Upload straight from the browser to Tigris, globally distributed S3
 
 [Tigris](https://www.tigrisdata.com) speaks the S3 API, so UploadCN's S3 adapter and upload
 route work with it unchanged: files go from the browser straight to your Tigris bucket,
-large files upload in parallel parts and resume after a refresh, and your server only
+large files upload in parallel parts and can resume after a reload, and your server only
 signs requests.
 
 <Callout title="Tested with Tigris">
-  Single uploads, multipart uploads, part listing (used to resume), browser CORS
-  preflights, reads and deletes all pass against a Tigris bucket with the settings below.
+  Tested end to end against a Tigris bucket with the settings below: single and
+  multipart uploads, browser CORS, reads and deletes, and a 50 MB upload interrupted by
+  a page reload that resumed from the last finished part. Resuming needs
+  `@uploadcn/server` 0.1.2 or later.
 </Callout>
 
 <Steps>
@@ -112,6 +114,22 @@ rule on the bucket in the Tigris console, or with the S3 `PutBucketCors` API:
 
 ## Large files
 
-Files above the multipart threshold upload in parallel parts through Tigris' S3 multipart
-API, and the route lists stored parts so an interrupted upload resumes where it stopped.
-See [Multipart & chunked](/docs/adapters/multipart) for part size and concurrency.
+Files at or above the multipart threshold (64 MiB by default) upload in parallel parts
+through Tigris' S3 multipart API. See [Multipart & chunked](/docs/adapters/multipart) for
+the threshold, part size and concurrency.
+
+To survive a page reload, add persistence. Restored uploads come back paused; when the
+user resumes, the route lists the parts Tigris already has and only the rest is sent:
+
+```tsx
+import { createIndexedDBPersistence, s3Adapter } from "@uploadcn/core"
+import { useUploader } from "@uploadcn/react"
+
+const uploader = useUploader({
+  adapter: s3Adapter({ endpoint: "/api/upload" }),
+  persistence: createIndexedDBPersistence(),
+  restore: true,
+})
+```
+
+See [Resumable uploads](/docs/guides/resumable-uploads) for the full flow.

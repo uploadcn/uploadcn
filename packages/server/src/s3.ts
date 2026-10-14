@@ -38,13 +38,33 @@ function escapeXml(value: string) {
     .replace(/'/g, "&apos;")
 }
 
+const XML_ENTITIES: Record<string, string> = {
+  quot: '"',
+  apos: "'",
+  lt: "<",
+  gt: ">",
+  amp: "&",
+}
+
+/**
+ * Decodes named and numeric character references in one pass. Services
+ * written in Go (Tigris, MinIO) escape quotes as `&#34;`, so ETags from
+ * ListParts arrive as `&#34;…&#34;`.
+ */
 function unescapeXml(value: string) {
-  return value
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&")
+  return value.replace(
+    /&(#x[0-9a-f]+|#[0-9]+|[a-z]+);/gi,
+    (entity, name: string) => {
+      if (name[0] === "#") {
+        const code =
+          name[1] === "x" || name[1] === "X"
+            ? Number.parseInt(name.slice(2), 16)
+            : Number.parseInt(name.slice(1), 10)
+        return Number.isFinite(code) ? String.fromCodePoint(code) : entity
+      }
+      return XML_ENTITIES[name.toLowerCase()] ?? entity
+    }
+  )
 }
 
 function readTag(xml: string, tag: string) {
