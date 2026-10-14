@@ -26,7 +26,7 @@ export const tiers: {
   {
     id: "partner",
     name: "Storage partner",
-    price: 500,
+    price: 299,
     description:
       "For storage and media platforms: become the storage developers reach for first.",
     perks: [
@@ -40,7 +40,7 @@ export const tiers: {
   {
     id: "silver",
     name: "Silver",
-    price: 250,
+    price: 149,
     description:
       "Visibility on every docs page developers read while building.",
     perks: ["Logo in the docs sidebar", "Logo in the README and the footer"],
@@ -48,14 +48,14 @@ export const tiers: {
   {
     id: "bronze",
     name: "Bronze",
-    price: 100,
+    price: 69,
     description: "Your logo where developers discover UploadCN.",
     perks: ["Logo in the README", "Logo in the site footer"],
   },
   {
     id: "supporter",
     name: "Supporter",
-    price: 25,
+    price: 15,
     description: "For teams and developers who ship with UploadCN.",
     perks: ["Your name in the README and on this page"],
   },
