@@ -341,6 +341,21 @@ describe("s3Storage", () => {
     )
   })
 
+  it("decodes numeric character references in ListParts ETags (Tigris, MinIO)", async () => {
+    // Go's XML encoder escapes quotes as &#34;. Restored uploads complete with
+    // these ETags, so they must decode to the same value the part PUT returned.
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        "<ListPartsResult><IsTruncated>false</IsTruncated><Part><PartNumber>1</PartNumber><ETag>&#34;08b4&#34;</ETag><Size>5</Size></Part><Part><PartNumber>2</PartNumber><ETag>&#x22;d76f&#x22;</ETag><Size>5</Size></Part><Part><PartNumber>3</PartNumber><ETag>&amp;quot;</ETag><Size>5</Size></Part></ListPartsResult>"
+      )
+    )
+    expect(await storage.listParts({ key: "k", uploadId: "up-1" })).toEqual([
+      { partNumber: 1, etag: '"08b4"', size: 5 },
+      { partNumber: 2, etag: '"d76f"', size: 5 },
+      { partNumber: 3, etag: "&quot;", size: 5 },
+    ])
+  })
+
   it("surfaces S3 errors returned with a 200 status", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(

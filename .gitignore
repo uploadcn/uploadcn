@@ -73,3 +73,5 @@ __pycache__/
 /CLAUDE.md
 .claude/
 *.local.md
+/apps/docs/AGENTS.md
+/apps/docs/CLAUDE.md
