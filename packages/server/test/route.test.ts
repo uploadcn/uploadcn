@@ -356,6 +356,74 @@ describe("s3Storage", () => {
     ])
   })
 
+  it("reads ListParts pages the way AWS formats them, following the marker", async () => {
+    // Shape from the AWS ListParts reference: namespace, indentation, extra
+    // fields, and IsTruncated with NextPartNumberMarker across pages.
+    const page = (
+      parts: number[],
+      next?: number
+    ) => `<?xml version="1.0" encoding="UTF-8"?>
+<ListPartsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+  <Bucket>my-bucket</Bucket>
+  <Key>video.mp4</Key>
+  <UploadId>up-1</UploadId>
+  <Initiator><ID>arn:aws:iam::111122223333:user/dev</ID><DisplayName>dev</DisplayName></Initiator>
+  <Owner><ID>75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a</ID></Owner>
+  <StorageClass>STANDARD</StorageClass>
+  <PartNumberMarker>${parts[0]! - 1}</PartNumberMarker>
+  ${next ? `<NextPartNumberMarker>${next}</NextPartNumberMarker>` : ""}
+  <MaxParts>2</MaxParts>
+  <IsTruncated>${next ? "true" : "false"}</IsTruncated>
+${parts
+  .map(
+    (n) => `  <Part>
+    <PartNumber>${n}</PartNumber>
+    <LastModified>2026-10-14T19:00:00.000Z</LastModified>
+    <ETag>&quot;etag-${n}&quot;</ETag>
+    <ChecksumCRC32>AAAAAA==</ChecksumCRC32>
+    <Size>${n === 3 ? 7 : 5242880}</Size>
+  </Part>`
+  )
+  .join("\n")}
+</ListPartsResult>`
+    const markers: (string | null)[] = []
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const marker = new URL((input as Request).url).searchParams.get(
+        "part-number-marker"
+      )
+      markers.push(marker)
+      return new Response(marker === "2" ? page([3]) : page([1, 2], 2))
+    })
+    expect(
+      await storage.listParts({ key: "video.mp4", uploadId: "up-1" })
+    ).toEqual([
+      { partNumber: 1, etag: '"etag-1"', size: 5242880 },
+      { partNumber: 2, etag: '"etag-2"', size: 5242880 },
+      { partNumber: 3, etag: '"etag-3"', size: 7 },
+    ])
+    expect(markers).toEqual([null, "2"])
+  })
+
+  it("reads part ETags whether a service escapes quotes or not", async () => {
+    // AWS and R2 send &quot;, Go-based services (Tigris, MinIO) send &#34;,
+    // and some send the quotes unescaped.
+    for (const etag of [
+      "&quot;abc&quot;",
+      "&#34;abc&#34;",
+      '"abc"',
+      "&#x22;abc&#x22;",
+    ]) {
+      vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+        new Response(
+          `<ListPartsResult><IsTruncated>false</IsTruncated><Part><PartNumber>1</PartNumber><ETag>${etag}</ETag><Size>5</Size></Part></ListPartsResult>`
+        )
+      )
+      expect(await storage.listParts({ key: "k", uploadId: "u" })).toEqual([
+        { partNumber: 1, etag: '"abc"', size: 5 },
+      ])
+    }
+  })
+
   it("surfaces S3 errors returned with a 200 status", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(

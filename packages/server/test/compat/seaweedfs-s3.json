@@ -1,0 +1,11 @@
+{
+  "identities": [
+    {
+      "name": "uploadcn-compat",
+      "credentials": [
+        { "accessKey": "uploadcn", "secretKey": "uploadcn-secret" }
+      ],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}
