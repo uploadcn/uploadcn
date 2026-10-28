@@ -45,7 +45,66 @@ function LazyPreview({ name }: { name: string }) {
   }, [])
   return (
     <div ref={ref} className="flex size-full items-center justify-center">
-      {visible ? <ExampleRenderer name={name} /> : <Spinner />}
+      {visible ? (
+        <FitToBox>
+          <ExampleRenderer name={name} />
+        </FitToBox>
+      ) : (
+        <Spinner />
+      )}
+    </div>
+  )
+}
+
+/** Below this a preview gets unreadable, so it's cropped instead. */
+const MIN_SCALE = 0.5
+
+/**
+ * Scales tall or wide previews down until they fit the card, so nothing is
+ * clipped. It only ever shrinks, so animated content doesn't pulse. Previews
+ * that would need to shrink past MIN_SCALE are pinned to the top and fade out
+ * at the bottom.
+ */
+function FitToBox({ children }: { children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const [scale, setScale] = React.useState(1)
+  React.useEffect(() => {
+    const content = ref.current
+    const box = content?.parentElement
+    if (!content || !box) return
+    const fit = () => {
+      // Layout sizes ignore the transform, so measuring never feeds back.
+      const height = content.offsetHeight
+      const width = Math.max(content.offsetWidth, content.scrollWidth)
+      if (!height || !width) return
+      const next = Math.min(
+        1,
+        box.clientHeight / height,
+        box.clientWidth / width
+      )
+      setScale((current) => Math.min(current, next))
+    }
+    fit()
+    const observer = new ResizeObserver(fit)
+    observer.observe(content)
+    observer.observe(box)
+    return () => observer.disconnect()
+  }, [])
+  const cropped = scale < MIN_SCALE
+  return (
+    <div
+      ref={ref}
+      style={
+        scale < 1
+          ? { transform: `scale(${Math.max(scale, MIN_SCALE)})` }
+          : undefined
+      }
+      className={cn(
+        "flex w-full shrink-0 justify-center",
+        cropped && "origin-top self-start"
+      )}
+    >
+      {children}
     </div>
   )
 }
@@ -102,7 +161,11 @@ function ExampleCard({
       <div
         inert
         aria-hidden
-        className="relative h-72 overflow-hidden bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:16px_16px] p-6"
+        className={cn(
+          "relative h-72 overflow-hidden bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:16px_16px] p-6",
+          // Keep the preview clear of the install pill.
+          install && "pt-12"
+        )}
       >
         <div className="flex size-full [zoom:0.8] items-center justify-center">
           <LazyPreview name={example.name} />
