@@ -46,7 +46,7 @@ export default function FormUploadExample() {
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className="flex flex-col gap-6"
+      className="flex w-full max-w-sm flex-col gap-6"
     >
       <FieldGroup>
         <Controller
