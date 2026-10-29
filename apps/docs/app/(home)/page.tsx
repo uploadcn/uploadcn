@@ -106,10 +106,12 @@ const homeDescription =
 export const metadata: Metadata = {
   title: { absolute: homeTitle },
   description: homeDescription,
+  // No og:url: X kept the card it saved for "https://uploadcn.dev" before the
+  // home page had an image. Without og:url it keys the card on the URL that
+  // was shared, so a new link (uploadcn.dev/?ref=x) gets a fresh card.
   ...shareMetadata({
     title: homeTitle,
     description: homeDescription,
-    url: "/",
   }),
   alternates: {
     canonical: "/",
