@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import { ExamplesGallery } from "@/components/examples/examples-gallery"
 import { examples } from "@/examples/meta"
+import { shareMetadata, siteImage } from "@/lib/seo"
 import registry from "@/registry.json"
 
 const ITEMS = new Set(registry.items.map((item) => item.name))
@@ -16,10 +17,25 @@ const installs = Object.fromEntries(
   })
 )
 
+const title = "Examples: shadcn upload components"
+const description = `${examples.length} live upload components for shadcn/ui: dropzones, avatar and gallery uploads, animated uploaders, OCR, forms and more. Copy the install command for any block.`
+
 export const metadata: Metadata = {
-  title: "Examples: shadcn upload components",
-  description: `${examples.length} live upload components for shadcn/ui: dropzones, avatar and gallery uploads, animated uploaders, OCR, forms and more. Copy the install command for any block.`,
+  title,
+  description,
   alternates: { canonical: "/examples" },
+  // Without this the root layout's og:url (the home page) and image apply.
+  ...shareMetadata({
+    title,
+    description,
+    url: "/examples",
+    image: {
+      url: "/examples/opengraph-image",
+      width: siteImage.width,
+      height: siteImage.height,
+      alt: "UploadCN examples",
+    },
+  }),
 }
 
 export default function ExamplesPage() {

@@ -38,6 +38,15 @@ describe("share metadata", () => {
     expect(meta.openGraph.url).toBe("/x")
   })
 
+  it("pages with their own share URL don't claim the home page", () => {
+    // The root layout's openGraph.url is "/", so a page without its own
+    // openGraph tells X and Facebook it is the home page.
+    for (const file of ["examples/page.tsx", "(home)/sponsors/page.tsx"]) {
+      const text = files.find((f) => f.file === file)?.text ?? ""
+      expect(text, file).toContain("shareMetadata(")
+    }
+  })
+
   it("every page names its author for LinkedIn", () => {
     const layout = files.find(({ file }) => file === "layout.tsx")
     expect(layout?.text).toContain('property="article:author"')
@@ -45,7 +54,10 @@ describe("share metadata", () => {
 
   it("the share image file exists at the size it claims", () => {
     const png = readFileSync(path.join(app, "opengraph-image.png"))
-    expect(siteImage.url).toBe("/opengraph-image.png")
+    // The query busts X and LinkedIn image caches; the path is the file.
+    expect(new URL(siteImage.url, "https://x.test").pathname).toBe(
+      "/opengraph-image.png"
+    )
     expect(png.readUInt32BE(16)).toBe(siteImage.width)
     expect(png.readUInt32BE(20)).toBe(siteImage.height)
   })

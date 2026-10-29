@@ -12,9 +12,12 @@ export function docsImage(slugs: string[]) {
   return `/og/docs/${[...slugs, "image.png"].join("/")}`
 }
 
-/** The site's share image: app/opengraph-image.png (and twitter-image.png). */
+/**
+ * The site's share image: app/opengraph-image.png (and twitter-image.png).
+ * X and LinkedIn cache images by URL, so bump `v` whenever the file changes.
+ */
 export const siteImage = {
-  url: "/opengraph-image.png",
+  url: "/opengraph-image.png?v=2",
   width: 1200,
   height: 630,
   alt: `${siteConfig.name}: file uploads, built for shadcn. Drop-in blocks with a tested upload engine underneath.`,
@@ -30,10 +33,12 @@ export function shareMetadata({
   title,
   description,
   url,
+  image = siteImage,
 }: {
   title: string
   description: string
   url: string
+  image?: typeof siteImage
 }) {
   return {
     openGraph: {
@@ -43,13 +48,13 @@ export function shareMetadata({
       url,
       title,
       description,
-      images: [siteImage],
+      images: [image],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [siteImage],
+      images: [image],
     },
   } satisfies Metadata
 }
