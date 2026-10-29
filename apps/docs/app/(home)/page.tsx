@@ -28,7 +28,7 @@ import { examples } from "@/examples/meta"
 import { JsonLd } from "@/components/json-ld"
 import { codeThemes } from "@/lib/code-themes"
 import { faq } from "@/lib/faq"
-import { siteJsonLd } from "@/lib/seo"
+import { shareMetadata, siteJsonLd } from "@/lib/seo"
 import { siteConfig } from "@/lib/site"
 
 const COMPOSITION = `<Upload adapter={s3Adapter({ endpoint: "/api/upload" })}>
@@ -106,8 +106,11 @@ const homeDescription =
 export const metadata: Metadata = {
   title: { absolute: homeTitle },
   description: homeDescription,
-  openGraph: { title: homeTitle, description: homeDescription },
-  twitter: { title: homeTitle, description: homeDescription },
+  ...shareMetadata({
+    title: homeTitle,
+    description: homeDescription,
+    url: "/",
+  }),
   alternates: {
     canonical: "/",
     types: { "text/plain": "/llms.txt" },
