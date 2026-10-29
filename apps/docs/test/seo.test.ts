@@ -38,6 +38,11 @@ describe("share metadata", () => {
     expect(meta.openGraph.url).toBe("/x")
   })
 
+  it("every page names its author for LinkedIn", () => {
+    const layout = files.find(({ file }) => file === "layout.tsx")
+    expect(layout?.text).toContain('property="article:author"')
+  })
+
   it("the share image file exists at the size it claims", () => {
     const png = readFileSync(path.join(app, "opengraph-image.png"))
     expect(siteImage.url).toBe("/opengraph-image.png")
