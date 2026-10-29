@@ -38,6 +38,12 @@ describe("share metadata", () => {
     expect(meta.openGraph.url).toBe("/x")
   })
 
+  it("shareMetadata leaves og:url out when no URL is given", () => {
+    const meta = shareMetadata({ title: "T", description: "D" })
+    expect(meta.openGraph.url).toBeUndefined()
+    expect(meta.openGraph.images).toEqual([siteImage])
+  })
+
   it("pages with their own share URL don't claim the home page", () => {
     // The root layout's openGraph.url is "/", so a page without its own
     // openGraph tells X and Facebook it is the home page.

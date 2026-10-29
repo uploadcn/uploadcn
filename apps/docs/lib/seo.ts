@@ -37,7 +37,8 @@ export function shareMetadata({
 }: {
   title: string
   description: string
-  url: string
+  /** og:url. Leave it out and crawlers key the card on the URL they fetched. */
+  url?: string
   image?: typeof siteImage
 }) {
   return {
