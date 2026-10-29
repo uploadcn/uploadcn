@@ -31,7 +31,7 @@ import {
   designAttributes,
 } from "@/lib/design"
 import { getSearchIndex } from "@/lib/search-index"
-import { keywords } from "@/lib/seo"
+import { keywords, siteImage } from "@/lib/seo"
 import { siteConfig } from "@/lib/site"
 import { cn } from "@/lib/utils"
 
@@ -108,11 +108,13 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     title: `${siteConfig.name}: ${siteConfig.tagline}`,
     description: siteConfig.description,
+    images: [siteImage],
   },
   twitter: {
     card: "summary_large_image",
     title: `${siteConfig.name}: ${siteConfig.tagline}`,
     description: siteConfig.description,
+    images: [siteImage],
   },
   robots: {
     index: true,

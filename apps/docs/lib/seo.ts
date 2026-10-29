@@ -1,3 +1,5 @@
+import type { Metadata } from "next"
+
 import { siteConfig } from "@/lib/site"
 
 /** Absolute URL on the site, for canonical links, sitemaps and JSON-LD. */
@@ -8,6 +10,48 @@ export function absoluteUrl(path = "/") {
 /** The generated Open Graph image of a docs page (built at build time). */
 export function docsImage(slugs: string[]) {
   return `/og/docs/${[...slugs, "image.png"].join("/")}`
+}
+
+/** The site's share image: app/opengraph-image.png (and twitter-image.png). */
+export const siteImage = {
+  url: "/opengraph-image.png",
+  width: 1200,
+  height: 630,
+  alt: `${siteConfig.name}: file uploads, built for shadcn. Drop-in blocks with a tested upload engine underneath.`,
+}
+
+/**
+ * Open Graph and Twitter metadata for a page with its own title. Next merges
+ * metadata shallowly, so a page's `openGraph` or `twitter` replaces the root
+ * layout's whole object, share image included. Pages use this instead of
+ * setting those fields by hand.
+ */
+export function shareMetadata({
+  title,
+  description,
+  url,
+}: {
+  title: string
+  description: string
+  url: string
+}) {
+  return {
+    openGraph: {
+      type: "website",
+      locale: "en_US",
+      siteName: siteConfig.name,
+      url,
+      title,
+      description,
+      images: [siteImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [siteImage],
+    },
+  } satisfies Metadata
 }
 
 /** The Markdown version of a docs page, for LLMs and answer engines. */

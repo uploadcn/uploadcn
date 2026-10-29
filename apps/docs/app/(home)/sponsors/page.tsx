@@ -5,6 +5,7 @@ import { ArrowRightIcon, CheckIcon, HeartIcon } from "lucide-react"
 import { SponsorLogos } from "@/components/sponsors/sponsor-logos"
 import { SiteFooter } from "@/components/home/site-footer"
 import { Button } from "@/components/ui/button"
+import { shareMetadata } from "@/lib/seo"
 import { siteConfig } from "@/lib/site"
 import { sponsors, tiers } from "@/lib/sponsors"
 import { cn } from "@/lib/utils"
@@ -16,7 +17,11 @@ export const metadata: Metadata = {
   title: "Sponsor UploadCN",
   description,
   alternates: { canonical: "/sponsors" },
-  openGraph: { title: "Sponsor UploadCN", description },
+  ...shareMetadata({
+    title: "Sponsor UploadCN",
+    description,
+    url: "/sponsors",
+  }),
 }
 
 const reasons = [
