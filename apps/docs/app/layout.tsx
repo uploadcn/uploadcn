@@ -160,6 +160,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: designScript }} />
+        {/* LinkedIn reads the author from Open Graph; Next's metadata API only
+            emits article:author on og:type "article" pages. */}
+        <meta property="article:author" content={siteConfig.author.name} />
       </head>
       <body className="flex min-h-svh flex-col">
         <SearchEntriesProvider entries={getSearchIndex()}>
