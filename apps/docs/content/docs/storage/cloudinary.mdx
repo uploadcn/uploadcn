@@ -10,10 +10,18 @@ import { cloudinaryAdapter } from "@uploadcn/core"
 Files go directly from the browser to Cloudinary's upload API, with real progress. You
 don't need the Cloudinary SDK.
 
+<Callout title="Tested with Cloudinary">
+  Tested end to end against a Cloudinary account: unsigned and signed uploads, browser
+  CORS, chunked uploads resumed after a dropped connection, expired and tampered
+  signatures, and deletes. Large files need `@uploadcn/core` 0.1.4 or later.
+</Callout>
+
 ## Unsigned uploads
 
-Create an **unsigned upload preset** in the Cloudinary console (Settings → Upload) and
-restrict it there: allowed formats, max file size, folder, moderation.
+In the Cloudinary console, open **Settings → Upload presets → Add upload preset** and set
+**Signing mode** to **Unsigned**. Then restrict the preset there: allowed formats, max
+file size, folder, moderation. Your cloud name is on the console dashboard. Neither the
+cloud name nor the preset name is a secret.
 
 ```ts
 const adapter = cloudinaryAdapter({
@@ -83,14 +91,18 @@ const adapter = cloudinaryAdapter({
 
 ## Large files
 
-Files larger than `chunkSize` (default 20 MB, minimum 5 MB) upload in chunks using
-Cloudinary's chunked upload API. Each finished chunk is saved as resume state, so a retry
-(or a reload with [persistence](/docs/guides/resumable-uploads)) continues from the last
-chunk instead of starting over.
+Files larger than `chunkSize` (default 20 MB) upload in chunks using Cloudinary's
+chunked upload API. Cloudinary needs every chunk except the last to be at least 5 MiB
+(5,242,880 bytes), so a smaller `chunkSize` is raised to that. Each finished chunk is
+saved as resume state, so a retry (or a reload with
+[persistence](/docs/guides/resumable-uploads)) continues from the last chunk instead of
+starting over.
 
 Cloudinary accepts a signature for one hour, so with signed uploads `sign` may be called
 again: when an upload resumes, or between chunks of an upload that runs that long. Your
 signing route already handles it; it just signs a new timestamp.
+
+Your plan's maximum file size applies to the whole file, chunked or not.
 
 ## The result
 
@@ -104,6 +116,29 @@ onSuccess={(item) => {
 }}
 ```
 
+## Errors
+
+When Cloudinary refuses an upload, the error carries Cloudinary's own reason:
+
+```ts
+onError={(item, error) => {
+  error.message // "Cloudinary: Upload preset not found"
+  error.status // 400
+  error.details // Cloudinary's full response body
+}}
+```
+
+Common ones:
+
+- `Upload preset not found`: the preset name is wrong, or it belongs to another cloud.
+- `Invalid Signature` (401): your signing route used the wrong API secret, or the browser
+  sent parameters other than the ones it signed. The message shows the string Cloudinary
+  expected you to sign.
+- `Stale request`: the signature is older than one hour. The adapter re-signs on its own
+  when it resumes.
+- `resources with extension bin are not allowed`: Cloudinary refuses some file
+  extensions. Limit the accepted types in your upload component.
+
 ## Options
 
 <TypeTable
@@ -114,7 +149,7 @@ onSuccess={(item) => {
     resourceType: { type: '"auto" | "image" | "video" | "raw"', default: '"auto"' },
     folder: { type: "string" },
     params: { type: "Record<string, string> | (item) => Record<string, string>", description: "Extra upload parameters: tags, context, public_id…" },
-    chunkSize: { type: "number", default: "20 MB" },
+    chunkSize: { type: "number", default: "20 MB", description: "Minimum 5 MiB, which Cloudinary requires." },
     apiUrl: { type: "string", default: '"https://api.cloudinary.com/v1_1"' },
   }}
 />
