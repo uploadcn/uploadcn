@@ -97,7 +97,9 @@ export function PreviewFrame({
           ) : null}
           <CopyCodeButton code={source} />
         </div>
-        <div key={run} className="relative w-full max-w-xl">
+        {/* Centered like the full-page view: examples narrower than the frame
+            (a button, a max-w-md form) sit in the middle, not on the left. */}
+        <div key={run} className="relative flex w-full max-w-xl justify-center">
           {preview}
         </div>
       </div>

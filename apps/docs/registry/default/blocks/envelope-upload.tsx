@@ -84,8 +84,8 @@ function Envelope({ recipient }: { recipient: string }) {
   return (
     <>
       <div className="relative h-40 w-60 [perspective:900px]" aria-hidden>
-        {/* Back */}
-        <div className="absolute inset-x-0 bottom-0 h-32 rounded-lg bg-muted" />
+        {/* Back: square on top, where the flap is hinged */}
+        <div className="absolute inset-x-0 bottom-0 h-32 rounded-b-lg bg-muted" />
         {/* Letters */}
         <AnimatePresence initial={false}>
           {letters.map((item, index) => (
@@ -138,7 +138,11 @@ function Envelope({ recipient }: { recipient: string }) {
           <svg
             viewBox="0 0 240 64"
             preserveAspectRatio="none"
-            className="size-full fill-card stroke-border drop-shadow-sm"
+            className={cn(
+              "size-full stroke-border drop-shadow-sm transition-colors duration-300",
+              // Open, you see the inside of the flap, the same as the back.
+              sealed ? "fill-card" : "fill-muted"
+            )}
           >
             <path d="M1 1 L120 63 L239 1 Z" strokeWidth="1" />
           </svg>

@@ -117,7 +117,7 @@ function Hourglass() {
             width="80"
             height={BULB + 10}
             y={topY}
-            className="fill-primary"
+            className="fill-primary dark:fill-primary/80"
           />
         </g>
         <g clipPath={`url(#${id}-bottom)`}>
@@ -126,7 +126,7 @@ function Hourglass() {
             width="80"
             height={BULB + 10}
             y={bottomY}
-            className="fill-primary"
+            className="fill-primary dark:fill-primary/80"
           />
         </g>
         {flowing ? (
@@ -137,7 +137,7 @@ function Hourglass() {
             y2={BOTTOM - 4}
             strokeWidth="2"
             strokeDasharray="3 5"
-            className="stroke-primary"
+            className="stroke-primary dark:stroke-primary/80"
             animate={reduceMotion ? undefined : { strokeDashoffset: [0, -16] }}
             transition={{ duration: 0.5, ease: "linear", repeat: Infinity }}
           />
@@ -158,7 +158,7 @@ function Hourglass() {
           width="96"
           height="14"
           rx="5"
-          className="fill-foreground"
+          className="fill-foreground/60"
         />
         <rect
           x="12"
@@ -166,7 +166,7 @@ function Hourglass() {
           width="96"
           height="14"
           rx="5"
-          className="fill-foreground"
+          className="fill-foreground/60"
         />
         <rect
           x="16"
@@ -174,7 +174,7 @@ function Hourglass() {
           width="5"
           height={BOTTOM - 22}
           rx="2"
-          className="fill-foreground/60"
+          className="fill-foreground/40"
         />
         <rect
           x="99"
@@ -182,7 +182,7 @@ function Hourglass() {
           width="5"
           height={BOTTOM - 22}
           rx="2"
-          className="fill-foreground/60"
+          className="fill-foreground/40"
         />
       </svg>
       <AnimatePresence>

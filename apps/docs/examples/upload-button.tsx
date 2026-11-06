@@ -6,7 +6,10 @@ import { UploadButton } from "@/registry/default/blocks/upload-button"
 
 export default function UploadButtonExample() {
   return (
-    <UploadButton onSuccess={(item) => toast.success(`${item.name} uploaded`)}>
+    <UploadButton
+      className="w-auto"
+      onSuccess={(item) => toast.success(`${item.name} uploaded`)}
+    >
       Upload file
     </UploadButton>
   )

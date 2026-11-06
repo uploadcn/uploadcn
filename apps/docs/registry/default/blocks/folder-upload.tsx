@@ -78,6 +78,10 @@ function FolderUpload<TResult = unknown>({
   )
 }
 
+/** The back panel with its tab, drawn as one path (viewBox 240 × 176). */
+const FOLDER_BACK =
+  "M0 14A14 14 0 0 1 14 0H80C92 0 94 18 106 18H224A16 16 0 0 1 240 34V160A16 16 0 0 1 224 176H16A16 16 0 0 1 0 160Z"
+
 interface FlyingFile {
   id: string
   name: string
@@ -117,21 +121,29 @@ function Folder({ name }: { name: string }) {
       aria-hidden
       className="relative h-48 w-60 select-none [perspective:900px]"
     >
-      {/* Back panel with the tab */}
-      <div className="absolute inset-x-0 bottom-0 h-40 rounded-2xl rounded-tl-none bg-primary/80 shadow-sm">
-        <div className="absolute -top-5 left-0 flex h-6 w-24 items-center rounded-t-xl bg-primary/80 px-3">
-          <span className="truncate text-xs font-medium text-primary-foreground/80">
-            {name}
-          </span>
-        </div>
-      </div>
+      {/* Back panel and tab: one shape, so the tab flows into the panel. The
+          folder is a solid tint of the theme's primary color: soft in light
+          mode, lifted off the page in dark mode. */}
+      <svg
+        viewBox="0 0 240 176"
+        className="absolute inset-x-0 bottom-0 h-44 w-full drop-shadow-sm"
+      >
+        <path d={FOLDER_BACK} className="fill-background" />
+        <path
+          d={FOLDER_BACK}
+          className="fill-primary/25 dark:fill-primary/10"
+        />
+      </svg>
+      <span className="absolute top-4 left-0 flex h-4.5 w-22 items-center px-3 text-xs font-medium text-foreground/70">
+        <span className="truncate">{name}</span>
+      </span>
 
       {/* Papers peeking out */}
       {[0, 1, 2].map((index) => (
         <div
           key={index}
           className={cn(
-            "absolute inset-x-5 bottom-2 h-36 rounded-lg border bg-background p-3 shadow-xs transition-transform duration-300 ease-out motion-reduce:transition-none",
+            "absolute inset-x-5 bottom-2 h-32 rounded-lg border bg-background p-3 shadow-xs transition-transform duration-300 ease-out motion-reduce:transition-none dark:bg-muted",
             "group-hover/upload-dropzone:-translate-y-3 group-data-dragging/upload-dropzone:-translate-y-8",
             index === 0 &&
               "-rotate-3 group-data-dragging/upload-dropzone:-rotate-6",
@@ -141,9 +153,9 @@ function Folder({ name }: { name: string }) {
           )}
           style={{ transitionDelay: `${index * 40}ms` }}
         >
-          <div className="h-1.5 w-12 rounded-full bg-muted" />
-          <div className="mt-1.5 h-1.5 w-20 rounded-full bg-muted" />
-          <div className="mt-1.5 h-1.5 w-16 rounded-full bg-muted" />
+          <div className="h-1.5 w-12 rounded-full bg-foreground/10" />
+          <div className="mt-1.5 h-1.5 w-20 rounded-full bg-foreground/10" />
+          <div className="mt-1.5 h-1.5 w-16 rounded-full bg-foreground/10" />
         </div>
       ))}
 
@@ -192,11 +204,11 @@ function Folder({ name }: { name: string }) {
       >
         <div
           className={cn(
-            "flex size-full origin-bottom flex-col justify-end rounded-2xl bg-primary p-4 shadow-lg transition-transform duration-300 ease-out motion-reduce:transition-none",
+            "flex size-full origin-bottom flex-col justify-end rounded-2xl bg-background bg-linear-to-b from-primary/10 to-primary/10 p-4 shadow-lg ring-1 ring-foreground/5 transition-transform duration-300 ease-out motion-reduce:transition-none dark:from-primary/30 dark:to-primary/30",
             "group-hover/upload-dropzone:[transform:rotateX(-14deg)] group-data-dragging/upload-dropzone:[transform:rotateX(-32deg)]"
           )}
         >
-          <div className="flex items-center justify-between text-xs font-medium text-primary-foreground/85 tabular-nums">
+          <div className="flex items-center justify-between text-xs font-medium text-foreground/75 tabular-nums">
             <span>
               {summary.total === 0
                 ? "Empty"
@@ -208,7 +220,7 @@ function Folder({ name }: { name: string }) {
                   key="done"
                   initial={{ scale: 0.4, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="flex size-4 items-center justify-center rounded-full bg-primary-foreground text-primary"
+                  className="flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground"
                 >
                   <IconPlaceholder
                     lucide="CheckIcon"
@@ -232,9 +244,9 @@ function Folder({ name }: { name: string }) {
               ) : null}
             </AnimatePresence>
           </div>
-          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-primary-foreground/20">
+          <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-foreground/10">
             <div
-              className="h-full rounded-full bg-primary-foreground transition-[width] duration-300 ease-out"
+              className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
               style={{ width: `${summary.percent}%` }}
             />
           </div>

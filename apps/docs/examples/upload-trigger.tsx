@@ -13,7 +13,7 @@ import {
 export default function UploadTriggerExample() {
   return (
     <Upload adapter={demoAdapter}>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         <UploadTrigger render={<Button />}>
           <UploadIcon data-icon="inline-start" />
           Upload
