@@ -9,8 +9,10 @@ import {
   type ValidationOptions,
 } from "@uploadcn/core"
 import {
+  UploadItemContext,
   useUploadContext,
   useUploadProgress,
+  useUploadSelector,
   type UploadRootProps,
 } from "@uploadcn/react"
 import { cn } from "cn"
@@ -22,6 +24,7 @@ import {
   UploadDropzone,
   UploadDropzoneDescription,
   UploadDropzoneTitle,
+  UploadFileIcon,
 } from "@/registry/default/ui/upload"
 
 interface FolderUploadProps<TResult> extends Pick<
@@ -42,7 +45,7 @@ interface FolderUploadProps<TResult> extends Pick<
 
 /**
  * A folder that opens when you hover or drag files over it. Dropped files
- * fly into the folder, and its front shows the upload progress.
+ * fly in and file away as labeled sheets, and its front shows the progress.
  */
 function FolderUpload<TResult = unknown>({
   adapter,
@@ -78,9 +81,13 @@ function FolderUpload<TResult = unknown>({
   )
 }
 
-/** The back panel with its tab, drawn as one path (viewBox 240 × 176). */
+/** The back panel with its tab, drawn as one path (viewBox 240 × 192). */
 const FOLDER_BACK =
-  "M0 14A14 14 0 0 1 14 0H80C92 0 94 18 106 18H224A16 16 0 0 1 240 34V160A16 16 0 0 1 224 176H16A16 16 0 0 1 0 160Z"
+  "M0 14A14 14 0 0 1 14 0H80C92 0 94 18 106 18H224A16 16 0 0 1 240 34V176A16 16 0 0 1 224 192H16A16 16 0 0 1 0 176Z"
+/** Sheets shown in the folder; older files are counted on the front. */
+const VISIBLE_SHEETS = 3
+/** How much of each sheet shows above the one in front of it, in px. */
+const SHEET_STEP = 24
 
 interface FlyingFile {
   id: string
@@ -92,6 +99,13 @@ interface FlyingFile {
 function Folder({ name }: { name: string }) {
   const { uploader } = useUploadContext()
   const summary = useUploadProgress(uploader)
+  const files = useUploadSelector(uploader, (state) =>
+    state.items
+      .filter(
+        (item) => item.status !== "rejected" && item.status !== "cancelled"
+      )
+      .slice(-VISIBLE_SHEETS)
+  )
   const reduceMotion = useReducedMotion()
   const [flying, setFlying] = React.useState<FlyingFile[]>([])
   const [gulp, setGulp] = React.useState(0)
@@ -119,14 +133,14 @@ function Folder({ name }: { name: string }) {
   return (
     <div
       aria-hidden
-      className="relative h-48 w-60 select-none [perspective:900px]"
+      className="relative h-56 w-60 select-none [perspective:900px]"
     >
       {/* Back panel and tab: one shape, so the tab flows into the panel. The
           folder is a solid tint of the theme's primary color: soft in light
           mode, lifted off the page in dark mode. */}
       <svg
-        viewBox="0 0 240 176"
-        className="absolute inset-x-0 bottom-0 h-44 w-full drop-shadow-sm"
+        viewBox="0 0 240 192"
+        className="absolute inset-x-0 bottom-0 h-48 w-full drop-shadow-sm"
       >
         <path d={FOLDER_BACK} className="fill-background" />
         <path
@@ -134,30 +148,44 @@ function Folder({ name }: { name: string }) {
           className="fill-primary/25 dark:fill-primary/10"
         />
       </svg>
-      <span className="absolute top-4 left-0 flex h-4.5 w-22 items-center px-3 text-xs font-medium text-foreground/70">
+      <span className="absolute top-8 left-0 flex h-4.5 w-22 items-center px-3 text-xs font-medium text-foreground/70">
         <span className="truncate">{name}</span>
       </span>
 
-      {/* Papers peeking out */}
-      {[0, 1, 2].map((index) => (
-        <div
-          key={index}
-          className={cn(
-            "absolute inset-x-5 bottom-2 h-32 rounded-lg border bg-background p-3 shadow-xs transition-transform duration-300 ease-out motion-reduce:transition-none dark:bg-muted",
-            "group-hover/upload-dropzone:-translate-y-3 group-data-dragging/upload-dropzone:-translate-y-8",
-            index === 0 &&
-              "-rotate-3 group-data-dragging/upload-dropzone:-rotate-6",
-            index === 1 &&
-              "rotate-2 group-data-dragging/upload-dropzone:rotate-4",
-            index === 2 && "rotate-0"
-          )}
-          style={{ transitionDelay: `${index * 40}ms` }}
-        >
-          <div className="h-1.5 w-12 rounded-full bg-foreground/10" />
-          <div className="mt-1.5 h-1.5 w-20 rounded-full bg-foreground/10" />
-          <div className="mt-1.5 h-1.5 w-16 rounded-full bg-foreground/10" />
-        </div>
-      ))}
+      {/* The files in the folder: the newest in front, each older one
+          showing its name above it, like sheets in a filing folder */}
+      <div className="absolute inset-0 transition-transform duration-300 ease-out group-hover/upload-dropzone:-translate-y-1.5 group-data-dragging/upload-dropzone:-translate-y-5 motion-reduce:transition-none">
+        <AnimatePresence initial={false}>
+          {files.map((item, index) => {
+            const depth = files.length - 1 - index
+            return (
+              <motion.div
+                key={item.id}
+                initial={
+                  reduceMotion ? { opacity: 0 } : { opacity: 0, y: -SHEET_STEP }
+                }
+                animate={{
+                  opacity: 1,
+                  y: -depth * SHEET_STEP,
+                  x: depth === 0 ? 0 : depth % 2 === 0 ? 4 : -4,
+                  rotate: depth === 0 ? 0 : depth % 2 === 0 ? 1.5 : -1.5,
+                }}
+                exit={{ opacity: 0 }}
+                transition={
+                  reduceMotion
+                    ? { duration: 0 }
+                    : { type: "spring", bounce: 0.2, duration: 0.5 }
+                }
+                className="absolute inset-x-4 top-25.5 h-28 rounded-lg border bg-background px-2.5 py-1 shadow-xs dark:bg-muted"
+              >
+                <UploadItemContext.Provider value={item}>
+                  <FolderSheet item={item} />
+                </UploadItemContext.Provider>
+              </motion.div>
+            )
+          })}
+        </AnimatePresence>
+      </div>
 
       {/* Files flying in */}
       <AnimatePresence>
@@ -200,7 +228,7 @@ function Folder({ name }: { name: string }) {
           reduceMotion || gulp === 0 ? undefined : { scale: [1, 1.04, 1] }
         }
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="absolute inset-x-0 bottom-0 z-20 h-28 origin-bottom"
+        className="absolute inset-x-0 bottom-0 z-20 h-24 origin-bottom"
       >
         <div
           className={cn(
@@ -252,6 +280,35 @@ function Folder({ name }: { name: string }) {
           </div>
         </div>
       </motion.div>
+    </div>
+  )
+}
+
+function FolderSheet({ item }: { item: UploadItemData }) {
+  const status =
+    item.status === "success"
+      ? formatBytes(item.size)
+      : item.status === "error"
+        ? "Failed"
+        : item.status === "paused"
+          ? "Paused"
+          : item.status === "uploading"
+            ? `${Math.round(item.progress.percent)}%`
+            : item.status === "processing" || item.status === "scanning"
+              ? "Checking"
+              : "Waiting"
+  return (
+    <div className="flex h-4 items-center gap-1.5 text-left text-xs">
+      <UploadFileIcon className="size-3.5 shrink-0 text-muted-foreground" />
+      <span className="min-w-0 flex-1 truncate font-medium">{item.name}</span>
+      <span
+        className={cn(
+          "shrink-0 text-muted-foreground tabular-nums",
+          item.status === "error" && "text-destructive"
+        )}
+      >
+        {status}
+      </span>
     </div>
   )
 }

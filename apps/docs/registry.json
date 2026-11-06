@@ -590,7 +590,7 @@
       "name": "folder-upload",
       "type": "registry:block",
       "title": "Folder Upload",
-      "description": "A folder that opens on hover and drag; dropped files fly in and the front shows progress.",
+      "description": "A folder that opens on hover and drag; dropped files fly in as labeled sheets and the front shows progress.",
       "dependencies": [
         "@uploadcn/core@^0.1.0",
         "@uploadcn/react@^0.1.0",
