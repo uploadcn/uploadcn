@@ -148,7 +148,7 @@ function Road({ destination }: { destination: string }) {
             {Array.from({ length: 40 }, (_, index) => (
               <span
                 key={index}
-                className="h-1 w-6 shrink-0 rounded-full bg-background/70"
+                className="h-1 w-6 shrink-0 rounded-full bg-background/70 dark:bg-foreground/35"
               />
             ))}
           </motion.div>

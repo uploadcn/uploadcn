@@ -90,7 +90,7 @@ function Battery() {
       <div className="flex items-center transition-transform duration-300 group-data-dragging/upload-dropzone:scale-105 motion-reduce:transition-none">
         <motion.div
           className={cn(
-            "relative flex h-24 w-56 gap-1.5 rounded-2xl border-4 border-foreground p-1.5",
+            "relative flex h-24 w-56 gap-1.5 rounded-2xl border-4 border-foreground/55 p-1.5",
             summary.isComplete && "shadow-lg shadow-primary/30"
           )}
           animate={
@@ -132,7 +132,7 @@ function Battery() {
             ) : null}
           </AnimatePresence>
         </motion.div>
-        <div className="h-9 w-2.5 rounded-r-md bg-foreground" />
+        <div className="h-9 w-2.5 rounded-r-md bg-foreground/55" />
       </div>
       <div className="flex items-baseline text-3xl font-semibold tracking-tight tabular-nums">
         <motion.span>{label}</motion.span>
@@ -163,7 +163,7 @@ function Cell({
       <motion.div
         className={cn(
           "absolute inset-0 origin-left",
-          failed ? "bg-destructive" : "bg-primary"
+          failed ? "bg-destructive" : "bg-primary/75"
         )}
         style={{ scaleX: fill }}
       />

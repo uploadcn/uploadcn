@@ -55,7 +55,7 @@ function TypewriterUpload<TResult = unknown>({
       <Page title={title} />
       <div
         aria-hidden
-        className="relative z-10 h-4 w-full rounded-full bg-foreground shadow-md"
+        className="relative z-10 h-4 w-full rounded-full bg-muted-foreground shadow-md"
       />
       <UploadDropzone
         variant="outline"

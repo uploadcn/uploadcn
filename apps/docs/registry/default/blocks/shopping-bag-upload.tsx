@@ -81,8 +81,8 @@ function Bag() {
   return (
     <>
       <div className="relative h-44 w-40" aria-hidden>
-        {/* Handles */}
-        <div className="absolute top-0 left-1/2 h-12 w-16 -translate-x-1/2 rounded-t-full border-4 border-b-0 border-foreground/80 transition-transform duration-300 group-data-dragging/upload-dropzone:-translate-y-2" />
+        {/* Handles: the legs run behind the bag, so they stay attached when it lifts */}
+        <div className="absolute top-0 left-1/2 h-16 w-16 -translate-x-1/2 rounded-t-full border-4 border-b-0 border-primary/50 transition-transform duration-300 group-data-dragging/upload-dropzone:-translate-y-2" />
         {/* Falling products */}
         <AnimatePresence initial={false}>
           {products.slice(-3).map((item, index) => (
@@ -110,14 +110,14 @@ function Bag() {
           ))}
         </AnimatePresence>
         {/* Bag body */}
-        <div className="absolute inset-x-0 bottom-0 z-10 h-32 overflow-hidden rounded-t-md rounded-b-2xl bg-foreground/90 shadow-lg transition-transform duration-300 group-data-dragging/upload-dropzone:scale-105">
+        <div className="absolute inset-x-0 bottom-0 z-10 h-32 overflow-hidden rounded-t-md rounded-b-2xl bg-background bg-linear-to-b from-primary/20 to-primary/20 shadow-lg ring-1 ring-foreground/5 transition-transform duration-300 group-data-dragging/upload-dropzone:scale-105">
           <motion.div
-            className="absolute inset-x-0 bottom-0 bg-primary/40"
+            className="absolute inset-x-0 bottom-0 bg-primary/15"
             initial={false}
             animate={{ height: `${fill}%` }}
             transition={{ type: "spring", bounce: 0, duration: 0.8 }}
           />
-          <div className="relative flex size-full flex-col items-center justify-center gap-1 text-background">
+          <div className="relative flex size-full flex-col items-center justify-center gap-1 text-foreground/80">
             <IconPlaceholder
               lucide="ShoppingBagIcon"
               tabler="IconShoppingBag"
