@@ -1,5 +1,12 @@
 # @uploadcn/react
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [6b1b5cd]
+  - @uploadcn/core@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes
