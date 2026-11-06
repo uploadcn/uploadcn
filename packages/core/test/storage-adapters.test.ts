@@ -93,7 +93,7 @@ describe("cloudinaryAdapter", () => {
     let signed = 0
     const adapter = cloudinaryAdapter({
       cloudName: "demo",
-      chunkSize: 5_000_000,
+      chunkSize: 5 * 1024 * 1024,
       sign: (params) => {
         signed++
         expect(params).toEqual({})
@@ -111,9 +111,9 @@ describe("cloudinaryAdapter", () => {
     expect(result.public_id).toBe("big")
     expect(signed).toBe(1)
     expect(requests.map((r) => r.headers?.["content-range"])).toEqual([
-      "bytes 0-4999999/12000000",
-      "bytes 5000000-9999999/12000000",
-      "bytes 10000000-11999999/12000000",
+      "bytes 0-5242879/12000000",
+      "bytes 5242880-10485759/12000000",
+      "bytes 10485760-11999999/12000000",
     ])
     const ids = new Set(requests.map((r) => r.headers?.["x-unique-upload-id"]))
     expect(ids.size).toBe(1)
@@ -127,9 +127,46 @@ describe("cloudinaryAdapter", () => {
     })
     await adapter.upload(resumed.ctx)
     expect(requests.map((r) => r.headers?.["content-range"])).toEqual([
-      "bytes 5000000-9999999/12000000",
-      "bytes 10000000-11999999/12000000",
+      "bytes 5242880-10485759/12000000",
+      "bytes 10485760-11999999/12000000",
     ])
+  })
+
+  it("raises chunks below 5 MiB, which Cloudinary refuses", async () => {
+    const { transport, requests } = fakeTransport(() => ({
+      status: 200,
+      body: JSON.stringify({ public_id: "big" }),
+    }))
+    const adapter = cloudinaryAdapter({
+      cloudName: "demo",
+      uploadPreset: "preset",
+      chunkSize: 5_000_000,
+      transport,
+    })
+    const file = createFile("video.mp4", 6_000_000, "video/mp4")
+    await adapter.upload(context(file).ctx)
+    expect(requests.map((r) => r.headers?.["content-range"])).toEqual([
+      "bytes 0-5242879/6000000",
+      "bytes 5242880-5999999/6000000",
+    ])
+  })
+
+  it("puts Cloudinary's reason in the error", async () => {
+    const { transport } = fakeTransport(() => ({
+      status: 400,
+      body: JSON.stringify({ error: { message: "Upload preset not found" } }),
+    }))
+    const adapter = cloudinaryAdapter({
+      cloudName: "demo",
+      uploadPreset: "missing",
+      transport,
+    })
+    const file = createFile("photo.png", 10, "image/png")
+    await expect(adapter.upload(context(file).ctx)).rejects.toMatchObject({
+      code: "http",
+      status: 400,
+      message: "Cloudinary: Upload preset not found",
+    })
   })
 
   // Cloudinary accepts a signature for one hour after its timestamp.
@@ -147,7 +184,7 @@ describe("cloudinaryAdapter", () => {
     })
     const adapter = cloudinaryAdapter({
       cloudName: "demo",
-      chunkSize: 5_000_000,
+      chunkSize: 5 * 1024 * 1024,
       sign,
       transport,
     })
@@ -168,7 +205,7 @@ describe("cloudinaryAdapter", () => {
       apiKey: "key",
     }
     const { ctx } = context(file, {
-      resumeState: { uploadId: "u-1", offset: 5_000_000, signature: stale },
+      resumeState: { uploadId: "u-1", offset: 5_242_880, signature: stale },
     })
     await adapter.upload(ctx)
     expect(signs).toBe(1)
@@ -199,7 +236,7 @@ describe("cloudinaryAdapter", () => {
       apiKey: "key",
     }
     const { ctx } = context(file, {
-      resumeState: { uploadId: "u-2", offset: 5_000_000, signature: recent },
+      resumeState: { uploadId: "u-2", offset: 5_242_880, signature: recent },
     })
     await adapter.upload(ctx)
     expect(signs).toBe(0)

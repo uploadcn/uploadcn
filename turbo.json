@@ -95,7 +95,14 @@
     "test": {
       "dependsOn": ["^build", "registry:build"],
       "outputs": [],
-      "env": ["S3_COMPAT"]
+      "env": [
+        "S3_COMPAT",
+        "CLOUDINARY_URL",
+        "CLOUDINARY_CLOUD_NAME",
+        "CLOUDINARY_UPLOAD_PRESET",
+        "CLOUDINARY_API_KEY",
+        "CLOUDINARY_API_SECRET"
+      ]
     },
     "dev": {
       "dependsOn": ["^build"],

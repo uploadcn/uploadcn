@@ -1,7 +1,11 @@
-import { UploadError } from "../errors"
+import { UploadError, httpError } from "../errors"
 import type { UploadAdapter, UploadItem } from "../types"
-import { type MaybePromise, ensureOk, parseBody } from "./shared"
-import { type Transport, xhrTransport } from "./transport"
+import { type MaybePromise, parseBody } from "./shared"
+import {
+  type Transport,
+  type TransportResponse,
+  xhrTransport,
+} from "./transport"
 
 /** The JSON Cloudinary returns for a finished upload (common fields). */
 export interface CloudinaryUploadResult {
@@ -49,8 +53,9 @@ export interface CloudinaryAdapterOptions {
     | Record<string, string>
     | ((item: UploadItem) => MaybePromise<Record<string, string>>)
   /**
-   * Files above this size upload in chunks of this size (min 5 MB) and can
-   * resume after a failure. Default 20 MB.
+   * Files above this size upload in chunks of this size (min 5 MiB, which
+   * Cloudinary requires for every chunk but the last) and can resume after a
+   * failure. Default 20 MB.
    */
   chunkSize?: number
   /** Override the API host, e.g. for a proxy. */
@@ -64,9 +69,25 @@ interface CloudinaryResumeState {
   signature?: CloudinarySignature
 }
 
-const MIN_CHUNK = 5 * 1000 * 1000
+const MIN_CHUNK = 5 * 1024 * 1024
 /** Seconds; Cloudinary rejects signatures older than one hour. */
 const SIGNATURE_MAX_AGE = 50 * 60
+
+/** Puts Cloudinary's own reason ("Upload preset not found") in the error. */
+function ensureOk(response: TransportResponse) {
+  if (response.status >= 200 && response.status < 300) return response
+  const body = parseBody(response.body) as
+    { error?: { message?: unknown } } | undefined
+  const reason =
+    typeof body === "object" && typeof body?.error?.message === "string"
+      ? body.error.message
+      : undefined
+  throw httpError(response.status, {
+    body: response.body,
+    retryAfter: response.headers.get("retry-after"),
+    message: reason && `Cloudinary: ${reason}`,
+  })
+}
 
 /**
  * Uploads directly from the browser to Cloudinary — unsigned with a preset,
