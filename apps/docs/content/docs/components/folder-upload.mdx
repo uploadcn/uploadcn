@@ -1,6 +1,6 @@
 ---
 title: Folder Upload
-description: A folder that opens as you hover or drag files over it. Dropped files fly in, and the folder's front shows the upload progress.
+description: A folder that opens as you hover or drag files over it. Dropped files fly in and file away as sheets labeled with their name and status, and the folder's front shows the upload progress.
 ---
 
 <ComponentPreview name="folder-upload" />
@@ -38,7 +38,7 @@ import { FolderUpload } from "@/components/folder-upload"
 <FolderUpload name="Q3 Reports" maxFiles={20} />
 ```
 
-The folder opens with CSS on hover and while dragging (`group-data-dragging`), and the flying files use `motion`. With `prefers-reduced-motion`, files don't fly and the folder doesn't tilt.
+The folder opens with CSS on hover and while dragging (`group-data-dragging`), and the flying files use `motion`. The latest three files show as sheets in the folder, each with its type icon, name and status (progress while uploading, size when done); the front counts them all. With `prefers-reduced-motion`, files don't fly and the folder doesn't tilt.
 
 ## Props
 

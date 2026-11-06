@@ -78,7 +78,8 @@ export const examples: ExampleMeta[] = [
   {
     name: "folder-upload",
     title: "Folder upload",
-    description: "The folder opens on hover; dropped files fly in.",
+    description:
+      "The folder opens on hover; dropped files file away as labeled sheets.",
     category: "Animated",
     href: "/docs/components/folder-upload",
   },
