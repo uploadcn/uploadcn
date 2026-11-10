@@ -11,7 +11,7 @@ export function baseOptions(): BaseLayoutProps {
       // In nav.children (a plain flex container in every layout), not in
       // `links`, which some layouts render as <ul> items.
       children: (
-        <div className="order-last ms-auto flex items-center gap-2 ps-2">
+        <div className="ms-auto flex items-center gap-1 ps-2 sm:gap-2 md:order-last">
           <GitHubStars />
           <DesignCustomizer />
         </div>

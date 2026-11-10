@@ -8,6 +8,7 @@
     "packages",
     "theming",
     "registry",
+    "changelog",
     "---Components---",
     "...components",
     "---Hooks---",

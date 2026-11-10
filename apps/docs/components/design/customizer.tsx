@@ -334,9 +334,12 @@ export function DesignCustomizer() {
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
+        aria-label="Customize"
+        className="max-sm:px-2"
       >
-        <PaletteIcon data-icon="inline-start" />
-        Customize
+        <PaletteIcon data-icon="inline-start" className="max-sm:me-0" />
+        {/* Icon only on phones: the header has no room for the word. */}
+        <span className="max-sm:hidden">Customize</span>
       </Button>
       <dialog
         ref={ref}
