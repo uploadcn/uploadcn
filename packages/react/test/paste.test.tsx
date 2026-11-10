@@ -495,6 +495,7 @@ describe("paste hooks", () => {
       "onFocus",
       "onPointerEnter",
       "onPointerLeave",
+      "onPointerOver",
     ])
 
     paste({ files: [file("a.png", "image/png")] })
@@ -535,5 +536,107 @@ describe("paste hooks", () => {
     rerender(<Composer ignoreEditable />)
     paste({ files: [screenshot()] }, textarea)
     expect(onPaste).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("paste targets", () => {
+  // Parts that take files for themselves (named slots) mark themselves with
+  // `data-paste-target` and get the paste through their own file input.
+  function Slots({ adapter }: { adapter: UploadAdapter }) {
+    const [filled, setFilled] = React.useState<Record<string, string>>({})
+    return (
+      <Upload.Root adapter={adapter} network={false} retry={false} paste>
+        {["front", "back"].map((name) => (
+          <div
+            key={name}
+            data-testid={name}
+            data-paste-target={filled[name] ? "filled" : "empty"}
+          >
+            <input
+              type="file"
+              aria-label={name}
+              onChange={(event) => {
+                const picked = event.currentTarget.files?.[0]
+                if (picked)
+                  setFilled((value) => ({ ...value, [name]: picked.name }))
+              }}
+            />
+            <output>{filled[name] ?? "empty"}</output>
+          </div>
+        ))}
+        <Upload.List>
+          {(item) => <Upload.Item item={item} data-testid="item" />}
+        </Upload.List>
+      </Upload.Root>
+    )
+  }
+  const slot = (name: string) =>
+    screen.getByTestId(name).querySelector("output")!.textContent
+
+  it("fills the first empty target, then the next", async () => {
+    const { adapter, names } = spyAdapter()
+    const { container } = render(<Slots adapter={adapter} />)
+    fireEvent.pointerEnter(container.firstElementChild!)
+
+    paste({ files: [file("id-front.png", "image/png")] })
+    await waitFor(() => expect(slot("front")).toBe("id-front.png"))
+    expect(slot("back")).toBe("empty")
+
+    paste({ files: [file("id-back.png", "image/png")] })
+    await waitFor(() => expect(slot("back")).toBe("id-back.png"))
+    // The targets took the files: nothing went to the queue untagged.
+    expect(names).toEqual([])
+    expect(screen.queryAllByTestId("item")).toHaveLength(0)
+  })
+
+  it("prefers the target the user is on, filled or not", async () => {
+    const { adapter } = spyAdapter()
+    render(<Slots adapter={adapter} />)
+
+    fireEvent.pointerOver(screen.getByTestId("back"))
+    paste({ files: [file("b1.png", "image/png")] })
+    await waitFor(() => expect(slot("back")).toBe("b1.png"))
+    expect(slot("front")).toBe("empty")
+
+    // Still on it: a second paste replaces that one, not the empty one.
+    paste({ files: [file("b2.png", "image/png")] })
+    await waitFor(() => expect(slot("back")).toBe("b2.png"))
+    expect(slot("front")).toBe("empty")
+  })
+
+  it("gives a single-file target only the first pasted file", async () => {
+    const { adapter } = spyAdapter()
+    const { container } = render(<Slots adapter={adapter} />)
+    fireEvent.pointerEnter(container.firstElementChild!)
+
+    paste({
+      files: [file("one.png", "image/png"), file("two.png", "image/png")],
+    })
+
+    await waitFor(() => expect(slot("front")).toBe("one.png"))
+    expect(slot("back")).toBe("empty")
+  })
+})
+
+describe("accessibility", () => {
+  it("exposes the shortcut on the dropzone only while paste is on", () => {
+    const { adapter } = spyAdapter()
+    const { rerender } = render(<Uploader adapter={adapter} paste />)
+    expect(getDropzone().getAttribute("aria-keyshortcuts")).toBe(
+      "Control+V Meta+V"
+    )
+    rerender(<Uploader adapter={adapter} paste={false} />)
+    expect(getDropzone().hasAttribute("aria-keyshortcuts")).toBe(false)
+  })
+
+  it("announces rejected pastes with the reason", async () => {
+    const { adapter } = spyAdapter()
+    render(<Uploader adapter={adapter} accept="image/*" />)
+    fireEvent.focus(getDropzone())
+
+    paste({ files: [file("notes.txt", "text/plain")] })
+
+    const status = await screen.findByText(/notes\.txt rejected: /)
+    expect(status.getAttribute("aria-live")).toBe("polite")
   })
 })

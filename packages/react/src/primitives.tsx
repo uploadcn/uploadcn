@@ -169,6 +169,25 @@ function FormFiles({
   )
 }
 
+const PASTE_TARGET = "[data-paste-target]"
+
+/**
+ * Hands pasted files to a paste target's own file input, as if they had
+ * been picked there, so the target applies its own rules to them.
+ */
+function deliverToTarget(target: Element, files: File[]) {
+  const input = target.matches('input[type="file"]')
+    ? (target as HTMLInputElement)
+    : target.querySelector<HTMLInputElement>('input[type="file"]')
+  if (!input || input.disabled || typeof DataTransfer === "undefined") return
+  const transfer = new DataTransfer()
+  for (const file of input.multiple ? files : files.slice(0, 1)) {
+    transfer.items.add(file)
+  }
+  input.files = transfer.files
+  input.dispatchEvent(new Event("change", { bubbles: true }))
+}
+
 function defaultFormValue(item: UploadItem): string {
   const result = item.result as
     { key?: unknown; url?: unknown } | null | undefined
@@ -278,7 +297,23 @@ function UploadRootView<TResult>({
   // The whole component is the paste zone, so it works the same for a
   // dropzone, a button or any custom layout.
   const { handlers: pasteHandlers } = useDropzonePaste({
-    onPaste: addFiles,
+    onPaste(files, { target }) {
+      // Parts that take files for themselves (named slots) mark themselves
+      // with `data-paste-target`. The paste goes to the one in use, or to
+      // the first empty one, through its own input and so its own rules.
+      // The picker input is a direct child of the root element.
+      const root = inputRef.current?.parentElement
+      const targets = [...(root?.querySelectorAll(PASTE_TARGET) ?? [])]
+      if (targets.length === 0) return addFiles(files)
+      const inUse = target?.closest(PASTE_TARGET)
+      const chosen =
+        (inUse && targets.includes(inUse) ? inUse : null) ??
+        targets.find(
+          (element) => element.getAttribute("data-paste-target") === "empty"
+        )
+      // Every target is filled and none is in use: nothing to replace.
+      if (chosen) deliverToTarget(chosen, files)
+    },
     enabled: paste,
     global: pasteMode === "global",
   })
@@ -450,6 +485,8 @@ export function UploadDropzone({
         role: "button",
         tabIndex: disabled ? -1 : 0,
         "aria-disabled": disabled || undefined,
+        // Tells assistive technology the shortcut the visible hint shows.
+        "aria-keyshortcuts": paste ? "Control+V Meta+V" : undefined,
         onClick(event: React.MouseEvent<HTMLElement>) {
           // Ignore clicks on nested controls (they handle themselves).
           const target = (event.target as HTMLElement).closest(INTERACTIVE)

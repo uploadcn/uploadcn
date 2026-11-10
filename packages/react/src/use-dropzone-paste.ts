@@ -2,9 +2,18 @@ import * as React from "react"
 
 import { takePastedFiles } from "./use-paste-files"
 
+export interface DropzonePasteContext {
+  /**
+   * Where the user was when they pasted: the element under the pointer, or
+   * the focused element inside the zone. `null` for a page-wide paste made
+   * outside the zone.
+   */
+  target: Element | null
+}
+
 export interface UseDropzonePasteOptions {
   /** Receives the pasted files (screenshots, files copied from the OS). */
-  onPaste: (files: File[]) => void
+  onPaste: (files: File[], context: DropzonePasteContext) => void
   /** Turn paste off without unmounting. Default `true`. */
   enabled?: boolean
   /**
@@ -16,6 +25,7 @@ export interface UseDropzonePasteOptions {
 
 export interface DropzonePasteHandlers {
   onPointerEnter: React.PointerEventHandler
+  onPointerOver: React.PointerEventHandler
   onPointerLeave: React.PointerEventHandler
   onFocus: React.FocusEventHandler
   onBlur: React.FocusEventHandler
@@ -35,7 +45,11 @@ export function useDropzonePaste({
   enabled = true,
   global = false,
 }: UseDropzonePasteOptions) {
-  const zone = React.useRef({ hovered: false, focused: false })
+  const zone = React.useRef<{
+    hovered: Element | null
+    focused: Element | null
+    inside: boolean
+  }>({ hovered: null, focused: null, inside: false })
   const onPasteRef = React.useRef(onPaste)
   React.useEffect(() => {
     onPasteRef.current = onPaste
@@ -43,20 +57,27 @@ export function useDropzonePaste({
 
   const handlers = React.useMemo<DropzonePasteHandlers>(
     () => ({
-      onPointerEnter() {
-        zone.current.hovered = true
+      onPointerEnter(event) {
+        zone.current.inside = true
+        zone.current.hovered = event.target as Element
+      },
+      // Bubbles from every child, so the zone knows which part is hovered.
+      onPointerOver(event) {
+        zone.current.inside = true
+        zone.current.hovered = event.target as Element
       },
       onPointerLeave() {
-        zone.current.hovered = false
+        zone.current.inside = false
+        zone.current.hovered = null
       },
-      onFocus() {
-        zone.current.focused = true
+      onFocus(event) {
+        zone.current.focused = event.target as Element
       },
       onBlur(event) {
         // Focus moving between the zone's own children stays "inside".
         const next = event.relatedTarget as Node | null
         if (!next || !event.currentTarget.contains(next)) {
-          zone.current.focused = false
+          zone.current.focused = null
         }
       },
     }),
@@ -66,11 +87,15 @@ export function useDropzonePaste({
   React.useEffect(() => {
     if (!enabled) return
     function handlePaste(event: Event) {
-      if (!global && !zone.current.hovered && !zone.current.focused) return
+      const { hovered, focused, inside } = zone.current
+      if (!global && !inside && !focused) return
       const files = takePastedFiles(event as ClipboardEvent, {
         ignoreEditable: true,
       })
-      if (files.length) onPasteRef.current(files)
+      // The pointer is the more recent signal when both are in the zone.
+      if (files.length) {
+        onPasteRef.current(files, { target: (inside && hovered) || focused })
+      }
     }
     // The event reaches `document` before `window`, so a focused or hovered
     // zone always wins over a page-wide one.
