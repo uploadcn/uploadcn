@@ -1,5 +1,12 @@
 # @uploadcn/server
 
+## 0.1.5
+
+### Patch Changes
+
+- Updated dependencies [41182a5]
+  - @uploadcn/core@0.1.5
+
 ## 0.1.4
 
 ### Patch Changes
