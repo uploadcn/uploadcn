@@ -6,6 +6,7 @@ import { type Page, expect, test } from "@playwright/test"
 import {
   PNG_BASE64,
   axeViolations,
+  gotoDark,
   hydrated,
   pasteFiles,
   screenshot,
@@ -167,5 +168,71 @@ test.describe("opt-in", () => {
     await expect(
       page.locator('[data-slot="upload"] [role="status"]').first()
     ).toHaveText(/pasted-image-.* uploaded|1 file added/)
+  })
+})
+
+test.describe("accessibility", () => {
+  test("keyboard only: Tab to the dropzone, then Ctrl+V", async ({ page }) => {
+    await page.evaluate(async (base64) => {
+      const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0))
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "image/png": new Blob([bytes], { type: "image/png" }),
+        }),
+      ])
+    }, PNG_BASE64)
+
+    // No pointer anywhere near the component.
+    await page.mouse.move(2, 2)
+    for (let presses = 0; presses < 6; presses++) {
+      await page.keyboard.press("Tab")
+      if (await dropzone(page).evaluate((el) => el === document.activeElement))
+        break
+    }
+    await expect(dropzone(page)).toBeFocused()
+    // The shortcut is exposed to assistive technology, not only shown.
+    await expect(dropzone(page)).toHaveAttribute(
+      "aria-keyshortcuts",
+      "Control+V Meta+V"
+    )
+    await expect(dropzone(page)).toHaveAccessibleName(/paste with Ctrl\+V/)
+
+    await page.keyboard.press("ControlOrMeta+V")
+    await expect(items(page)).toHaveCount(1)
+    await expect(
+      page.locator('[data-slot="upload"] [role="status"][aria-live="polite"]')
+    ).toHaveText(/pasted-image-.* uploaded|1 file added/)
+    // Focus stays where it was, so the next paste or Tab works as expected.
+    await expect(dropzone(page)).toBeFocused()
+  })
+
+  test("a rejected paste is announced with the reason", async ({ page }) => {
+    await dropzone(page).focus()
+    await pasteFiles(page, [
+      { name: "notes.pdf", type: "application/pdf", base64: btoa("%PDF-1.4") },
+    ])
+    await expect(
+      page.locator('[data-slot="upload"] [role="status"][aria-live="polite"]')
+    ).toHaveText(/notes\.pdf rejected: File type not allowed/)
+  })
+
+  for (const url of ["/view/paste-upload", "/view/upload-paste"]) {
+    test(`${url} passes axe in dark mode, hint and files included`, async ({
+      page,
+    }) => {
+      await gotoDark(page, url)
+      await hydrated(page, '[data-slot="upload-dropzone"]')
+      await page.locator('[data-slot="upload"]').hover()
+      await pasteFiles(page, [screenshot])
+      await expect(page.locator("[data-status]").first()).toBeVisible()
+      await page.waitForTimeout(1500)
+      expect(await axeViolations(page, page.locator("main"))).toEqual([])
+    })
+  }
+
+  test("/view/upload-paste passes axe in light mode", async ({ page }) => {
+    await page.goto("/view/upload-paste")
+    await hydrated(page, '[data-slot="upload-dropzone"]')
+    expect(await axeViolations(page, page.locator("main"))).toEqual([])
   })
 })

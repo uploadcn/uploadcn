@@ -11,8 +11,9 @@ Accessibility is built into the primitives, so every block inherits it.
   the file picker. This is the alternative to drag and drop (WCAG 2.5.7 Dragging Movements).
 - With [`paste`](/docs/components/upload#paste) on, there is a second keyboard path:
   with the dropzone focused, <kbd>Ctrl</kbd>+<kbd>V</kbd> or <kbd>⌘</kbd>+<kbd>V</kbd> adds the
-  clipboard's files. `UploadDropzonePasteHint` shows the shortcut, and pastes into text
-  fields are never intercepted.
+  clipboard's files. `UploadDropzonePasteHint` shows the shortcut (and reads “Command V”
+  for ⌘), the dropzone carries `aria-keyshortcuts`, focus stays put, and pastes into
+  text fields are never intercepted.
 - `UploadTrigger` and every action are native `<button>`s.
 - The hidden file input is removed from the tab order so focus never lands on an
   invisible element.

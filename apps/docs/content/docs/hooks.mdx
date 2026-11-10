@@ -151,6 +151,11 @@ A paste is taken while the pointer is over the zone or focus is inside it, or an
 on the page with `global: true`. Pastes into text inputs, textareas and
 `contenteditable` elements are never touched. Set `enabled: false` to turn it off.
 
+`onPaste` also receives `{ target }`: the element under the pointer or with focus when
+the paste happened, for zones that route files to one of several parts. Inside
+`<Upload paste>`, an element with `data-paste-target="empty"` or `"filled"` and its own
+file input takes pasted files for itself, which is how `UploadSlot` works.
+
 ## useFileValidation
 
 ```tsx

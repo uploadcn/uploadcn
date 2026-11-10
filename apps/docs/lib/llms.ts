@@ -42,7 +42,7 @@ Components work with every shadcn style (vega, nova, maia, lyra, mira, luma, ser
 
 Server extras: virus scanning in the upload route (\`@uploadcn/server/scan\`: ClamAV, VirusTotal, any HTTP scanner) and OCR (\`@uploadcn/server/ocr\`: Google Vision, AWS Textract, Azure Document Intelligence, Mistral, your own service; \`tesseractOcr\` in the browser). Add the OCR route with \`npx shadcn@latest add @uploadcn/ocr-route\`.
 
-Paste to upload (opt-in): add \`paste\` and an upload component takes files pasted with Ctrl+V or ⌘V while it is focused or hovered: screenshots, copied images and files copied from the file manager, several at once. \`paste="global"\` takes them from anywhere on the page. Three ways to turn it on: the \`paste\` prop on \`<Upload>\` or \`<FileUpload>\`; the \`<UploadPaste>\` wrapper (\`npx shadcn@latest add @uploadcn/upload-paste\`) around any block, animated ones included; or \`paste\` on \`UploadConfigProvider\` for the whole app. Pasted files are validated like dropped ones (\`accept\`, \`maxSize\`, \`maxFiles\`), clipboard images are named \`pasted-image-<timestamp>.png\`, and pastes into text inputs and textareas are never intercepted. \`<UploadDropzonePasteHint />\` shows "or paste with Ctrl+V / ⌘V" while paste is on. Needs \`@uploadcn/react\` 0.1.5 or later.
+Paste to upload (opt-in): add \`paste\` and an upload component takes files pasted with Ctrl+V or ⌘V while it is focused or hovered: screenshots, copied images and files copied from the file manager, several at once. \`paste="global"\` takes them from anywhere on the page. Three ways to turn it on: the \`paste\` prop on \`<Upload>\` or \`<FileUpload>\`; the \`<UploadPaste>\` wrapper (\`npx shadcn@latest add @uploadcn/upload-paste\`) around any block, animated ones included; or \`paste\` on \`UploadConfigProvider\` for the whole app. Pasted files are validated like dropped ones (\`accept\`, \`maxSize\`, \`maxFiles\`), clipboard images are named \`pasted-image-<timestamp>.png\`, and pastes into text inputs and textareas are never intercepted. It works with every block: pasted files go through each block's own flow (crop step, CSV parsing, named slots), and slot forms fill the slot in use or the first empty one. \`<UploadDropzonePasteHint />\` shows "or paste with Ctrl+V / ⌘V" while paste is on. Needs \`@uploadcn/react\` 0.1.5 or later.
 
 \`\`\`tsx
 // One component (prop: paste?: boolean | "global", default false)
@@ -53,7 +53,7 @@ Paste to upload (opt-in): add \`paste\` and an upload component takes files past
 import { UploadPaste } from "@/components/upload-paste"
 
 <UploadPaste hint>
-  <RocketUpload />
+  <FolderUpload />
 </UploadPaste>
 
 // Every upload component in the app

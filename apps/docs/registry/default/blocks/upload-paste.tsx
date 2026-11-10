@@ -77,7 +77,11 @@ function UploadPasteHint({
     >
       {children ?? (
         <>
-          Paste with <kbd>Ctrl+V</kbd> / <kbd>⌘V</kbd>
+          Paste with <kbd>Ctrl+V</kbd> /{" "}
+          <kbd>
+            <span aria-hidden>⌘V</span>
+            <span className="sr-only">Command V</span>
+          </kbd>
         </>
       )}
     </p>

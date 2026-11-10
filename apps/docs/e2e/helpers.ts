@@ -105,3 +105,11 @@ export async function axeViolations(page: Page, scope: Locator) {
       `${violation.id}: ${violation.help} (${violation.nodes[0]?.html.slice(0, 120)})`
   )
 }
+
+/** Opens `url` with the site's dark theme, as a returning visitor has it. */
+export async function gotoDark(page: Page, url: string) {
+  await page.addInitScript(() => localStorage.setItem("theme", "dark"))
+  await page.emulateMedia({ colorScheme: "dark" })
+  await page.goto(url)
+  await expect(page.locator("html")).toHaveClass(/dark/)
+}

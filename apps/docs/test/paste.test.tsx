@@ -2,9 +2,10 @@
 // three ways in: `paste` on a component, the UploadPaste wrapper around any
 // block, and `paste` on UploadConfigProvider for the whole app.
 import * as React from "react"
-import { createAdapter, type UploadAdapter } from "@uploadcn/core"
+import { createAdapter } from "@uploadcn/core"
 import { UploadConfigProvider } from "@uploadcn/react"
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -87,7 +88,13 @@ describe("FileUpload paste", () => {
     const zone = dropzone(container)
 
     expect(zone.hasAttribute("data-paste")).toBe(true)
-    expect(hint(container)!.textContent).toBe("or paste with Ctrl+V / ⌘V")
+    expect(hint(container)!.textContent).toBe(
+      "or paste with Ctrl+V / ⌘VCommand V"
+    )
+    // Sighted users see the symbol, screen readers hear the word.
+    expect(hint(container)!.querySelector("[aria-hidden]")!.textContent).toBe(
+      "⌘V"
+    )
     // The hint is tied to the dropzone's paste state, not always on.
     expect(hint(container)!.className).toContain(
       "group-data-paste/upload-dropzone:block"
@@ -219,7 +226,7 @@ describe("UploadPaste", () => {
     )
     const line = () =>
       container.querySelector('[data-slot="upload-paste-hint"]')
-    expect(line()!.textContent).toBe("Paste with Ctrl+V / ⌘V")
+    expect(line()!.textContent).toBe("Paste with Ctrl+V / ⌘VCommand V")
 
     rerender(
       <UploadPaste hint="Strg+V fügt einen Screenshot ein">
@@ -278,7 +285,9 @@ describe("UploadPaste", () => {
 
 describe("every block", () => {
   // The promise of UploadPaste: it works with any block, because paste lives
-  // on the <Upload> root that all of them render.
+  // on the <Upload> root that all of them render. Each block is wrapped,
+  // given a pasted file of the kind it accepts, and must take it the way it
+  // takes a picked file.
   const importBlock = (name: string): Promise<Record<string, unknown>> =>
     import(`../registry/default/blocks/${name}.tsx`)
   const pascal = (name: string) =>
@@ -295,48 +304,180 @@ describe("every block", () => {
       recognize: async () => ({ text: "", pages: [], provider: "test" }),
     },
   }
-  /** Not wrapped: add-ons, and blocks that manage paste or uploads their own way. */
-  const SKIP = new Set([
-    "upload-paste",
-    "upload-confetti",
-    "chat-attachments", // has its own composer-wide paste
-    "global-upload", // a provider plus panels, not one component
-    "upload-dialog", // its uploader mounts when the dialog opens
-  ])
+  const PNG = Uint8Array.from(
+    atob(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+    ),
+    (char) => char.charCodeAt(0)
+  )
+  const fixtures = {
+    png: () => new File([PNG], "pasted.png", { type: "image/png" }),
+    pdf: () =>
+      new File(["%PDF-1.4"], "pasted.pdf", { type: "application/pdf" }),
+    csv: () =>
+      new File(["sku,title,price\nA-1,Mug,12\n"], "pasted.csv", {
+        type: "text/csv",
+      }),
+    mp3: () =>
+      new File([new Uint8Array(64)], "pasted.mp3", { type: "audio/mpeg" }),
+    mp4: () =>
+      new File([new Uint8Array(64)], "pasted.mp4", { type: "video/mp4" }),
+  }
+  const FIXTURE: Record<string, keyof typeof fixtures> = {
+    "csv-import": "csv",
+    "document-upload": "pdf",
+    "job-application-upload": "pdf",
+    "audio-upload": "mp3",
+    "video-upload": "mp4",
+  }
+  /** Add-ons for other uploaders, not uploaders themselves. */
+  const SKIP = new Set(["upload-paste", "upload-confetti"])
   const blocks = registry.items
     .filter((item) => item.type === "registry:block" && !SKIP.has(item.name))
     .map((item) => [item.name] as const)
 
-  it.each(blocks)("%s takes pastes inside UploadPaste", async (name) => {
+  async function load(name: string) {
     const exports = await importBlock(name)
-    const Block = exports[EXPORTS[name] ?? pascal(name)] as React.ComponentType<
+    if (name === "global-upload") {
+      const { UploadProvider, GlobalDropzone, UploadQueuePanel } = exports as {
+        UploadProvider: React.ComponentType<Record<string, unknown>>
+        GlobalDropzone: React.ComponentType
+        UploadQueuePanel: React.ComponentType
+      }
+      return function GlobalUploadBlock(props: Record<string, unknown>) {
+        return (
+          <UploadProvider {...props}>
+            <main>The app</main>
+            <GlobalDropzone />
+            <UploadQueuePanel />
+          </UploadProvider>
+        )
+      }
+    }
+    return exports[EXPORTS[name] ?? pascal(name)] as React.ComponentType<
       Record<string, unknown>
     >
-    const adapter: UploadAdapter<unknown> = spyAdapter().adapter
-    const props = PROPS[name] ?? {}
+  }
 
-    const plain = render(
+  /** What the user does before pasting, for blocks that start closed. */
+  function open(name: string) {
+    if (name !== "upload-dialog") return
+    const trigger = [...document.querySelectorAll("button")].find(
+      (button) => button.textContent === "Upload files"
+    )
+    fireEvent.click(trigger!)
+  }
+
+  /** Signs that a file reached the block. */
+  const evidence = (names: string[], fileName: string) => ({
+    uploads: names.length,
+    statuses: document.querySelectorAll("[data-status]").length,
+    named: Boolean(document.body.textContent?.includes(fileName)),
+    dialogs: document.querySelectorAll("dialog[open]").length,
+  })
+
+  it.each(blocks)("%s is opt-in", async (name) => {
+    const Block = await load(name)
+    const { adapter, names } = spyAdapter()
+    const { container } = render(
       <UploadConfigProvider adapter={adapter}>
-        <Block {...props} />
+        <Block {...(PROPS[name] ?? {})} />
       </UploadConfigProvider>
     )
-    expect(
-      plain.container.querySelector("[data-paste]"),
-      "paste is opt-in"
-    ).toBeNull()
-    plain.unmount()
+    await act(async () => open(name))
+    // The composer has always taken pastes in its own text area.
+    if (name === "chat-attachments") return
+    expect(document.querySelector("[data-paste]")).toBeNull()
 
-    const wrapped = render(
+    fireEvent.pointerEnter(container.firstElementChild ?? container)
+    const event = paste([fixtures[FIXTURE[name] ?? "png"]()])
+
+    expect(event.defaultPrevented).toBe(false)
+    expect(names).toEqual([])
+  })
+
+  it.each(blocks)("%s takes a pasted file inside UploadPaste", async (name) => {
+    const Block = await load(name)
+    const { adapter, names } = spyAdapter()
+    const file = fixtures[FIXTURE[name] ?? "png"]()
+    const { container } = render(
       <UploadConfigProvider adapter={adapter}>
         <UploadPaste>
-          <Block {...props} />
+          <Block {...(PROPS[name] ?? {})} />
         </UploadPaste>
       </UploadConfigProvider>
     )
-    expect(
-      wrapped.container.querySelector("[data-paste]"),
-      "the block's <Upload> takes pastes"
-    ).not.toBeNull()
+    await act(async () => open(name))
+    const before = evidence(names, file.name)
+
+    if (name === "chat-attachments") {
+      // Its own paste: aimed at the composer, wrapper or not.
+      await act(async () => {
+        paste([file], container.querySelector("textarea")!)
+      })
+    } else {
+      const zone = document.querySelector<HTMLElement>("[data-paste]")
+      expect(zone, "the block's <Upload> takes pastes").not.toBeNull()
+      // Like a user would: pointer over the component, then Ctrl+V.
+      await act(async () => {
+        fireEvent.pointerEnter(zone!.firstElementChild ?? zone!)
+        const event = paste([file])
+        expect(event.defaultPrevented, "the paste was claimed").toBe(true)
+      })
+    }
+
+    // The same bar as a picked file (see blocks.test.tsx), and it has to
+    // be the paste that got there: none of it was true before.
+    await waitFor(() => {
+      const now = evidence(names, file.name)
+      const added =
+        now.uploads > before.uploads ||
+        now.statuses > before.statuses ||
+        (now.named && !before.named) || // e.g. awaiting "Import"
+        now.dialogs > before.dialogs // e.g. the crop step
+      expect(added).toBe(true)
+    })
+  })
+
+  it.each([
+    ["identity-verification"],
+    ["document-checklist"],
+    ["job-application-upload"],
+  ])("%s puts pasted files into its slots, never loose", async (name) => {
+    const Block = await load(name)
+    const { adapter } = spyAdapter()
+    const kind = FIXTURE[name] ?? "png"
+    const { container } = render(
+      <UploadConfigProvider adapter={adapter}>
+        <UploadPaste>
+          <Block {...(PROPS[name] ?? {})} />
+        </UploadPaste>
+      </UploadConfigProvider>
+    )
+    const slots = () => [
+      ...container.querySelectorAll<HTMLElement>('[data-slot="upload-slot"]'),
+    ]
+    const filled = () => slots().map((slot) => slot.hasAttribute("data-filled"))
+    expect(slots().length).toBeGreaterThan(1)
+    expect(filled().every((value) => !value)).toBe(true)
+    const zone = container.querySelector<HTMLElement>("[data-paste]")!
+
+    // On the form, not on a slot: the first empty slot takes it.
+    await act(async () => {
+      fireEvent.pointerEnter(zone)
+      paste([fixtures[kind]()])
+    })
+    await waitFor(() => expect(filled()[0]).toBe(true))
+    expect(filled().filter(Boolean)).toHaveLength(1)
+
+    // On a specific slot: that slot takes it.
+    const last = slots().length - 1
+    await act(async () => {
+      fireEvent.pointerOver(slots()[last]!)
+      paste([fixtures[kind]()])
+    })
+    await waitFor(() => expect(filled()[last]).toBe(true))
+    expect(filled().filter(Boolean)).toHaveLength(2)
   })
 })
 

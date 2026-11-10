@@ -249,7 +249,11 @@ function UploadDropzonePasteHint({
     >
       {children ?? (
         <>
-          or paste with <kbd>Ctrl+V</kbd> / <kbd>⌘V</kbd>
+          or paste with <kbd>Ctrl+V</kbd> /{" "}
+          <kbd>
+            <span aria-hidden>⌘V</span>
+            <span className="sr-only">Command V</span>
+          </kbd>
         </>
       )}
     </p>
@@ -1151,7 +1155,8 @@ function useUploadSlot(name: string) {
 /**
  * A named, single-file slot inside a shared `<Upload>`, "ID front",
  * "Resume", "Proof of address". Each slot has its own picker and drop
- * target, replaces its own file, and tags it with `meta.slot`.
+ * target, replaces its own file, and tags it with `meta.slot`. Pasted files
+ * (`<Upload paste>`) go to the slot in use, or the first empty one.
  * Inside, every `UploadItem*` part works for the slot's file.
  */
 function UploadSlot({
@@ -1204,6 +1209,8 @@ function UploadSlot({
       data-slot="upload-slot"
       data-name={name}
       data-filled={item ? "" : undefined}
+      // With `paste` on, a paste goes to the slot in use or the first empty one.
+      data-paste-target={item ? "filled" : "empty"}
       data-status={item?.status}
       data-dragging={isDragging ? "" : undefined}
       data-drag-reject={isDragReject ? "" : undefined}

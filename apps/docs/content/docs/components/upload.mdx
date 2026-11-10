@@ -210,15 +210,6 @@ it: take a screenshot, click the dropzone and paste.
 
 <ComponentPreview name="paste-upload" />
 
-<img
-  src="/demo/demo-paste.gif"
-  alt="The dropzone is focused with Tab, a screenshot is pasted with Ctrl+V, and it appears in the queue and uploads"
-  width="960"
-  height="540"
-  loading="lazy"
-  className="rounded-xl border"
-/>
-
 Paste is opt-in, and you choose how far it reaches:
 
 ```tsx
@@ -230,7 +221,7 @@ Paste is opt-in, and you choose how far it reaches:
 
 {/* Any block, animated ones too, without touching its code */}
 <UploadPaste>
-  <RocketUpload />
+  <FolderUpload />
 </UploadPaste>
 
 {/* Every upload component in your app */}
@@ -256,8 +247,13 @@ your custom validators apply, and a polite live region announces what was added.
   Copied files keep their names.
 - A paste is added once. With several uploaders on a page, the focused or hovered one
   takes it, ahead of one set to `"global"`. Use `"global"` for one uploader per page.
+- [Slots](#slots) take pasted files too: a paste goes to the slot you are on, or to the
+  first empty one, and through that slot's own `accept` rule.
 - Add `UploadDropzonePasteHint` for a visible “or paste with Ctrl+V / ⌘V” line. It shows
-  only while paste is on, so you can leave it in a shared component.
+  only while paste is on, so you can leave it in a shared component. Screen readers
+  hear “Command V” for the ⌘ symbol.
+- The dropzone gets `aria-keyshortcuts`, so assistive technology knows the shortcut
+  even without the hint.
 
 ```tsx
 <Upload paste>
@@ -331,7 +327,8 @@ stays selectable and links stay clickable.
 
 `UploadSlot` is a named, single-file slot inside a shared `<Upload>`, for forms
 that need specific documents. Each slot has its own picker and drop target, replaces
-its own file, and tags it with `meta.slot` so your backend knows which is which.
+its own file, and tags it with `meta.slot` so your backend knows which is which. With
+[`paste`](#paste) on, a pasted file goes to the slot you are on, or the first empty one.
 Read a slot's file with `useUploadSlot(name)`.
 
 <ComponentPreview name="upload-slots" />
@@ -360,7 +357,9 @@ describes the queue in one line and renders nothing while it's empty.
 - `UploadDropzone` is a button: it's focusable and opens the picker with
   <kbd>Enter</kbd> or <kbd>Space</kbd>, the alternative to dragging.
 - With `paste`, files can be added from the keyboard alone: focus the dropzone and press
-  <kbd>Ctrl</kbd>+<kbd>V</kbd> or <kbd>⌘</kbd>+<kbd>V</kbd>. `UploadDropzonePasteHint` says so on screen.
+  <kbd>Ctrl</kbd>+<kbd>V</kbd> or <kbd>⌘</kbd>+<kbd>V</kbd>. `UploadDropzonePasteHint` says so on
+  screen, `aria-keyshortcuts` says so to assistive technology, and focus stays where it
+  was after the paste.
 - `UploadItemProgress` is a `progressbar` labelled with the file name.
 - A polite live region announces added, finished, failed and rejected files.
 - Every action has a name such as “Retry upload of report.pdf”.
