@@ -29,6 +29,9 @@ function readProviderParam(): ProviderId | null {
     : null
 }
 
+/** Says the result of a copy out loud: an icon swap alone is silent. */
+const AnnounceContext = React.createContext<(message: string) => void>(() => {})
+
 function CopyButton({
   text,
   label,
@@ -39,25 +42,53 @@ function CopyButton({
   label: string
   className?: string
 }) {
-  const [copied, setCopied] = React.useState(false)
+  const announce = React.useContext(AnnounceContext)
+  const [state, setState] = React.useState<"idle" | "copied" | "failed">("idle")
   React.useEffect(() => {
-    if (!copied) return
-    const timer = setTimeout(() => setCopied(false), 1500)
+    if (state === "idle") return
+    const timer = setTimeout(() => setState("idle"), 2000)
     return () => clearTimeout(timer)
-  }, [copied])
+  }, [state])
   return (
     <Button
       variant="ghost"
       size="sm"
-      data-copied={copied || undefined}
-      aria-label={copied ? `Copied ${label}` : `Copy ${label}`}
+      data-copied={state === "copied" || undefined}
+      aria-label={
+        state === "copied"
+          ? `Copied ${label}`
+          : state === "failed"
+            ? `Could not copy ${label}`
+            : `Copy ${label}`
+      }
       className={cn("text-muted-foreground", className)}
       onClick={() => {
-        void navigator.clipboard.writeText(text).then(() => setCopied(true))
+        // The Clipboard API is missing on insecure origins and can be
+        // refused: say so instead of failing silently.
+        Promise.resolve()
+          .then(() => navigator.clipboard.writeText(text))
+          .then(
+            () => {
+              setState("copied")
+              announce(`Copied ${label} to the clipboard.`)
+            },
+            () => {
+              setState("failed")
+              announce(
+                `Could not copy ${label}. Select the text and copy it instead.`
+              )
+            }
+          )
       }}
     >
-      {copied ? <CheckIcon /> : <CopyIcon />}
-      <span aria-hidden>{copied ? "Copied" : "Copy"}</span>
+      {state === "copied" ? <CheckIcon /> : <CopyIcon />}
+      <span aria-hidden>
+        {state === "copied"
+          ? "Copied"
+          : state === "failed"
+            ? "Not copied"
+            : "Copy"}
+      </span>
     </Button>
   )
 }
@@ -79,6 +110,9 @@ function Block({ block }: { block: ConfigBlock }) {
           <CopyButton text={block.code} label={name} />
         </figcaption>
         <pre
+          // Focusable so keyboard users can scroll wide code; a named group
+          // so screen readers say what the code is.
+          role="group"
           tabIndex={0}
           aria-label={name}
           className="overflow-x-auto p-4 font-mono text-[0.8rem] leading-relaxed outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
@@ -100,7 +134,13 @@ function Block({ block }: { block: ConfigBlock }) {
           </span>
           {/* Long commands scroll sideways: keep that reachable by keyboard. */}
           <code
+            role="group"
             tabIndex={0}
+            aria-label={
+              block.commands!.length > 1
+                ? `${name} command ${index + 1}`
+                : `${name} command`
+            }
             className="min-w-0 flex-1 overflow-x-auto rounded-sm py-1.5 font-mono text-[0.8rem] whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {command}
@@ -198,170 +238,191 @@ export function ConfigGenerator({
   )
   const info = config.provider
   const hasLocalhost = config.origins.includes(LOCALHOST)
+  const [announcement, setAnnouncement] = React.useState("")
 
   return (
-    <div
-      data-slot="config-generator"
-      data-provider={provider}
-      className="not-prose my-6 flex flex-col gap-8"
-    >
-      <div className="flex flex-col gap-5 rounded-xl border p-4 sm:p-5">
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-medium">Storage provider</legend>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {providers.map((entry) => (
-              <label
-                key={entry.id}
-                className={cn(
-                  "flex cursor-pointer items-center justify-center rounded-lg border px-3 py-2 text-center text-sm font-medium transition-colors",
-                  "has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
-                  entry.id === provider
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "hover:bg-muted"
-                )}
-              >
-                <input
-                  type="radio"
-                  name={`${id}-provider`}
-                  value={entry.id}
-                  checked={entry.id === provider}
-                  onChange={() => setProvider(entry.id)}
-                  className="sr-only"
-                />
-                {entry.name}
-              </label>
-            ))}
-          </div>
-        </fieldset>
+    <AnnounceContext.Provider value={setAnnouncement}>
+      <div
+        data-slot="config-generator"
+        data-provider={provider}
+        className="not-prose my-6 flex flex-col gap-8"
+      >
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic
+          data-slot="config-announcer"
+          className="sr-only"
+        >
+          {announcement}
+        </div>
+        <div className="flex flex-col gap-5 rounded-xl border p-4 sm:p-5">
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-sm font-medium">
+              Storage provider
+            </legend>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {providers.map((entry) => (
+                <label
+                  key={entry.id}
+                  className={cn(
+                    "flex cursor-pointer items-center justify-center rounded-lg border px-3 py-2 text-center text-sm font-medium transition-colors",
+                    "has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+                    entry.id === provider
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name={`${id}-provider`}
+                    value={entry.id}
+                    checked={entry.id === provider}
+                    onChange={() => setProvider(entry.id)}
+                    className="sr-only"
+                  />
+                  {/* Not color alone: the choice also shows in forced colors. */}
+                  {entry.id === provider ? (
+                    <CheckIcon
+                      aria-hidden
+                      className="me-1.5 size-3.5 shrink-0"
+                    />
+                  ) : null}
+                  {entry.name}
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor={`${id}-bucket`}>{info.bucketLabel}</Label>
-            <Input
-              id={`${id}-bucket`}
-              value={isCloudinary ? preset : bucket}
-              onChange={(event) =>
-                (isCloudinary ? setPreset : setBucket)(event.target.value)
-              }
-              placeholder={info.bucketPlaceholder}
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </div>
-          {provider === "s3" ? (
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2">
-              <Label htmlFor={`${id}-region`}>Region</Label>
+              <Label htmlFor={`${id}-bucket`}>{info.bucketLabel}</Label>
               <Input
-                id={`${id}-region`}
-                value={region}
-                onChange={(event) => setRegion(event.target.value)}
-                placeholder="us-east-1"
+                id={`${id}-bucket`}
+                value={isCloudinary ? preset : bucket}
+                onChange={(event) =>
+                  (isCloudinary ? setPreset : setBucket)(event.target.value)
+                }
+                placeholder={info.bucketPlaceholder}
                 autoComplete="off"
                 spellCheck={false}
               />
             </div>
-          ) : null}
-          <div className="flex flex-col gap-2 sm:col-span-2">
-            <Label htmlFor={`${id}-origins`}>Allowed origins</Label>
-            <Textarea
-              id={`${id}-origins`}
-              value={origins}
-              onChange={(event) => setOrigins(event.target.value)}
-              placeholder={`${PLACEHOLDER_ORIGIN}\nhttp://localhost:3000`}
-              aria-describedby={`${id}-origins-help`}
-              disabled={!info.usesOrigins}
-              autoComplete="off"
-              spellCheck={false}
-              rows={2}
-              className="font-mono text-[0.8rem]"
-            />
-            <p
-              id={`${id}-origins-help`}
-              className="text-sm text-muted-foreground"
-            >
-              {info.usesOrigins
-                ? "The sites your users upload from, one per line or separated by commas. Scheme and host only, no path."
-                : `${info.name} has no bucket CORS, so origins do not apply.`}
-            </p>
-            {info.usesOrigins && !hasLocalhost ? (
-              <Button
-                variant="outline"
-                size="xs"
-                className="self-start font-mono"
-                onClick={() =>
-                  setOrigins((value) =>
-                    value.trim()
-                      ? `${value.trimEnd()}\n${LOCALHOST}`
-                      : LOCALHOST
-                  )
-                }
+            {provider === "s3" ? (
+              <div className="flex flex-col gap-2">
+                <Label htmlFor={`${id}-region`}>Region</Label>
+                <Input
+                  id={`${id}-region`}
+                  value={region}
+                  onChange={(event) => setRegion(event.target.value)}
+                  placeholder="us-east-1"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </div>
+            ) : null}
+            <div className="flex flex-col gap-2 sm:col-span-2">
+              <Label htmlFor={`${id}-origins`}>Allowed origins</Label>
+              <Textarea
+                id={`${id}-origins`}
+                value={origins}
+                onChange={(event) => setOrigins(event.target.value)}
+                placeholder={`${PLACEHOLDER_ORIGIN}\nhttp://localhost:3000`}
+                aria-describedby={`${id}-origins-help`}
+                disabled={!info.usesOrigins}
+                autoComplete="off"
+                spellCheck={false}
+                rows={2}
+                className="font-mono text-[0.8rem]"
+              />
+              <p
+                id={`${id}-origins-help`}
+                className="text-sm text-muted-foreground"
               >
-                <PlusIcon />
-                {LOCALHOST}
-              </Button>
+                {info.usesOrigins
+                  ? "The sites your users upload from, one per line or separated by commas. Scheme and host only, no path."
+                  : `${info.name} has no bucket CORS, so origins do not apply.`}
+              </p>
+              {info.usesOrigins && !hasLocalhost ? (
+                <Button
+                  variant="outline"
+                  size="xs"
+                  className="self-start font-mono"
+                  onClick={() =>
+                    setOrigins((value) =>
+                      value.trim()
+                        ? `${value.trimEnd()}\n${LOCALHOST}`
+                        : LOCALHOST
+                    )
+                  }
+                >
+                  <PlusIcon />
+                  {LOCALHOST}
+                </Button>
+              ) : null}
+            </div>
+          </div>
+
+          <div
+            role="status"
+            aria-live="polite"
+            data-slot="config-warnings"
+            className="empty:hidden"
+          >
+            {config.warnings.length ? (
+              <ul className="flex list-disc flex-col gap-1 ps-5 text-sm text-muted-foreground">
+                {config.warnings.map((warning) => (
+                  <li key={warning}>{warning}</li>
+                ))}
+              </ul>
             ) : null}
           </div>
         </div>
 
         <div
-          role="status"
-          aria-live="polite"
-          data-slot="config-warnings"
-          className="empty:hidden"
+          data-slot="config-output"
+          aria-label={`${info.name} configuration`}
+          role="region"
+          className="flex flex-col gap-8"
         >
-          {config.warnings.length ? (
-            <ul className="flex list-disc flex-col gap-1 ps-5 text-sm text-muted-foreground">
-              {config.warnings.map((warning) => (
-                <li key={warning}>{warning}</li>
+          {config.sections.map((section) => (
+            <Section key={section.id} section={section} />
+          ))}
+
+          <section aria-label="Documentation" className="flex flex-col gap-3">
+            <h2 className="text-lg font-semibold tracking-tight">
+              Official {info.name} docs
+            </h2>
+            <p className="text-sm leading-relaxed">
+              These formats were checked against the pages below. Providers
+              change their consoles and APIs, so follow the links when something
+              does not match. The full UploadCN setup is in the{" "}
+              <Link
+                href={info.guide}
+                className="font-medium underline underline-offset-4"
+              >
+                {info.name} guide
+              </Link>
+              .
+            </p>
+            <ul className="flex flex-col gap-1.5 text-sm">
+              {config.links.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 font-medium underline underline-offset-4"
+                  >
+                    {link.label}
+                    <ArrowUpRightIcon aria-hidden className="size-3.5" />
+                  </a>
+                </li>
               ))}
             </ul>
-          ) : null}
+          </section>
         </div>
       </div>
-
-      <div
-        data-slot="config-output"
-        aria-label={`${info.name} configuration`}
-        role="region"
-        className="flex flex-col gap-8"
-      >
-        {config.sections.map((section) => (
-          <Section key={section.id} section={section} />
-        ))}
-
-        <section aria-label="Documentation" className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold tracking-tight">
-            Official {info.name} docs
-          </h2>
-          <p className="text-sm leading-relaxed">
-            These formats were checked against the pages below. Providers change
-            their consoles and APIs, so follow the links when something does not
-            match. The full UploadCN setup is in the{" "}
-            <Link
-              href={info.guide}
-              className="font-medium underline underline-offset-4"
-            >
-              {info.name} guide
-            </Link>
-            .
-          </p>
-          <ul className="flex flex-col gap-1.5 text-sm">
-            {config.links.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 font-medium underline underline-offset-4"
-                >
-                  {link.label}
-                  <ArrowUpRightIcon aria-hidden className="size-3.5" />
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
-    </div>
+    </AnnounceContext.Provider>
   )
 }

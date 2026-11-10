@@ -25,6 +25,8 @@ const blockCode = (id: string) => {
   if (!element) throw new Error(`no "${id}" block on screen`)
   return element.textContent ?? ""
 }
+const announcer = () =>
+  document.querySelector<HTMLElement>('[data-slot="config-announcer"]')!
 const choose = (name: string) =>
   fireEvent.click(screen.getByRole("radio", { name }))
 
@@ -90,9 +92,9 @@ describe("ConfigGenerator", () => {
       "aws s3api put-bucket-cors --bucket acme-uploads"
     )
     // The reader is told how their input was read.
-    expect(screen.getByRole("status").textContent).toContain(
-      'Using http://localhost:3000 for "localhost:3000".'
-    )
+    expect(
+      document.querySelector('[data-slot="config-warnings"]')!.textContent
+    ).toContain('Using http://localhost:3000 for "localhost:3000".')
   })
 
   it("keeps the inputs when the provider changes", () => {
@@ -212,7 +214,7 @@ describe("ConfigGenerator", () => {
         expect(copy).toHaveLength(1 + commands)
         const code = element.querySelector("pre")!.textContent
         fireEvent.click(copy[0]!)
-        expect(writeText).toHaveBeenLastCalledWith(code)
+        await waitFor(() => expect(writeText).toHaveBeenLastCalledWith(code))
       }
       unmount()
     }
@@ -226,16 +228,72 @@ describe("ConfigGenerator", () => {
     })
 
     fireEvent.click(screen.getByRole("button", { name: "Copy .env.local" }))
+    await screen.findByRole("button", { name: "Copied .env.local" })
     expect(writeText).toHaveBeenCalledWith(blockCode("env"))
     expect(writeText.mock.calls[0]![0]).toContain("S3_BUCKET=acme-uploads")
-    await screen.findByRole("button", { name: "Copied .env.local" })
+    // Said out loud too: an icon swap alone is silent to a screen reader.
+    expect(announcer().textContent).toBe("Copied .env.local to the clipboard.")
+    expect(announcer().getAttribute("aria-live")).toBe("polite")
 
     fireEvent.click(
       screen.getByRole("button", { name: "Copy cors.json command" })
     )
-    expect(writeText).toHaveBeenLastCalledWith(
-      "aws s3api put-bucket-cors --bucket acme-uploads --cors-configuration file://cors.json"
+    await waitFor(() =>
+      expect(writeText).toHaveBeenLastCalledWith(
+        "aws s3api put-bucket-cors --bucket acme-uploads --cors-configuration file://cors.json"
+      )
     )
+  })
+
+  it("says so when the clipboard refuses or is not available", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: {
+        writeText: vi.fn(async () => Promise.reject(new Error("denied"))),
+      },
+      configurable: true,
+    })
+    render(<ConfigGenerator />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy .env.local" }))
+    await screen.findByRole("button", { name: "Could not copy .env.local" })
+    expect(announcer().textContent).toBe(
+      "Could not copy .env.local. Select the text and copy it instead."
+    )
+    cleanup()
+
+    // No Clipboard API at all (an insecure origin).
+    Object.defineProperty(navigator, "clipboard", {
+      value: undefined,
+      configurable: true,
+    })
+    render(<ConfigGenerator />)
+    fireEvent.click(screen.getByRole("button", { name: "Copy .env.local" }))
+    await screen.findByRole("button", { name: "Could not copy .env.local" })
+  })
+
+  it("names every scrollable code block for screen readers", () => {
+    render(<ConfigGenerator />)
+    const groups = within(output()).getAllByRole("group")
+    expect(groups.length).toBeGreaterThan(4)
+    for (const group of groups) {
+      expect(
+        group.getAttribute("aria-label"),
+        group.outerHTML.slice(0, 80)
+      ).toBeTruthy()
+      // Reachable by keyboard, so wide code can be scrolled without a mouse.
+      expect(group.getAttribute("tabindex")).toBe("0")
+    }
+  })
+
+  it("groups the providers as radios with a legend", () => {
+    render(<ConfigGenerator />)
+    const group = screen.getByRole("group", { name: "Storage provider" })
+    expect(within(group).getAllByRole("radio")).toHaveLength(providers.length)
+    expect(
+      within(group)
+        .getAllByRole("radio")
+        .filter((radio) => (radio as HTMLInputElement).checked)
+    ).toHaveLength(1)
   })
 
   it.each(providers.map((provider) => [provider.name, provider.id] as const))(

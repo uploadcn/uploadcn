@@ -2,7 +2,7 @@
 // type a bucket and origins, and copy what it generates.
 import { type Page, expect, test } from "@playwright/test"
 
-import { axeViolations, hydrated } from "./helpers"
+import { axeViolations, gotoDark, hydrated } from "./helpers"
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/docs/storage/config-generator")
@@ -168,9 +168,9 @@ test("the output follows the inputs as they are typed", async ({ page }) => {
 
   await origins.pressSequentially(", localhost:3000")
   await expect(code(page, "cors-cli")).toContainText('"http://localhost:3000"')
-  await expect(generator(page).getByRole("status")).toContainText(
-    'Using http://localhost:3000 for "localhost:3000".'
-  )
+  await expect(
+    generator(page).locator('[data-slot="config-warnings"]')
+  ).toContainText('Using http://localhost:3000 for "localhost:3000".')
 
   await page.getByLabel("Bucket name").pressSequentially("acme")
   await expect(code(page, "env")).toContainText("S3_BUCKET=acme")
@@ -232,4 +232,73 @@ test("adds the local dev origin in one click", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: "http://localhost:3000" })
   ).toHaveCount(0)
+})
+
+test.describe("accessibility", () => {
+  test("keyboard only: choose, type, copy", async ({ page }) => {
+    const radio = page.getByRole("radio", { name: "Amazon S3" })
+    await radio.focus()
+    // Arrow keys move through the radio group, like any native one.
+    await page.keyboard.press("ArrowRight")
+    const r2 = page.getByRole("radio", { name: "Cloudflare R2" })
+    await expect(r2).toBeChecked()
+    await expect(r2).toBeFocused()
+
+    await page.keyboard.press("Tab")
+    await expect(page.getByLabel("Bucket name")).toBeFocused()
+    await page.keyboard.type("acme-uploads")
+    await page.keyboard.press("Tab")
+    await expect(page.getByLabel("Allowed origins")).toBeFocused()
+    await page.keyboard.type("https://app.acme.com")
+    await expect(code(page, "env")).toContainText("R2_BUCKET=acme-uploads")
+
+    const copy = page.getByRole("button", { name: "Copy .env.local" })
+    await copy.focus()
+    await page.keyboard.press("Enter")
+    // Confirmed in words for screen readers, and focus does not move.
+    await expect(
+      generator(page).locator('[data-slot="config-announcer"]')
+    ).toHaveText("Copied .env.local to the clipboard.")
+    await expect(
+      page.getByRole("button", { name: "Copied .env.local" })
+    ).toBeFocused()
+    expect(await clipboard(page)).toContain("R2_BUCKET=acme-uploads")
+
+    // Wide code can be reached and scrolled without a mouse.
+    await page.keyboard.press("Tab")
+    await expect(
+      output(page).getByRole("group", { name: ".env.local" })
+    ).toBeFocused()
+  })
+
+  test("input problems are announced politely", async ({ page }) => {
+    await page.getByLabel("Allowed origins").fill("*")
+    const warnings = generator(page).locator('[data-slot="config-warnings"]')
+    await expect(warnings).toHaveAttribute("aria-live", "polite")
+    await expect(warnings).toContainText("lets any website start uploads")
+  })
+
+  for (const provider of ["Amazon S3", "Cloudinary"]) {
+    test(`${provider} passes axe in dark mode with warnings shown`, async ({
+      page,
+    }) => {
+      await gotoDark(page, "/docs/storage/config-generator")
+      await hydrated(page, '[data-slot="config-generator"]')
+      if (provider !== "Amazon S3") await choose(page, provider)
+      else await page.getByLabel("Allowed origins").fill("* example.com")
+      expect(await axeViolations(page, generator(page))).toEqual([])
+    })
+  }
+
+  test("the chosen provider shows without relying on color", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ forcedColors: "active" })
+    await choose(page, "Tigris")
+    const marked = generator(page)
+      .locator("fieldset label")
+      .filter({ has: page.locator("svg") })
+    await expect(marked).toHaveCount(1)
+    await expect(marked).toHaveText("Tigris")
+  })
 })
