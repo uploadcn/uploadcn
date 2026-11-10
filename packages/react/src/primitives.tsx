@@ -10,7 +10,7 @@ import {
 } from "@uploadcn/core"
 import * as React from "react"
 
-import { useUploadConfig } from "./config"
+import { type UploadPasteMode, useUploadConfig } from "./config"
 
 import {
   UploadContext,
@@ -31,6 +31,7 @@ import {
   renderElement,
 } from "./render"
 import { useDropzone } from "./use-dropzone"
+import { useDropzonePaste } from "./use-dropzone-paste"
 import { getPreviewKind, useFilePreview } from "./use-file-preview"
 import { shallowArrayEqual, useUploadSelector } from "./use-upload-selector"
 import { type UseUploaderOptions, useUploader } from "./use-uploader"
@@ -112,6 +113,14 @@ interface UploadRootOwnProps<TResult> {
   directory?: boolean
   /** Translate or customize every string. */
   messages?: Partial<UploadMessages>
+  /**
+   * Paste to upload. `true`: Ctrl/⌘+V adds screenshots and copied files
+   * while this component is focused or hovered. `"global"`: from anywhere on
+   * the page. Pasted files are validated like dropped ones, and pastes into
+   * text fields are never touched. Defaults to the `paste` setting of the
+   * nearest `UploadConfigProvider`, which is off.
+   */
+  paste?: UploadPasteMode
   render?: RenderProp<UploadRootState>
   children?: React.ReactNode
 }
@@ -211,6 +220,7 @@ function UploadRootView<TResult>({
   capture,
   directory,
   messages: messagesProp,
+  paste: pasteProp,
   render,
   children,
   ...props
@@ -221,7 +231,12 @@ function UploadRootView<TResult>({
   const { accept, maxFiles } = uploader.getOptions()
   const multiple = multipleProp ?? maxFiles !== 1
 
-  const configMessages = useUploadConfig().messages
+  const config = useUploadConfig()
+  const configMessages = config.messages
+  const pasteMode: UploadPasteMode = disabled
+    ? false
+    : (pasteProp ?? config.paste ?? false)
+  const paste = pasteMode !== false
   const messages = React.useMemo(
     () => ({
       ...defaultMessages,
@@ -260,6 +275,14 @@ function UploadRootView<TResult>({
     if (!disabled) inputRef.current?.click()
   }, [disabled])
 
+  // The whole component is the paste zone, so it works the same for a
+  // dropzone, a button or any custom layout.
+  const { handlers: pasteHandlers } = useDropzonePaste({
+    onPaste: addFiles,
+    enabled: paste,
+    global: pasteMode === "global",
+  })
+
   const context = React.useMemo<UploadContextValue>(
     () => ({
       uploader,
@@ -270,6 +293,7 @@ function UploadRootView<TResult>({
       disabled,
       messages,
       inputId,
+      paste,
     }),
     [
       uploader,
@@ -280,13 +304,15 @@ function UploadRootView<TResult>({
       disabled,
       messages,
       inputId,
+      paste,
     ]
   )
 
   const state: UploadRootState = { disabled, isUploading }
   const rootProps = mergeProps(
     {
-      ...dataAttributes({ disabled, uploading: isUploading }),
+      ...pasteHandlers,
+      ...dataAttributes({ disabled, uploading: isUploading, paste }),
       "aria-busy": isUploading || undefined,
     },
     props
@@ -409,7 +435,7 @@ export function UploadDropzone({
   clickable = true,
   ...props
 }: UploadDropzoneProps) {
-  const { addFiles, accept, multiple, disabled, openFileDialog } =
+  const { addFiles, accept, multiple, disabled, openFileDialog, paste } =
     useUploadContext()
   const { isDragging, isDragReject, handlers } = useDropzone({
     onDrop: addFiles,
@@ -450,6 +476,8 @@ export function UploadDropzone({
           dragging: isDragging,
           "drag-reject": isDragReject,
           disabled,
+          // Lets styles show a paste hint only while paste is on.
+          paste: Boolean(paste),
         }),
       },
       props

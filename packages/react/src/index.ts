@@ -125,6 +125,11 @@ export {
 } from "./use-dropzone"
 export { useWindowDrop, type UseWindowDropOptions } from "./use-window-drop"
 export { usePasteFiles, type UsePasteFilesOptions } from "./use-paste-files"
+export {
+  useDropzonePaste,
+  type DropzonePasteHandlers,
+  type UseDropzonePasteOptions,
+} from "./use-dropzone-paste"
 export { useFileValidation } from "./use-file-validation"
 export {
   useImageCompression,
@@ -148,4 +153,5 @@ export {
   UploadConfigProvider,
   useUploadConfig,
   type UploadConfig,
+  type UploadPasteMode,
 } from "./config"

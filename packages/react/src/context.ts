@@ -15,6 +15,8 @@ export interface UploadContextValue {
   disabled: boolean
   messages: UploadMessages
   inputId: string
+  /** Whether this upload takes pasted files (the `paste` prop or config). */
+  paste?: boolean
 }
 
 export const UploadContext = React.createContext<UploadContextValue | null>(

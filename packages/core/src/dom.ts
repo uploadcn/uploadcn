@@ -70,13 +70,114 @@ export async function getDroppedFiles(
   return files
 }
 
-/** Files pasted from the clipboard (screenshots, copied files). */
-export function getClipboardFiles(clipboardData: DataTransfer | null) {
+const PASTED_EXTENSIONS: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/gif": "gif",
+  "image/webp": "webp",
+  "image/avif": "avif",
+  "image/bmp": "bmp",
+  "image/tiff": "tiff",
+  "image/svg+xml": "svg",
+  "application/pdf": "pdf",
+  "text/plain": "txt",
+}
+
+/** Browsers call a pasted bitmap `image.png`, whatever it shows. */
+const GENERIC_CLIPBOARD_NAME = /^image\.[a-z0-9]+$/i
+
+/** A clipboard bitmap is created at paste time; a copied file keeps its date. */
+const SYNTHESIZED_WITHIN = 5000
+
+const pad = (value: number) => String(value).padStart(2, "0")
+
+function pasteTimestamp(date: Date) {
+  return (
+    `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}` +
+    `-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
+  )
+}
+
+function needsPastedName(file: File, now: Date) {
+  if (file.name.trim() === "") return true
+  return (
+    GENERIC_CLIPBOARD_NAME.test(file.name) &&
+    file.type.startsWith("image/") &&
+    Math.abs(now.getTime() - file.lastModified) <= SYNTHESIZED_WITHIN
+  )
+}
+
+export interface ClipboardFilesOptions {
+  /** The paste time used in generated names. Defaults to now. */
+  now?: Date
+}
+
+/**
+ * Files pasted from the clipboard (screenshots, copied files).
+ *
+ * Clipboard images have no real file name: browsers send them unnamed or as
+ * a generic `image.png`. Those are renamed `pasted-image-<timestamp>.<ext>`
+ * (`pasted-file-…` for other unnamed data) so every paste gets a distinct,
+ * readable name. Files copied from a file manager keep their own names.
+ */
+export function getClipboardFiles(
+  clipboardData: DataTransfer | null | undefined,
+  options: ClipboardFilesOptions = {}
+) {
   if (!clipboardData) return []
-  const files = Array.from(clipboardData.files)
-  if (files.length) return files
-  return Array.from(clipboardData.items)
-    .filter((item) => item.kind === "file")
-    .map((item) => item.getAsFile())
-    .filter((file): file is File => file !== null)
+  let files = Array.from(clipboardData.files ?? [])
+  if (files.length === 0) {
+    files = Array.from(clipboardData.items ?? [])
+      .filter((item) => item.kind === "file")
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => file !== null)
+  }
+  const now = options.now ?? new Date()
+  const stamp = pasteTimestamp(now)
+  let renamed = 0
+  return files.map((file) => {
+    if (!needsPastedName(file, now)) return file
+    renamed++
+    const kind = file.type.startsWith("image/") ? "image" : "file"
+    const extension =
+      PASTED_EXTENSIONS[file.type] ?? file.name.split(".").pop() ?? ""
+    const suffix = renamed > 1 ? `-${renamed}` : ""
+    const name = `pasted-${kind}-${stamp}${suffix}${extension ? `.${extension}` : ""}`
+    return new File([file], name, {
+      type: file.type,
+      lastModified: file.lastModified,
+    })
+  })
+}
+
+const NON_TEXT_INPUTS = new Set([
+  "button",
+  "checkbox",
+  "color",
+  "file",
+  "hidden",
+  "image",
+  "radio",
+  "range",
+  "reset",
+  "submit",
+])
+
+/**
+ * Whether an event target is somewhere the user types: a text input, a
+ * textarea, a select or a `contenteditable` element. Paste and keyboard
+ * shortcuts should leave those alone.
+ */
+export function isEditableTarget(target: EventTarget | null | undefined) {
+  const element = target as Partial<HTMLInputElement> | null | undefined
+  if (!element || typeof element.tagName !== "string") return false
+  const tag = element.tagName.toUpperCase()
+  if (tag === "TEXTAREA" || tag === "SELECT") return true
+  if (tag === "INPUT") {
+    return !NON_TEXT_INPUTS.has((element.type ?? "text").toLowerCase())
+  }
+  if (element.isContentEditable) return true
+  // `isContentEditable` is not implemented everywhere (e.g. test DOMs).
+  const closest = element.closest?.("[contenteditable]")
+  return closest != null && closest.getAttribute("contenteditable") !== "false"
 }

@@ -74,7 +74,7 @@ const missingAdapter = createAdapter(
 export function useUploader<TResult = unknown>(
   options: UseUploaderOptions<TResult> = {}
 ): Uploader<TResult> {
-  const { messages: _messages, ...defaults } = useUploadConfig()
+  const { messages: _messages, paste: _paste, ...defaults } = useUploadConfig()
   const { callbacks, restore, engine: own } = splitOptions(options)
   const engine = {
     ...defaults,
