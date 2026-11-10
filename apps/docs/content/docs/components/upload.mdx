@@ -83,7 +83,7 @@ import {
 <ComponentTree
   root={{
     name: "Upload",
-    description: "holds the uploader, options or an `uploader` prop",
+    description: "holds the uploader, options or an `uploader` prop; `paste`",
     children: [
       {
         name: "UploadDropzone",
@@ -95,6 +95,10 @@ import {
               { name: "UploadDropzoneMedia" },
               { name: "UploadDropzoneTitle" },
               { name: "UploadDropzoneDescription" },
+              {
+                name: "UploadDropzonePasteHint",
+                description: "“or paste with Ctrl+V / ⌘V”",
+              },
             ],
           },
           {
@@ -197,6 +201,82 @@ Use `clickable={false}` when the dropzone contains its own `UploadTrigger`.
 <UploadDropzone size="sm">…</UploadDropzone>
 ```
 
+### Paste
+
+Add `paste` and the component takes pasted files. Focus it or hover over it, then press
+<kbd>Ctrl</kbd>+<kbd>V</kbd> (<kbd>⌘</kbd>+<kbd>V</kbd> on a Mac) to add screenshots, copied images
+or files copied from the file manager, several at once if the clipboard holds them. Try
+it: take a screenshot, click the dropzone and paste.
+
+<ComponentPreview name="paste-upload" />
+
+<img
+  src="/demo/demo-paste.gif"
+  alt="The dropzone is focused with Tab, a screenshot is pasted with Ctrl+V, and it appears in the queue and uploads"
+  width="960"
+  height="540"
+  loading="lazy"
+  className="rounded-xl border"
+/>
+
+Paste is opt-in, and you choose how far it reaches:
+
+```tsx
+{/* One component: while it is focused or hovered */}
+<Upload paste>…</Upload>
+
+{/* One component: from anywhere on the page */}
+<Upload paste="global">…</Upload>
+
+{/* Any block, animated ones too, without touching its code */}
+<UploadPaste>
+  <RocketUpload />
+</UploadPaste>
+
+{/* Every upload component in your app */}
+<UploadConfigProvider adapter={adapter} paste>
+  {children}
+</UploadConfigProvider>
+```
+
+`paste` lives on `Upload`, so the whole component is the paste zone: it works the same
+for a dropzone, a button, a grid or an animated block. [`UploadPaste`](/docs/components/upload-paste)
+is a wrapper for components whose `<Upload>` you can't reach, and
+[`UploadConfigProvider`](/docs/storage#configure-it-once) sets the default for everything
+below it. A component's own `paste` prop wins, so `paste={false}` opts one out.
+
+Pasted files take the same path as dropped ones, so `accept`, `maxSize`, `maxFiles` and
+your custom validators apply, and a polite live region announces what was added.
+
+- Pastes into text inputs, textareas and `contenteditable` elements are never touched,
+  and neither are pastes that carry only text. Typing and pasting text keep working
+  everywhere, including in fields inside the component.
+- Clipboard images have no file name (browsers send `image.png` at best), so they are
+  named `pasted-image-<timestamp>.png`, for example `pasted-image-20261110-143052.png`.
+  Copied files keep their names.
+- A paste is added once. With several uploaders on a page, the focused or hovered one
+  takes it, ahead of one set to `"global"`. Use `"global"` for one uploader per page.
+- Add `UploadDropzonePasteHint` for a visible “or paste with Ctrl+V / ⌘V” line. It shows
+  only while paste is on, so you can leave it in a shared component.
+
+```tsx
+<Upload paste>
+  <UploadDropzone>
+    <UploadDropzoneHeader>
+      <UploadDropzoneMedia variant="icon" />
+      <UploadDropzoneTitle>Drop files here</UploadDropzoneTitle>
+      <UploadDropzoneDescription>or click to browse</UploadDropzoneDescription>
+      <UploadDropzonePasteHint />
+    </UploadDropzoneHeader>
+  </UploadDropzone>
+</Upload>
+```
+
+<Callout title="Needs @uploadcn/react 0.1.5 or later">
+  Paste is part of the `Upload.Root` primitive. Update with
+  `npm install @uploadcn/core@latest @uploadcn/react@latest`.
+</Callout>
+
 ## Item
 
 ### Variant
@@ -279,6 +359,8 @@ describes the queue in one line and renders nothing while it's empty.
 
 - `UploadDropzone` is a button: it's focusable and opens the picker with
   <kbd>Enter</kbd> or <kbd>Space</kbd>, the alternative to dragging.
+- With `paste`, files can be added from the keyboard alone: focus the dropzone and press
+  <kbd>Ctrl</kbd>+<kbd>V</kbd> or <kbd>⌘</kbd>+<kbd>V</kbd>. `UploadDropzonePasteHint` says so on screen.
 - `UploadItemProgress` is a `progressbar` labelled with the file name.
 - A polite live region announces added, finished, failed and rejected files.
 - Every action has a name such as “Retry upload of report.pdf”.
@@ -317,8 +399,16 @@ The root. Accepts every [uploader option](/docs/reference/core#uploaderoptions),
       type: "Partial<UploadMessages>",
       description: "Translate every label and announcement.",
     },
+    paste: {
+      type: 'boolean | "global"',
+      default: "false (or the UploadConfigProvider setting)",
+      description:
+        "Take files pasted with Ctrl/⌘+V while the component is focused or hovered, or from anywhere on the page with \"global\".",
+    },
   }}
 />
+
+Data attributes: `data-disabled`, `data-uploading`, `data-paste` (paste is on).
 
 ### UploadDropzone
 
@@ -335,7 +425,13 @@ The root. Accepts every [uploader option](/docs/reference/core#uploaderoptions),
   }}
 />
 
-Data attributes: `data-dragging`, `data-drag-reject`, `data-disabled`.
+Data attributes: `data-dragging`, `data-drag-reject`, `data-disabled`, `data-paste`
+(the upload takes pastes).
+
+### UploadDropzonePasteHint
+
+A line of muted text, “or paste with Ctrl+V / ⌘V”, that is visible only while its
+dropzone has `data-paste`. Pass children to change or translate the text.
 
 ### UploadDropzoneMedia
 

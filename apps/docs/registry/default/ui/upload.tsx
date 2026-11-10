@@ -228,6 +228,34 @@ function UploadDropzoneDescription({
   )
 }
 
+/**
+ * "or paste with Ctrl+V / ⌘V". Shows only while the upload takes pastes
+ * (`<Upload paste>` or `UploadConfigProvider paste`), so it never advertises
+ * what is turned off.
+ */
+function UploadDropzonePasteHint({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"p">) {
+  return (
+    <p
+      data-slot="upload-dropzone-paste-hint"
+      className={cn(
+        "cn-upload-dropzone-description hidden text-muted-foreground group-data-paste/upload-dropzone:block [&>kbd]:font-sans [&>kbd]:font-medium",
+        className
+      )}
+      {...props}
+    >
+      {children ?? (
+        <>
+          or paste with <kbd>Ctrl+V</kbd> / <kbd>⌘V</kbd>
+        </>
+      )}
+    </p>
+  )
+}
+
 function UploadDropzoneContent({
   className,
   ...props
@@ -1517,6 +1545,7 @@ export {
   UploadDropzoneDescription,
   UploadDropzoneHeader,
   UploadDropzoneMedia,
+  UploadDropzonePasteHint,
   UploadDropzoneTitle,
   UploadEmpty,
   UploadFileIcon,

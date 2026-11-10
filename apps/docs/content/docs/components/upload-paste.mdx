@@ -1,0 +1,126 @@
+---
+title: Upload Paste
+description: Wrap any upload component or block, animated ones too, and it takes screenshots and files pasted with Ctrl+V or ⌘V.
+---
+
+<ComponentPreview name="upload-paste" />
+
+Hover over the polaroids (or tab to the dropzone) and paste a screenshot. The block
+inside was not changed: `UploadPaste` turns paste on for whatever it wraps.
+
+## Installation
+
+<Tabs items={["Command", "Manual"]}>
+<Tab value="Command">
+
+```npm
+npx shadcn@latest add @uploadcn/upload-paste
+```
+
+</Tab>
+<Tab value="Manual">
+
+Install `@uploadcn/react` 0.1.5 or later, then copy:
+
+```npm
+npm install @uploadcn/react@latest @uploadcn/core@latest
+```
+
+<ComponentSource name="upload-paste" />
+
+</Tab>
+</Tabs>
+
+## Usage
+
+```tsx
+import { UploadPaste } from "@/components/upload-paste"
+```
+
+```tsx
+<UploadPaste>
+  <RocketUpload />
+</UploadPaste>
+```
+
+That is the whole setup. It works with every UploadCN component and block, because
+they are all built on `<Upload>`: the wrapper tells the uploads inside it to take pasted
+files, and each one handles them like dropped files, with its own `accept`, `maxSize`
+and `maxFiles`.
+
+## Where a paste goes
+
+A paste is taken while the component is focused or the pointer is over it. Pastes into
+text inputs, textareas and `contenteditable` elements are never touched, and neither are
+pastes that carry only text.
+
+```tsx
+{/* Anywhere on the page: for one uploader per page */}
+<UploadPaste global>
+  <FileUpload />
+</UploadPaste>
+
+{/* Several uploaders: each takes the paste while it is the one in use */}
+<UploadPaste>
+  <AvatarUpload />
+  <GalleryUpload />
+</UploadPaste>
+```
+
+## Hint
+
+`hint` shows the shortcut under the component, so people know they can paste. Pass your
+own text to change or translate it, or place `UploadPasteHint` yourself.
+
+```tsx
+<UploadPaste hint>
+  <VinylUpload />
+</UploadPaste>
+
+<UploadPaste hint="Strg+V fügt einen Screenshot ein">
+  <VinylUpload />
+</UploadPaste>
+```
+
+## Other ways to turn paste on
+
+`UploadPaste` is for components whose `<Upload>` you can't reach. When you can, use the
+prop, and to turn paste on everywhere, use the provider:
+
+```tsx
+{/* A component you compose yourself, and the File Upload block */}
+<Upload paste>…</Upload>
+<FileUpload paste />
+
+{/* Every upload component in your app */}
+<UploadConfigProvider adapter={adapter} paste>
+  {children}
+</UploadConfigProvider>
+```
+
+See [Paste](/docs/components/upload#paste) for how pasted files are named and validated.
+
+## Props
+
+<TypeTable
+  type={{
+    global: {
+      type: "boolean",
+      default: "false",
+      description:
+        "Take file pastes from anywhere on the page, not only while the component is focused or hovered.",
+    },
+    hint: {
+      type: "boolean | ReactNode",
+      default: "false",
+      description:
+        "Show “Paste with Ctrl+V / ⌘V” under the component, or your own text.",
+    },
+    disabled: {
+      type: "boolean",
+      default: "false",
+      description: "Turn paste off without removing the wrapper.",
+    },
+    className: { type: "string", description: "Styles the hint." },
+  }}
+/>

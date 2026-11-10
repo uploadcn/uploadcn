@@ -185,7 +185,8 @@ describe.each(items.map((item) => [item.name, item] as const))(
 
       it("lets apps choose storage (adapter prop or UploadConfigProvider)", () => {
         const source = sources.map(({ source }) => source).join("\n")
-        if (name === "upload-confetti") return // a part inside <Upload>, not an uploader
+        // Parts and wrappers for other uploaders, not uploaders themselves.
+        if (name === "upload-confetti" || name === "upload-paste") return
         expect(source).toMatch(/adapter\?: UploadAdapter<TResult>/)
         // No hidden network defaults: the adapter comes from props or the provider.
         expect(source).not.toMatch(/s3Adapter\(\{ endpoint/)

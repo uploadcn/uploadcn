@@ -68,6 +68,12 @@ import { FileUpload } from "@/components/file-upload"
     },
     multiple: { type: "boolean" },
     disabled: { type: "boolean" },
+    paste: {
+      type: 'boolean | "global"',
+      default: "false",
+      description:
+        "Take files pasted with Ctrl/⌘+V while the component is focused or hovered, or from anywhere on the page with \"global\". Also shows the paste hint.",
+    },
     title: { type: "ReactNode" },
     description: {
       type: "ReactNode",
@@ -82,6 +88,21 @@ import { FileUpload } from "@/components/file-upload"
 />
 
 ## Examples
+
+### Paste to upload
+
+Add `paste`, then click the dropzone (or hover over it) and press
+<kbd>Ctrl</kbd>+<kbd>V</kbd> or <kbd>⌘</kbd>+<kbd>V</kbd>. Pasted files are validated like dropped
+ones, and the dropzone shows the shortcut. See [Paste](/docs/components/upload#paste)
+for the details.
+
+<ComponentPreview name="paste-upload" />
+
+```tsx
+<FileUpload paste accept="image/*" maxFiles={6} />
+
+<FileUpload paste="global" />
+```
 
 ### Multiple files
 

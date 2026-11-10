@@ -574,6 +574,20 @@ export const examples: ExampleMeta[] = [
     href: "/docs/components/upload#dropzone",
   },
   {
+    name: "paste-upload",
+    title: "Paste to upload",
+    description: "Paste screenshots and copied files with Ctrl+V or ⌘V.",
+    category: "Behavior",
+    href: "/docs/components/upload#paste",
+  },
+  {
+    name: "upload-paste",
+    title: "Paste into any block",
+    description: "One wrapper adds paste to any block, animated ones too.",
+    category: "Behavior",
+    href: "/docs/components/upload-paste",
+  },
+  {
     name: "multiple-upload",
     title: "Multiple files",
     description: "Up to 10 files with per-file progress.",
