@@ -71,7 +71,11 @@ type Props = Omit<React.ComponentProps<typeof HugeiconsIcon>, "icon">
 
 const wrap = (icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]) =>
   function Icon(props: Props) {
-    return React.createElement(HugeiconsIcon, { icon, strokeWidth: 2, ...props })
+    return React.createElement(HugeiconsIcon, {
+      icon,
+      strokeWidth: 2,
+      ...props,
+    })
   }
 
 export const icons = {

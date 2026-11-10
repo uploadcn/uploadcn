@@ -3,6 +3,7 @@
   "pages": [
     "upload",
     "image-cropper",
+    "upload-paste",
     "---Blocks---",
     "file-upload",
     "upload-button",
@@ -11,7 +12,6 @@
     "upload-table",
     "upload-tabs",
     "upload-field",
-    "upload-paste",
     "image-upload",
     "avatar-upload",
     "gallery-upload",
