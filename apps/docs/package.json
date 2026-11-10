@@ -13,8 +13,7 @@
     "registry:validate": "shadcn registry validate",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:install": "node scripts/test-install.mts",
-    "demo:record": "node scripts/record-demos.mts"
+    "test:install": "node scripts/test-install.mts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

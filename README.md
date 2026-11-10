@@ -70,17 +70,13 @@ press <kbd>Ctrl</kbd>+<kbd>V</kbd> or <kbd>⌘</kbd>+<kbd>V</kbd> to upload a sc
 copied image or files copied from your file manager. Pasted files are validated like
 dropped ones, and pastes into text fields are never intercepted.
 
-<p align="center">
-  <img src="apps/docs/public/demo/demo-paste.gif" width="720" alt="A screenshot is pasted into the File Upload dropzone with Ctrl+V; it appears in the queue and uploads" />
-</p>
-
 It is opt-in, and you choose how far it reaches:
 
 ```tsx
 <FileUpload paste />                       {/* one component */}
 
 <UploadPaste>                              {/* any block, animated ones too */}
-  <RocketUpload />
+  <FolderUpload />
 </UploadPaste>
 
 <UploadConfigProvider adapter={adapter} paste>   {/* the whole app */}
@@ -94,10 +90,6 @@ Pick Amazon S3, Cloudflare R2, Tigris or Cloudinary, type your bucket and your s
 origins, and copy the `.env` template, the CORS rules in that provider's own format and
 the smallest IAM policy. Try it at
 [uploadcn.dev/docs/storage/config-generator](https://uploadcn.dev/docs/storage/config-generator).
-
-<p align="center">
-  <img src="apps/docs/public/demo/demo-config.gif" width="720" alt="The config generator: switching from Amazon S3 to Cloudflare R2, typing a bucket and an origin, the output updating, and a block being copied" />
-</p>
 
 ## What you get
 
@@ -144,7 +136,7 @@ apps/
     registry.json          registry definition, built to public/r for every style
     examples/              live examples rendered in the docs
     content/docs/          documentation (MDX)
-    scripts/               style, icon and registry builds, install tests, demo recordings
+    scripts/               style, icon and registry builds, install tests
     test/                  registry standards, security and block behavior suites
     e2e/                   Playwright tests against the built docs
 packages/
