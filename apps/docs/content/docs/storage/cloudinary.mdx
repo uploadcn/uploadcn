@@ -31,6 +31,9 @@ const adapter = cloudinaryAdapter({
 })
 ```
 
+The [config generator](/docs/storage/config-generator?provider=cloudinary) has the `.env` template and a
+command that creates the unsigned preset through Cloudinary's Admin API.
+
 <Callout type="warn" title="Anyone can use an unsigned preset">
   The preset name is public. Use unsigned presets only for low-risk uploads, and lock
   the preset down. For anything tied to a user, sign uploads on your server.

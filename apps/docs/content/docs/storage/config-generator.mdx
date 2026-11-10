@@ -1,0 +1,88 @@
+---
+title: Config generator
+description: Pick S3, R2, Tigris or Cloudinary, type your bucket and site origins, and copy the .env template, CORS rules and permissions UploadCN needs.
+---
+
+Direct-to-bucket uploads need three things outside your code: environment variables for
+the upload route, a CORS rule on the bucket so browsers may upload to it, and an access
+key that is allowed to do it. Each provider wants them in its own format. Pick yours,
+fill in the bucket name and the origins your users upload from, and copy each block.
+
+<ConfigGenerator />
+
+Everything is generated in your browser as you type. Nothing you enter is sent anywhere,
+and the output never contains secrets: paste your keys into `.env.local` yourself.
+
+## What the output is for
+
+| Block                 | Where it goes                                                                |
+| --------------------- | ---------------------------------------------------------------------------- |
+| `.env.local`          | Your app. The names are the ones the [upload route](/docs/frameworks/nextjs) reads. |
+| CORS                  | The bucket, through the provider's console or CLI.                           |
+| IAM policy or token   | The access key your server signs uploads with.                               |
+| Upload preset         | Cloudinary only: the unsigned preset the browser uploads with.               |
+
+## Why these rules
+
+Every block is the smallest configuration that lets UploadCN work:
+
+- **`PUT` only.** The browser sends one kind of request to the bucket: a `PUT` to a URL
+  your server signed, for a whole file or for one part of a multipart upload. Reads,
+  deletes and multipart bookkeeping happen on your server.
+- **`content-type` only.** It is the single header the browser sends, and the signature
+  locks its value.
+- **`ETag` exposed.** Multipart uploads read each part's `ETag` response header to
+  finish the upload. Without it, files at or above the multipart threshold (64 MiB by
+  default) fail on their first part with a “Missing ETag” error.
+- **Object permissions only.** The access key needs to put, read and delete objects,
+  and to abort and list the parts of multipart uploads. It never needs to list or
+  manage buckets, and the bucket can stay private.
+
+<Callout title="Checked against the providers' docs">
+  The formats come from each provider's official documentation, linked under every
+  result. They were last checked in November 2026. Two things could not be confirmed
+  in a provider's docs and are marked as notes in the output: `ExposeHeaders` on
+  Tigris (its CORS page does not show the field), and how Cloudinary treats browser
+  origins (its docs describe no CORS setting).
+</Callout>
+
+## After you paste
+
+<Steps>
+<Step>
+
+### Add the route and point your components at it
+
+```npm
+npx shadcn@latest add @uploadcn/upload-route @uploadcn/upload-config
+```
+
+Cloudinary needs no route for unsigned uploads: use the adapter block from the
+generator instead.
+
+</Step>
+<Step>
+
+### Restart the dev server
+
+Next.js reads `.env.local` at startup.
+
+</Step>
+<Step>
+
+### Upload a small file, then a large one
+
+A small file checks the signature and CORS. A file over 64 MiB also checks multipart
+and the exposed `ETag`. If the browser console shows a CORS error, compare the origin
+in the error with the ones in your rule: scheme, host and port must match exactly.
+
+</Step>
+</Steps>
+
+## Provider guides
+
+- [Amazon S3](/docs/adapters/s3)
+- [Cloudflare R2](/docs/adapters/r2)
+- [Tigris](/docs/storage/tigris)
+- [Cloudinary](/docs/storage/cloudinary)
+- [Choosing storage](/docs/storage)

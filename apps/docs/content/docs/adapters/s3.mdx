@@ -97,6 +97,10 @@ See the [server reference](/docs/reference/server) for every option.
 `ExposeHeaders: ["ETag"]` is required for multipart uploads: the browser reads each
 part's ETag to complete the upload.
 
+The [config generator](/docs/storage/config-generator?provider=s3) builds this rule for your bucket
+and origins, in the console and AWS CLI formats, together with the `.env` template and
+the smallest IAM policy the access key needs.
+
 ## S3-compatible services
 
 Pass `endpoint` to `s3Storage` for MinIO, Backblaze B2, DigitalOcean Spaces, Wasabi
