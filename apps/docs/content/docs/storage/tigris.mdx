@@ -112,6 +112,10 @@ rule on the bucket in the Tigris console, or with the S3 `PutBucketCors` API:
 ]
 ```
 
+The [config generator](/docs/storage/config-generator?provider=tigris) builds this rule for your bucket
+and origins with the AWS CLI command that applies it, the `.env` template and an IAM
+policy for the access key.
+
 ## Large files
 
 Files at or above the multipart threshold (64 MiB by default) upload in parallel parts

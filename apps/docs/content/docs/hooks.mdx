@@ -20,6 +20,7 @@ npm install @uploadcn/react @uploadcn/core
 | [`useDropzone`](#usedropzone) | Add drag-and-drop to any element |
 | [`useWindowDrop`](#usewindowdrop) | Detect files dragged anywhere over the page |
 | [`usePasteFiles`](#usepastefiles) | Upload pasted files and screenshots |
+| [`useDropzonePaste`](#usedropzonepaste) | Paste into a focused or hovered drop zone |
 | [`useFileValidation`](#usefilevalidation) | Validate files without uploading them |
 | [`useImageCompression`](#useimagecompression) | Compress images and report savings |
 | [`useImageCrop`](#useimagecrop) | UI-agnostic crop, zoom, rotate and flip state |
@@ -131,6 +132,29 @@ usePasteFiles({ onPaste: (files) => uploader.add(files), target: composerRef })
 ```
 
 Text pastes are left alone; only file pastes (e.g. screenshots) are intercepted.
+Clipboard images without a real name are named `pasted-image-<timestamp>.png`. Pass
+`ignoreEditable` to also leave file pastes into text fields alone.
+
+## useDropzonePaste
+
+Paste-to-upload for a drop zone you build yourself. `<Upload paste>` already uses it
+(see [Paste](/docs/components/upload#paste)).
+
+```tsx
+const dropzone = useDropzone({ onDrop: (files) => uploader.add(files) })
+const paste = useDropzonePaste({ onPaste: (files) => uploader.add(files) })
+
+return <div tabIndex={0} {...dropzone.handlers} {...paste.handlers}>…</div>
+```
+
+A paste is taken while the pointer is over the zone or focus is inside it, or anywhere
+on the page with `global: true`. Pastes into text inputs, textareas and
+`contenteditable` elements are never touched. Set `enabled: false` to turn it off.
+
+`onPaste` also receives `{ target }`: the element under the pointer or with focus when
+the paste happened, for zones that route files to one of several parts. Inside
+`<Upload paste>`, an element with `data-paste-target="empty"` or `"filled"` and its own
+file input takes pasted files for itself, which is how `UploadSlot` works.
 
 ## useFileValidation
 

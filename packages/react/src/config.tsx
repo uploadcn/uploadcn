@@ -4,8 +4,14 @@ import * as React from "react"
 import type { UploadMessages } from "./messages"
 
 /**
+ * Paste to upload: `true` takes pasted files while the upload component is
+ * focused or hovered, `"global"` takes them from anywhere on the page.
+ */
+export type UploadPasteMode = boolean | "global"
+
+/**
  * App-wide defaults for every uploader below the provider: where files go
- * (`adapter`), limits, retries and messages. Props on a component win.
+ * (`adapter`), limits, retries, messages and paste. Props on a component win.
  */
 export interface UploadConfig extends Partial<
   Omit<UploaderOptions<unknown>, "adapter">
@@ -13,6 +19,11 @@ export interface UploadConfig extends Partial<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- results are app-defined
   adapter?: UploadAdapter<any>
   messages?: Partial<UploadMessages>
+  /**
+   * Paste to upload (Ctrl/⌘+V) for every upload component below the
+   * provider. Off by default; a component's own `paste` prop wins.
+   */
+  paste?: UploadPasteMode
 }
 
 const UploadConfigContext = React.createContext<UploadConfig>({})

@@ -938,6 +938,20 @@
       "categories": ["upload", "animated"]
     },
     {
+      "name": "upload-paste",
+      "type": "registry:block",
+      "title": "Upload Paste",
+      "description": "Wrap any upload component or block to add paste to upload: Ctrl+V or ⌘V adds screenshots and copied files.",
+      "dependencies": ["@uploadcn/react@^0.1.0", "cn"],
+      "files": [
+        {
+          "path": "registry/default/blocks/upload-paste.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "categories": ["upload"]
+    },
+    {
       "name": "upload-odometer",
       "type": "registry:block",
       "title": "Upload Odometer",

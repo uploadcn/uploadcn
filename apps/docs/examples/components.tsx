@@ -78,6 +78,7 @@ export const exampleComponents: Record<string, React.ComponentType> = {
   "paper-plane-button": dynamic(() => import("./paper-plane-button"), {
     loading,
   }),
+  "paste-upload": dynamic(() => import("./paste-upload"), { loading }),
   "pause-resume": dynamic(() => import("./pause-resume"), { loading }),
   "pdf-upload": dynamic(() => import("./pdf-upload"), { loading }),
   "polaroid-upload": dynamic(() => import("./polaroid-upload"), { loading }),
@@ -116,6 +117,7 @@ export const exampleComponents: Record<string, React.ComponentType> = {
   "upload-card": dynamic(() => import("./upload-card"), { loading }),
   "upload-chips": dynamic(() => import("./upload-chips"), { loading }),
   "upload-confetti": dynamic(() => import("./upload-confetti"), { loading }),
+  "upload-paste": dynamic(() => import("./upload-paste"), { loading }),
   "upload-demo": dynamic(() => import("./upload-demo"), { loading }),
   "upload-dialog": dynamic(() => import("./upload-dialog"), { loading }),
   "upload-dock": dynamic(() => import("./upload-dock"), { loading }),

@@ -15,6 +15,7 @@ import {
   ComponentPreview,
   ComponentSource,
 } from "@/components/docs/component-preview"
+import { ConfigGenerator } from "@/components/docs/config-generator"
 import {
   ArchitectureDiagram,
   ComponentTree,
@@ -38,6 +39,7 @@ export function getMDXComponents(components?: MDXComponents) {
     TypeTable,
     ComponentPreview,
     ComponentSource,
+    ConfigGenerator,
     ArchitectureDiagram,
     ComponentTree,
     Flow,

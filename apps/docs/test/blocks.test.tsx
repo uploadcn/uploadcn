@@ -101,7 +101,12 @@ function pickFile(container: HTMLElement, file: File) {
 }
 
 const blocks = registry.items.filter(
-  (item) => item.type === "registry:block" && item.name !== "upload-confetti"
+  (item) =>
+    item.type === "registry:block" &&
+    // Add-ons for other uploaders, covered on their own below and in
+    // paste.test.tsx.
+    item.name !== "upload-confetti" &&
+    item.name !== "upload-paste"
 )
 
 async function loadBlock(name: string) {

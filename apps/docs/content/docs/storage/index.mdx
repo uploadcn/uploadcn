@@ -21,6 +21,10 @@ and every dropzone, button, gallery and animated component follows.
 | Only the UI, the form submits the files        | [`localAdapter`](/docs/storage/browser)                 | None                      |
 | Resumable uploads through a tus server          | [`tusAdapter`](/docs/adapters/tus)                      | A tus server              |
 
+Using S3, R2, Tigris or Cloudinary? The [config generator](/docs/storage/config-generator)
+gives you the `.env` template, the CORS rules and the permissions for your bucket, ready
+to copy.
+
 ## Configure it once
 
 Wrap your app in `UploadConfigProvider`. Every component below it uses that adapter, and
@@ -48,6 +52,15 @@ export function UploadConfig({ children }: { children: React.ReactNode }) {
 
 `npx shadcn@latest add @uploadcn/upload-config` creates this file for you. Put
 `<UploadConfig>` in your root layout.
+
+The provider is also where app-wide behavior goes. For example, `paste` turns on
+[paste to upload](/docs/components/upload#paste) for every component below it:
+
+```tsx
+<UploadConfigProvider adapter={adapter} paste>
+  {children}
+</UploadConfigProvider>
+```
 
 ### Overriding per component
 

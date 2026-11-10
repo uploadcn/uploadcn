@@ -81,7 +81,9 @@ export {
   getClipboardFiles,
   getDraggedTypes,
   getDroppedFiles,
+  isEditableTarget,
   isFileDrag,
+  type ClipboardFilesOptions,
 } from "./dom"
 export { createBrowserNetworkMonitor } from "./network"
 export {

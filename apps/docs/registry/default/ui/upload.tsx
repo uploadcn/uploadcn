@@ -228,6 +228,38 @@ function UploadDropzoneDescription({
   )
 }
 
+/**
+ * "or paste with Ctrl+V / ⌘V". Shows only while the upload takes pastes
+ * (`<Upload paste>` or `UploadConfigProvider paste`), so it never advertises
+ * what is turned off.
+ */
+function UploadDropzonePasteHint({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"p">) {
+  return (
+    <p
+      data-slot="upload-dropzone-paste-hint"
+      className={cn(
+        "cn-upload-dropzone-description hidden text-muted-foreground group-data-paste/upload-dropzone:block [&>kbd]:font-sans [&>kbd]:font-medium",
+        className
+      )}
+      {...props}
+    >
+      {children ?? (
+        <>
+          or paste with <kbd>Ctrl+V</kbd> /{" "}
+          <kbd>
+            <span aria-hidden>⌘V</span>
+            <span className="sr-only">Command V</span>
+          </kbd>
+        </>
+      )}
+    </p>
+  )
+}
+
 function UploadDropzoneContent({
   className,
   ...props
@@ -1123,7 +1155,8 @@ function useUploadSlot(name: string) {
 /**
  * A named, single-file slot inside a shared `<Upload>`, "ID front",
  * "Resume", "Proof of address". Each slot has its own picker and drop
- * target, replaces its own file, and tags it with `meta.slot`.
+ * target, replaces its own file, and tags it with `meta.slot`. Pasted files
+ * (`<Upload paste>`) go to the slot in use, or the first empty one.
  * Inside, every `UploadItem*` part works for the slot's file.
  */
 function UploadSlot({
@@ -1176,6 +1209,8 @@ function UploadSlot({
       data-slot="upload-slot"
       data-name={name}
       data-filled={item ? "" : undefined}
+      // With `paste` on, a paste goes to the slot in use or the first empty one.
+      data-paste-target={item ? "filled" : "empty"}
       data-status={item?.status}
       data-dragging={isDragging ? "" : undefined}
       data-drag-reject={isDragReject ? "" : undefined}
@@ -1517,6 +1552,7 @@ export {
   UploadDropzoneDescription,
   UploadDropzoneHeader,
   UploadDropzoneMedia,
+  UploadDropzonePasteHint,
   UploadDropzoneTitle,
   UploadEmpty,
   UploadFileIcon,

@@ -38,8 +38,14 @@ export function Uploader() {
 
 Hooks: `useUploader`, `useUpload`, `useUploadState`, `useUploadSelector`,
 `useUploadItem`, `useUploadProgress`, `useUploadValue`, `useDropzone`, `useWindowDrop`,
-`usePasteFiles`, `useFileValidation`, `useImageCompression`, `useImageCrop`,
-`useFilePreview`, `useNetworkStatus`, `useUploadGuard`.
+`usePasteFiles`, `useDropzonePaste`, `useFileValidation`, `useImageCompression`,
+`useImageCrop`, `useFilePreview`, `useNetworkStatus`, `useUploadGuard`.
+
+Paste to upload is one prop: `<Upload.Root paste>` takes screenshots and copied files
+pasted with Ctrl+V or ⌘V while the component is focused or hovered, and
+`paste="global"` takes them from anywhere on the page. Set `paste` on
+`UploadConfigProvider` to turn it on for every component below. Pastes into text fields
+are left alone.
 
 Requires React 19. Documentation: https://uploadcn.dev/docs/hooks
 

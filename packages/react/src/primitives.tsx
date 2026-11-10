@@ -10,7 +10,7 @@ import {
 } from "@uploadcn/core"
 import * as React from "react"
 
-import { useUploadConfig } from "./config"
+import { type UploadPasteMode, useUploadConfig } from "./config"
 
 import {
   UploadContext,
@@ -31,6 +31,7 @@ import {
   renderElement,
 } from "./render"
 import { useDropzone } from "./use-dropzone"
+import { useDropzonePaste } from "./use-dropzone-paste"
 import { getPreviewKind, useFilePreview } from "./use-file-preview"
 import { shallowArrayEqual, useUploadSelector } from "./use-upload-selector"
 import { type UseUploaderOptions, useUploader } from "./use-uploader"
@@ -112,6 +113,14 @@ interface UploadRootOwnProps<TResult> {
   directory?: boolean
   /** Translate or customize every string. */
   messages?: Partial<UploadMessages>
+  /**
+   * Paste to upload. `true`: Ctrl/⌘+V adds screenshots and copied files
+   * while this component is focused or hovered. `"global"`: from anywhere on
+   * the page. Pasted files are validated like dropped ones, and pastes into
+   * text fields are never touched. Defaults to the `paste` setting of the
+   * nearest `UploadConfigProvider`, which is off.
+   */
+  paste?: UploadPasteMode
   render?: RenderProp<UploadRootState>
   children?: React.ReactNode
 }
@@ -158,6 +167,25 @@ function FormFiles({
       aria-hidden
     />
   )
+}
+
+const PASTE_TARGET = "[data-paste-target]"
+
+/**
+ * Hands pasted files to a paste target's own file input, as if they had
+ * been picked there, so the target applies its own rules to them.
+ */
+function deliverToTarget(target: Element, files: File[]) {
+  const input = target.matches('input[type="file"]')
+    ? (target as HTMLInputElement)
+    : target.querySelector<HTMLInputElement>('input[type="file"]')
+  if (!input || input.disabled || typeof DataTransfer === "undefined") return
+  const transfer = new DataTransfer()
+  for (const file of input.multiple ? files : files.slice(0, 1)) {
+    transfer.items.add(file)
+  }
+  input.files = transfer.files
+  input.dispatchEvent(new Event("change", { bubbles: true }))
 }
 
 function defaultFormValue(item: UploadItem): string {
@@ -211,6 +239,7 @@ function UploadRootView<TResult>({
   capture,
   directory,
   messages: messagesProp,
+  paste: pasteProp,
   render,
   children,
   ...props
@@ -221,7 +250,12 @@ function UploadRootView<TResult>({
   const { accept, maxFiles } = uploader.getOptions()
   const multiple = multipleProp ?? maxFiles !== 1
 
-  const configMessages = useUploadConfig().messages
+  const config = useUploadConfig()
+  const configMessages = config.messages
+  const pasteMode: UploadPasteMode = disabled
+    ? false
+    : (pasteProp ?? config.paste ?? false)
+  const paste = pasteMode !== false
   const messages = React.useMemo(
     () => ({
       ...defaultMessages,
@@ -260,6 +294,30 @@ function UploadRootView<TResult>({
     if (!disabled) inputRef.current?.click()
   }, [disabled])
 
+  // The whole component is the paste zone, so it works the same for a
+  // dropzone, a button or any custom layout.
+  const { handlers: pasteHandlers } = useDropzonePaste({
+    onPaste(files, { target }) {
+      // Parts that take files for themselves (named slots) mark themselves
+      // with `data-paste-target`. The paste goes to the one in use, or to
+      // the first empty one, through its own input and so its own rules.
+      // The picker input is a direct child of the root element.
+      const root = inputRef.current?.parentElement
+      const targets = [...(root?.querySelectorAll(PASTE_TARGET) ?? [])]
+      if (targets.length === 0) return addFiles(files)
+      const inUse = target?.closest(PASTE_TARGET)
+      const chosen =
+        (inUse && targets.includes(inUse) ? inUse : null) ??
+        targets.find(
+          (element) => element.getAttribute("data-paste-target") === "empty"
+        )
+      // Every target is filled and none is in use: nothing to replace.
+      if (chosen) deliverToTarget(chosen, files)
+    },
+    enabled: paste,
+    global: pasteMode === "global",
+  })
+
   const context = React.useMemo<UploadContextValue>(
     () => ({
       uploader,
@@ -270,6 +328,7 @@ function UploadRootView<TResult>({
       disabled,
       messages,
       inputId,
+      paste,
     }),
     [
       uploader,
@@ -280,13 +339,15 @@ function UploadRootView<TResult>({
       disabled,
       messages,
       inputId,
+      paste,
     ]
   )
 
   const state: UploadRootState = { disabled, isUploading }
   const rootProps = mergeProps(
     {
-      ...dataAttributes({ disabled, uploading: isUploading }),
+      ...pasteHandlers,
+      ...dataAttributes({ disabled, uploading: isUploading, paste }),
       "aria-busy": isUploading || undefined,
     },
     props
@@ -409,7 +470,7 @@ export function UploadDropzone({
   clickable = true,
   ...props
 }: UploadDropzoneProps) {
-  const { addFiles, accept, multiple, disabled, openFileDialog } =
+  const { addFiles, accept, multiple, disabled, openFileDialog, paste } =
     useUploadContext()
   const { isDragging, isDragReject, handlers } = useDropzone({
     onDrop: addFiles,
@@ -424,6 +485,8 @@ export function UploadDropzone({
         role: "button",
         tabIndex: disabled ? -1 : 0,
         "aria-disabled": disabled || undefined,
+        // Tells assistive technology the shortcut the visible hint shows.
+        "aria-keyshortcuts": paste ? "Control+V Meta+V" : undefined,
         onClick(event: React.MouseEvent<HTMLElement>) {
           // Ignore clicks on nested controls (they handle themselves).
           const target = (event.target as HTMLElement).closest(INTERACTIVE)
@@ -450,6 +513,8 @@ export function UploadDropzone({
           dragging: isDragging,
           "drag-reject": isDragReject,
           disabled,
+          // Lets styles show a paste hint only while paste is on.
+          paste: Boolean(paste),
         }),
       },
       props

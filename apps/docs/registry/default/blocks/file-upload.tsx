@@ -21,6 +21,7 @@ import {
   UploadDropzoneDescription,
   UploadDropzoneHeader,
   UploadDropzoneMedia,
+  UploadDropzonePasteHint,
   UploadDropzoneTitle,
   UploadItem,
   UploadItemActions,
@@ -46,6 +47,12 @@ interface FileUploadProps<TResult> extends Pick<
   autoUpload?: boolean
   multiple?: boolean
   disabled?: boolean
+  /**
+   * Paste to upload: `true` takes files pasted with Ctrl/⌘+V while the
+   * component is focused or hovered, `"global"` from anywhere on the page.
+   * Off unless set here or on `UploadConfigProvider`.
+   */
+  paste?: boolean | "global"
   title?: React.ReactNode
   description?: React.ReactNode
   onSuccess?: (item: UploadItemData<TResult>) => void
@@ -79,21 +86,26 @@ function describeLimits({
   return parts.join(" · ")
 }
 
-/** A dropzone, a queue with per-file progress and a summary footer. */
+/**
+ * A dropzone, a queue with per-file progress and a summary footer. Files can
+ * be dropped, picked or, with `paste`, pasted.
+ */
 function FileUpload<TResult = unknown>({
   adapter,
   uploader,
   title = "Drop files here or click to browse",
   description,
+  paste,
   className,
   ...options
 }: FileUploadProps<TResult>) {
   return (
     <Upload
       {...((uploader
-        ? { uploader }
+        ? { uploader, paste }
         : {
             adapter,
+            paste,
             ...options,
           }) as UploadRootProps<TResult>)}
       className={className}
@@ -105,6 +117,7 @@ function FileUpload<TResult = unknown>({
           <UploadDropzoneDescription>
             {description ?? (describeLimits(options) || "Any file type")}
           </UploadDropzoneDescription>
+          <UploadDropzonePasteHint />
         </UploadDropzoneHeader>
       </UploadDropzone>
       <UploadList>

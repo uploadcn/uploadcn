@@ -9,6 +9,11 @@ Accessibility is built into the primitives, so every block inherits it.
 
 - `UploadDropzone` is a focusable button: <kbd>Enter</kbd> or <kbd>Space</kbd> opens
   the file picker. This is the alternative to drag and drop (WCAG 2.5.7 Dragging Movements).
+- With [`paste`](/docs/components/upload#paste) on, there is a second keyboard path:
+  with the dropzone focused, <kbd>Ctrl</kbd>+<kbd>V</kbd> or <kbd>⌘</kbd>+<kbd>V</kbd> adds the
+  clipboard's files. `UploadDropzonePasteHint` shows the shortcut (and reads “Command V”
+  for ⌘), the dropzone carries `aria-keyshortcuts`, focus stays put, and pastes into
+  text fields are never intercepted.
 - `UploadTrigger` and every action are native `<button>`s.
 - The hidden file input is removed from the tab order so focus never lands on an
   invisible element.
@@ -16,8 +21,8 @@ Accessibility is built into the primitives, so every block inherits it.
 
 ## Screen readers
 
-- A polite live region announces files added, uploads finished, failures (with the
-  reason) and rejections.
+- A polite live region announces files added (picked, dropped or pasted), uploads
+  finished, failures (with the reason) and rejections.
 - `UploadProgress` is a `progressbar` with `aria-valuenow`, `aria-valuetext` and a label
   naming the file. Indeterminate states omit `aria-valuenow`.
 - Action buttons have explicit names: “Pause upload of video.mp4”.

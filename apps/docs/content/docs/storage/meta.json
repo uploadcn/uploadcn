@@ -1,4 +1,12 @@
 {
   "title": "Storage",
-  "pages": ["index", "cloudinary", "tigris", "filesystem", "browser", "custom"]
+  "pages": [
+    "index",
+    "config-generator",
+    "cloudinary",
+    "tigris",
+    "filesystem",
+    "browser",
+    "custom"
+  ]
 }

@@ -52,7 +52,7 @@ describe.each(pages.map((page) => [page.file, page] as const))(
     })
 
     it("links only to pages that exist", () => {
-      const links = [...page.text.matchAll(/\]\((\/docs[^)#\s]*)/g)].map(
+      const links = [...page.text.matchAll(/\]\((\/docs[^)#?\s]*)/g)].map(
         (match) => match[1]!.replace(/\/$/, "")
       )
       expect(links.filter((link) => !urls.has(link))).toEqual([])

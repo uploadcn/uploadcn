@@ -109,6 +109,11 @@
       "cache": false,
       "persistent": true
     },
+    "test:e2e": {
+      "cache": false,
+      "dependsOn": ["build"],
+      "env": ["E2E_PORT", "E2E_BASE_URL", "CI"]
+    },
     "test:install": {
       "cache": false,
       "dependsOn": ["^build"],
