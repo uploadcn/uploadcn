@@ -39,6 +39,35 @@ jobs:
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build
 
+  e2e:
+    name: e2e
+    # The docs' interactive pages in a real browser (Playwright, Chromium),
+    # against the production build: paste-to-upload and the provider config
+    # generator.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TURBO_TELEMETRY_DISABLED: 1
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm --filter docs exec playwright install --with-deps chromium
+
+      # Turbo builds the packages, the registry and the docs first.
+      - name: Build the docs and run the end-to-end tests
+        run: pnpm turbo run test:e2e --filter=docs
+
   storage-compat:
     name: storage-compat
     # The real upload path (adapter → route → s3Storage) against live

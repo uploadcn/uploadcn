@@ -12,7 +12,9 @@
     "registry:build": "node scripts/gen-styles.mjs && node scripts/gen-icon-map.mjs && node scripts/build-registry.mts",
     "registry:validate": "shadcn registry validate",
     "test": "vitest run",
-    "test:install": "node scripts/test-install.mts"
+    "test:e2e": "playwright test",
+    "test:install": "node scripts/test-install.mts",
+    "demo:record": "node scripts/record-demos.mts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -45,6 +47,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@shadcn/lint": "0.2.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/dom": "^10.4.2",

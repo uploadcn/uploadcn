@@ -43,6 +43,14 @@ pnpm dev              # packages in watch mode + docs at http://localhost:3000
    pnpm format         # Prettier
    ```
 
+   Changes to the docs site's interactive pages also have end-to-end tests
+   (`apps/docs/e2e`, Playwright). They run against the build from `pnpm check`:
+
+   ```bash
+   pnpm --filter docs exec playwright install chromium   # once
+   pnpm --filter docs test:e2e
+   ```
+
 4. If you changed `@uploadcn/core`, `@uploadcn/react` or `@uploadcn/server`, add a
    changeset and describe the change for the changelog:
 

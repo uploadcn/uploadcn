@@ -109,6 +109,15 @@
       "cache": false,
       "persistent": true
     },
+    "test:e2e": {
+      "cache": false,
+      "dependsOn": ["build"],
+      "env": ["E2E_PORT", "E2E_BASE_URL", "CI"]
+    },
+    "demo:record": {
+      "cache": false,
+      "env": ["DEMO_BASE_URL"]
+    },
     "test:install": {
       "cache": false,
       "dependsOn": ["^build"],
