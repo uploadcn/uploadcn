@@ -58,19 +58,62 @@ export default function Page() {
 }
 ```
 
-Then choose where files go (S3, R2, Cloudinary, local disk, your own API, or browser
-only). See the [installation guide](https://uploadcn.dev/docs/installation).
+Then choose where files go (S3, R2, Tigris, Cloudinary, local disk, your own API, or
+browser only). See the [installation guide](https://uploadcn.dev/docs/installation), or
+get the `.env`, CORS rules and permissions for your bucket from the
+[config generator](https://uploadcn.dev/docs/storage/config-generator).
+
+### Paste to upload
+
+Add `paste` and an upload component takes pasted files: click it (or hover over it) and
+press <kbd>Ctrl</kbd>+<kbd>V</kbd> or <kbd>⌘</kbd>+<kbd>V</kbd> to upload a screenshot, a
+copied image or files copied from your file manager. Pasted files are validated like
+dropped ones, and pastes into text fields are never intercepted.
+
+<p align="center">
+  <img src="apps/docs/public/demo/demo-paste.gif" width="720" alt="A screenshot is pasted into the File Upload dropzone with Ctrl+V; it appears in the queue and uploads" />
+</p>
+
+It is opt-in, and you choose how far it reaches:
+
+```tsx
+<FileUpload paste />                       {/* one component */}
+
+<UploadPaste>                              {/* any block, animated ones too */}
+  <RocketUpload />
+</UploadPaste>
+
+<UploadConfigProvider adapter={adapter} paste>   {/* the whole app */}
+  {children}
+</UploadConfigProvider>
+```
+
+### Provider config generator
+
+Pick Amazon S3, Cloudflare R2, Tigris or Cloudinary, type your bucket and your site's
+origins, and copy the `.env` template, the CORS rules in that provider's own format and
+the smallest IAM policy. Try it at
+[uploadcn.dev/docs/storage/config-generator](https://uploadcn.dev/docs/storage/config-generator).
+
+<p align="center">
+  <img src="apps/docs/public/demo/demo-config.gif" width="720" alt="The config generator: switching from Amazon S3 to Cloudflare R2, typing a bucket and an origin, the output updating, and a block being copied" />
+</p>
 
 ## What you get
 
-- **58 blocks, 30 of them animated.** Dropzones, avatar and gallery uploads, document
+- **59 blocks, 30 of them animated.** Dropzones, avatar and gallery uploads, document
   checklists, identity verification, chat attachments, CSV import, a camera capture, and
   playful animated uploads. Browse them on the [examples page](https://uploadcn.dev/examples).
 - **Your design system.** Every item compiles for all 8 shadcn styles (Vega, Nova, Maia,
   Lyra, Mira, Luma, Sera, Rhea), works on Radix, Base UI and React Aria, and converts its
   icons to your icon library (Lucide, Tabler, Hugeicons, Phosphor, Remix Icon) on install.
-- **Any storage.** Direct-to-bucket uploads to S3 and R2 with a small signing route,
-  Cloudinary, local disk, any custom upload function, or browser-only for forms.
+- **Any storage.** Direct-to-bucket uploads to S3, R2 and Tigris with a small signing
+  route, Cloudinary, local disk, any custom upload function, or browser-only for forms.
+  The [config generator](https://uploadcn.dev/docs/storage/config-generator) writes the
+  `.env`, CORS and IAM setup for your bucket.
+- **Every way to add a file.** Drop files or whole folders, browse, capture from the
+  camera, or paste a screenshot with Ctrl+V or ⌘V: one prop, or one wrapper around any
+  block.
 - **Built for real traffic.** Concurrency limits, retries with backoff, multipart and
   resumable uploads, pause and resume, offline recovery, server-side scan and processing
   states.
@@ -101,8 +144,9 @@ apps/
     registry.json          registry definition, built to public/r for every style
     examples/              live examples rendered in the docs
     content/docs/          documentation (MDX)
-    scripts/               style, icon and registry builds, install tests
+    scripts/               style, icon and registry builds, install tests, demo recordings
     test/                  registry standards, security and block behavior suites
+    e2e/                   Playwright tests against the built docs
 packages/
   core/                    @uploadcn/core
   react/                   @uploadcn/react
@@ -131,6 +175,7 @@ pnpm check            # lint, typecheck, test and build everything
 | `pnpm registry:build`                  | Regenerate styles and icons, rebuild `apps/docs/public/r` for all 8 styles      |
 | `pnpm --filter docs registry:validate` | Validate `registry.json`                                                        |
 | `pnpm --filter docs test:install`      | Install every item into fresh Radix, Base UI and React Aria apps (docs running) |
+| `pnpm --filter docs test:e2e`          | Playwright end-to-end tests against the built docs (run `pnpm build` first)     |
 
 The docs include a real upload route (`apps/docs/app/api/upload`). Without credentials it
 uses in-memory development storage. To upload to a real bucket, copy
